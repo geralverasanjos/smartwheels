@@ -115,7 +115,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
             <SidebarFooter>
                 <SidebarMenu>
                      <SidebarMenuItem>
-                        <Link href="/dashboard/settings">
+                        <Link href={`/dashboard/settings?from=${pathname}`}>
                             <SidebarMenuButton isActive={pathname === "/dashboard/settings"} tooltip={t('menu_settings')}>
                                 <Settings />
                                 <span>{t('menu_settings')}</span>
