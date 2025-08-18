@@ -20,7 +20,7 @@ export function DashboardHeader() {
     }
 
     return (
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger className="md:hidden"/>
             <div className="flex-1" />
             <LanguageSelector />
@@ -36,11 +36,11 @@ export function DashboardHeader() {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>{t('my_account')}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href={getProfileLink()}>{t('menu_profile')}</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/dashboard/settings">{t('menu_settings')}</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/dashboard/support">{t('menu_support')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href={getProfileLink()}>{t('menu_profile')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href="/dashboard/settings">{t('menu_settings')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href="/dashboard/support">{t('menu_support')}</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/">{t('logout')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href="/">{t('logout')}</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </header>
