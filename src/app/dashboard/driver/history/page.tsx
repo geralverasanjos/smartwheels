@@ -14,7 +14,7 @@ const pastTrips = [
 
 export default function DriverHistoryPage() {
     const { t } = useAppContext();
-    const { formatCurrency } = useCurrency();
+    const { formatCurrency, formatDate } = useCurrency();
 
     return (
         <Card>
@@ -35,7 +35,7 @@ export default function DriverHistoryPage() {
                                      </div>
                                 </div>
                                 <div className="text-left md:text-center">
-                                    <p className="font-semibold">{new Date(trip.date).toLocaleDateString()}</p>
+                                    <p className="font-semibold">{formatDate(trip.date)}</p>
                                     <p className="text-xs text-muted-foreground">{t('history_date')}</p>
                                 </div>
                                 <div className="text-left md:text-center">

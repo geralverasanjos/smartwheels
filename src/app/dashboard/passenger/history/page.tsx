@@ -16,7 +16,7 @@ const pastTrips = [
 
 export default function PassengerHistoryPage() {
     const { t } = useAppContext();
-    const { formatCurrency } = useCurrency();
+    const { formatCurrency, formatDate } = useCurrency();
 
     return (
         <Card>
@@ -37,7 +37,7 @@ export default function PassengerHistoryPage() {
                                     </Avatar>
                                     <div>
                                         <p className="font-bold">{t(trip.type === 'trip' ? 'trip_type_trip' : 'trip_type_delivery')} com {trip.driver.name}</p>
-                                        <p className="text-sm text-muted-foreground">{new Date(trip.date).toLocaleDateString()}</p>
+                                        <p className="text-sm text-muted-foreground">{formatDate(trip.date)}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6 text-sm">

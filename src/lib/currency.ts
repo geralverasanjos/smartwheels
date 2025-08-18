@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useCallback } from 'react';
 import { languages } from './i18n';
@@ -18,5 +18,13 @@ export const useCurrency = () => {
     }).format(value);
   }, [language]);
 
-  return { formatCurrency };
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString(language.value, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    });
+  }, [language.value]);
+
+  return { formatCurrency, formatDate };
 };

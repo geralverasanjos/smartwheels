@@ -17,7 +17,7 @@ const fleetHistory = [
 
 export default function FleetHistoryPage() {
     const { t } = useAppContext();
-    const { formatCurrency } = useCurrency();
+    const { formatCurrency, formatDate } = useCurrency();
 
     return (
         <Card>
@@ -54,7 +54,7 @@ export default function FleetHistoryPage() {
                                         {t(trip.type === 'trip' ? 'trip_type_trip' : 'trip_type_delivery')}
                                     </div>
                                 </TableCell>
-                                <TableCell>{new Date(trip.date).toLocaleDateString()}</TableCell>
+                                <TableCell>{formatDate(trip.date)}</TableCell>
                                 <TableCell>
                                     <Badge variant={trip.status === 'completed' ? 'default' : 'destructive'}>
                                         {t(trip.status === 'completed' ? 'status_completed' : 'status_cancelled')}
