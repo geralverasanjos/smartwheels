@@ -38,7 +38,7 @@ export function DashboardHeader() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem><Link href={getProfileLink()}>{t('menu_profile')}</Link></DropdownMenuItem>
                     <DropdownMenuItem><Link href="/dashboard/settings">{t('menu_settings')}</Link></DropdownMenuItem>
-                    <DropdownMenuItem><Link href="/dashboard/support">{t('menu_support')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href={`/dashboard/support?from=${pathname}`}>{t('menu_support')}</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem><Link href="/">{t('logout')}</Link></DropdownMenuItem>
                 </DropdownMenuContent>

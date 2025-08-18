@@ -121,7 +121,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                         </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <Link href="/dashboard/support">
+                        <Link href={`/dashboard/support?from=${pathname}`}>
                             <SidebarMenuButton isActive={pathname === "/dashboard/support"} className="support-button-glow" tooltip={t('menu_support')}>
                                 <LifeBuoy />
                                 <span>{t('menu_support')}</span>
