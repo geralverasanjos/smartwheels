@@ -124,9 +124,6 @@ export default function LandingPage() {
                                 <p>{t('business_model_step3_desc')}</p>
                             </div>
                         </div>
-                        <div className="chart-container relative h-96">
-                           <Image src="https://placehold.co/600x400/000000/32CD32" alt={t('business_model_chart_alt')} layout="fill" objectFit="contain" data-ai-hint="business chart" />
-                        </div>
                       </div>
                     </section>
 

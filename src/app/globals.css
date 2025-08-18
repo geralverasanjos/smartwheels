@@ -355,15 +355,11 @@
   }
 
   .business-model-section .content-container {
-    @apply grid md:grid-cols-2 gap-12 items-center;
-  }
-
-  .business-model-section .chart-container {
-    @apply h-full min-h-[300px];
+    @apply flex justify-center;
   }
 
   .business-model-section .flow-container {
-    @apply text-left space-y-6;
+    @apply text-left space-y-6 max-w-2xl;
   }
 
   .business-model-section .flow-container h3 {
@@ -390,143 +386,6 @@
   }
 
   .business-model-section .flow-card p {
-    color: hsl(var(--muted-foreground));
-    @apply text-base leading-relaxed;
-  }
-
-  .transversal-modules-section {
-    @apply text-center my-16 w-full max-w-6xl mx-auto px-4;
-  }
-
-  .transversal-modules-section .text-container {
-    @apply mb-12;
-  }
-
-  .transversal-modules-section h2 {
-    @apply text-4xl font-headline mb-3;
-    color: hsl(var(--primary));
-  }
-
-  .transversal-modules-section .subtitle {
-    @apply text-lg text-muted-foreground max-w-3xl mx-auto;
-  }
-
-  .transversal-content {
-    @apply grid md:grid-cols-1 gap-8 lg:gap-12 items-center;
-  }
-
-  .transversal-image {
-    @apply flex items-center justify-center;
-  }
-
-  .transversal-image img {
-    @apply max-w-full h-auto rounded-lg shadow-lg;
-  }
-
-  .transversal-details {
-    background-color: hsla(var(--card), 0.5);
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    @apply text-left p-8;
-  }
-
-  .transversal-tabs {
-    @apply flex items-center border-b border-border mb-6;
-  }
-
-  .tab-button {
-    @apply flex items-center py-3 px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 border-b-2 border-transparent -mb-px;
-  }
-
-  .tab-button:hover {
-    color: hsl(var(--foreground));
-  }
-
-  .tab-button.active {
-    color: hsl(var(--primary));
-    border-color: hsl(var(--primary));
-  }
-
-  .tab-content {
-    @apply min-h-[150px];
-  }
-
-  .tab-content h3 {
-    @apply text-2xl font-headline mb-4;
-    color: hsl(var(--foreground));
-  }
-
-  .tab-content p {
-    color: hsl(var(--muted-foreground));
-    @apply text-base leading-relaxed;
-  }
-
-  .tech-integrations-section {
-    @apply text-center my-16 w-full max-w-6xl mx-auto px-4;
-  }
-
-  .tech-integrations-section .text-container {
-    @apply mb-12;
-  }
-
-  .tech-integrations-section h2 {
-    @apply text-4xl font-headline mb-3;
-    color: hsl(var(--primary));
-  }
-
-  .tech-integrations-section .subtitle {
-    @apply text-lg text-muted-foreground max-w-3xl mx-auto;
-  }
-
-  .tech-integrations-content {
-    @apply grid md:grid-cols-1 gap-8 lg:gap-12 items-center;
-  }
-
-  .tech-integrations-image {
-    @apply flex items-center justify-center;
-  }
-
-  .tech-integrations-image img {
-    @apply max-w-full h-auto rounded-lg shadow-lg border-4 border-card;
-  }
-
-  .tech-integrations-details {
-    @apply space-y-6;
-  }
-
-  .tech-card {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    @apply p-6 text-left;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0 4px 6px hsla(var(--foreground), 0.05);
-  }
-
-  .tech-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px hsla(var(--primary), 0.2),
-      0 0 15px hsla(var(--primary), 0.1);
-  }
-
-  .tech-card-header {
-    @apply flex items-center gap-4 mb-4;
-  }
-
-  .tech-card-header .icon {
-    color: hsl(var(--primary));
-  }
-
-  .tech-card-header .icon svg {
-    @apply h-8 w-8;
-  }
-
-  .tech-card h3 {
-    @apply text-xl font-headline;
-    color: hsl(var(--card-foreground));
-  }
-
-  .tech-card p {
     color: hsl(var(--muted-foreground));
     @apply text-base leading-relaxed;
   }
