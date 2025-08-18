@@ -1,5 +1,24 @@
 
 export const translations = {
+  "my_account": {
+    "pt-PT": "Minha Conta",
+    "pt-BR": "Minha Conta",
+    "en-US": "My Account",
+    "es-ES": "Mi Cuenta",
+    "fr-FR": "Mon Compte",
+    "de-DE": "Mein Konto",
+    "it-IT": "Il Mio Account",
+    "ja-JP": "マイアカウント",
+    "zh-CN": "我的账户",
+    "ru-RU": "Мой аккаунт",
+    "ar-SA": "حسابي",
+    "hi-IN": "मेरा खाता",
+    "ko-KR": "내 계정",
+    "he-IL": "החשבון שלי",
+    "uk-UA": "Мій акаунт",
+    "id-ID": "Akun Saya",
+    "th-TH": "บัญชีของฉัน"
+  },
   "btn_passenger_title": {
     "pt-PT": "Passageiro",
     "pt-BR": "Passageiro",

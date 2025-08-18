@@ -5,8 +5,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LanguageSelector } from '../landing/language-selector';
 import Link from 'next/link';
+import { useAppContext } from '@/contexts/app-context';
+import { usePathname } from 'next/navigation';
 
 export function DashboardHeader() {
+    const { t } = useAppContext();
+    const pathname = usePathname();
+
+    const getProfileLink = () => {
+        if (pathname.includes('/dashboard/passenger')) return '/dashboard/passenger/profile';
+        if (pathname.includes('/dashboard/driver')) return '/dashboard/driver/profile';
+        if (pathname.includes('/dashboard/fleet-manager')) return '/dashboard/fleet-manager/profile';
+        return '#';
+    }
+
     return (
         <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <SidebarTrigger className="md:hidden"/>
@@ -22,13 +34,13 @@ export function DashboardHeader() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t('my_account' as any)}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="#">Perfil</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="#">Configurações</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="#">Suporte</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href={getProfileLink()}>{t('menu_profile')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/dashboard/settings">{t('menu_settings')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/dashboard/support">{t('menu_support')}</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/">Sair</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/">{t('logout')}</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </header>
