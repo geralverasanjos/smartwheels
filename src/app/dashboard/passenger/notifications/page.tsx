@@ -1,6 +1,6 @@
 'use client';
 import { useAppContext } from '@/contexts/app-context';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 
 export default function PlaceholderPage() {
