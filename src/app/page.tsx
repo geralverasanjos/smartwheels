@@ -1,12 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';
-import { List, DollarSign, Package, User, Car, Users, BrainCircuit, HeartHandshake, Zap } from 'lucide-react';
+import { List, DollarSign, Package, User, Car, Users } from 'lucide-react';
 import Footer from '@/components/landing/footer';
 import { LandingHeader } from '@/components/landing/landing-header';
 import { useRouter } from 'next/navigation';
 import AuthDialog from '@/components/auth/auth-dialog';
-import Image from 'next/image';
 
 export default function LandingPage() {
     const { t } = useAppContext();
