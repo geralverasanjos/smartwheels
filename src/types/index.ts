@@ -8,3 +8,12 @@ export interface Promotion {
     endDate: string;
     status: 'Ativa' | 'Inativa';
 }
+
+export interface UserProfile {
+    name: string;
+    email: string;
+    phone: string;
+    nif: string;
+    address: string;
+    avatarUrl?: string;
+}
