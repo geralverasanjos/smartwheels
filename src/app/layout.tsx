@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { AppContextProvider } from '@/contexts/app-context';
 import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
   title: 'SmartWheels',
@@ -37,8 +38,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AppContextProvider>
-          {children}
-          <Toaster />
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </AppContextProvider>
       </body>
     </html>
