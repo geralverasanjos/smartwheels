@@ -14,11 +14,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const theme = localStorage.getItem('theme') || 'system';
+                if (theme === 'system') {
+                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  document.documentElement.classList.toggle('dark', prefersDark);
+                } else {
+                  document.documentElement.classList.toggle('dark', theme === 'dark');
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="font-body antialiased">
         <AppContextProvider>
