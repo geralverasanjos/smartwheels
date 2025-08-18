@@ -152,44 +152,6 @@ export const translations = {
     "id-ID": "Terima biaya perjalanan langsung ke akun Anda, tanpa perantara.",
     "th-TH": "รับค่าธรรมเนียมการเดินทางเข้าบัญชีของคุณโดยตรง โดยไม่มีคนกลาง"
   },
-  "transversal_modules_title": {
-    "pt-PT": "Módulos Transversais",
-    "pt-BR": "Módulos Transversais",
-    "en-US": "Transversal Modules",
-    "es-ES": "Módulos transversales",
-    "fr-FR": "Modules transversaux",
-    "de-DE": "Transversale Module",
-    "it-IT": "Moduli trasversali",
-    "ja-JP": "横断的モジュール",
-    "zh-CN": "横向模块",
-    "ru-RU": "Сквозные модули",
-    "ar-SA": "الوحدات العرضية",
-    "hi-IN": "अनुप्रस्थ मॉड्यूल",
-    "ko-KR": "횡단 모듈",
-    "he-IL": "מודולים רוחביים",
-    "uk-UA": "Трансверсальні модулі",
-    "id-ID": "Modul transversal",
-    "th-TH": "โมดูลแนวขวาง"
-  },
-  "transversal_modules_subtitle": {
-    "pt-PT": "Desenvolva o seu negócio através de diferentes serviços.",
-    "pt-BR": "Desenvolva seu negócio através de diferentes serviços.",
-    "en-US": "Develop your business through different services.",
-    "es-ES": "Desarrolla tu negocio a través de diferentes servicios.",
-    "fr-FR": "Développez votre entreprise grâce à différents services.",
-    "de-DE": "Entwickeln Sie Ihr Geschäft durch verschiedene Dienstleistungen.",
-    "it-IT": "Sviluppa la tua attività attraverso diversi servizi.",
-    "ja-JP": "さまざまなサービスを通じてビジネスを開発します。",
-    "zh-CN": "通过不同的服务发展您的业务。",
-    "ru-RU": "Развивайте свой бизнес с помощью различных сервисов.",
-    "ar-SA": "طور عملك من خلال خدمات مختلفة.",
-    "hi-IN": "विभिन्न सेवाओं के माध्यम से अपने व्यवसाय का विकास करें।",
-    "ko-KR": "다양한 서비스를 통해 비즈니스를 발전시키세요.",
-    "he-IL": "פתח את העסק שלך באמצעות שירותים שונים.",
-    "uk-UA": "Розвивайте свій бізнес за допомогою різних послуг.",
-    "id-ID": "Kembangkan bisnis Anda melalui layanan yang berbeda.",
-    "th-TH": "พัฒนาธุรกิจของคุณผ่านบริการที่หลากหลาย"
-  },
   "welcome_title_p2": {
     "pt-PT": "Inteligente",
     "pt-BR": "Inteligente",
@@ -626,7 +588,7 @@ export const translations = {
     "uk-UA": "Керуйте своїм автопарком і водіями",
     "id-ID": "Kelola armada kendaraan dan pengemudi Anda",
     "th-TH": "จัดการกองยานพาหนะและคนขับของคุณ"
-}    
+  }
 }
 export const languages = [
     { value: "pt-PT", label: "Português (Portugal)", flagCode: "pt", currency: { code: "EUR", symbol: "€" } },
