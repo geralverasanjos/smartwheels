@@ -14,10 +14,20 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export default function SettingsPage() {
   const { t } = useAppContext();
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // ou um esqueleto de carregamento
+  }
 
   return (
     <div className="space-y-8">
