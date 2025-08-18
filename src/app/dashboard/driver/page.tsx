@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, User, Star, Loader2, PlayCircle, CheckCircle } from 'lucide-react';
+import { Car, Package, User, Star, Loader2, PlayCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ type State = {
   simulationStep: 'idle' | 'request' | 'enroute_to_pickup' | 'at_pickup' | 'enroute_to_destination' | 'at_destination';
   vehiclePosition: { lat: number; lng: number };
   directions: google.maps.DirectionsResult | null;
-  statusMessage: string;
+  statusMessageKey: TranslationKeys;
 };
 
 type Action =
@@ -38,56 +38,58 @@ type Action =
   | { type: 'FINISH_RIDE' }
   | { type: 'SET_VEHICLE_POSITION'; payload: { lat: number; lng: number } }
   | { type: 'SET_DIRECTIONS'; payload: google.maps.DirectionsResult | null }
-  | { type: 'SET_STATUS_MESSAGE', payload: string };
+  | { type: 'SET_STATUS_MESSAGE_KEY', payload: TranslationKeys };
   
-const initialState: State = {
+import type { TranslationKeys } from '@/lib/i18n';
+
+const getInitialState = (): State => ({
   isOnline: false,
   isSimulating: false,
   simulationStep: 'idle',
   vehiclePosition: DRIVER_INITIAL_POSITION,
   directions: null,
-  statusMessage: 'Você está offline.'
-};
+  statusMessageKey: 'driver_status_offline' as TranslationKeys,
+});
 
 function simulationReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'TOGGLE_ONLINE':
-            return { ...state, isOnline: action.payload, statusMessage: action.payload ? 'Aguardando novas solicitações...' : 'Você está offline.' };
+            return { ...state, isOnline: action.payload, statusMessageKey: action.payload ? 'driver_status_waiting' : 'driver_status_offline' };
         case 'TOGGLE_SIMULATION':
             const isSimulating = !state.isSimulating;
             if (isSimulating && state.isOnline) {
                  return {
-                    ...initialState,
+                    ...getInitialState(),
                     isOnline: state.isOnline,
                     isSimulating,
                     simulationStep: 'request',
-                    statusMessage: 'Nova solicitação de corrida!',
+                    statusMessageKey: 'driver_status_new_request',
                     vehiclePosition: state.vehiclePosition,
                 };
             }
             return {
-                ...initialState,
+                ...getInitialState(),
                 isOnline: state.isOnline,
                 isSimulating: false,
-                statusMessage: state.isOnline ? 'Aguardando novas solicitações...' : 'Você está offline.',
+                statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline',
                 vehiclePosition: state.vehiclePosition,
             };
         case 'ACCEPT_RIDE':
-            return { ...state, simulationStep: 'enroute_to_pickup', statusMessage: 'A caminho para buscar o passageiro...' };
+            return { ...state, simulationStep: 'enroute_to_pickup', statusMessageKey: 'driver_status_pickup_enroute' };
         case 'DECLINE_RIDE':
-             return { ...state, simulationStep: 'idle', statusMessage: 'Aguardando novas solicitações...' };
+             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting' };
         case 'ARRIVE_AT_PICKUP':
-            return { ...state, simulationStep: 'at_pickup', statusMessage: 'Passageiro coletado. Inicie a viagem para o destino.' };
+            return { ...state, simulationStep: 'at_pickup', statusMessageKey: 'driver_status_pickup_arrived' };
         case 'START_TRIP_TO_DESTINATION':
-            return { ...state, simulationStep: 'enroute_to_destination', statusMessage: 'Viagem em andamento para o destino final.' };
+            return { ...state, simulationStep: 'enroute_to_destination', statusMessageKey: 'driver_status_destination_enroute' };
         case 'FINISH_RIDE':
-            return { ...initialState, isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessage: state.isOnline ? 'Aguardando novas solicitações...' : 'Você está offline.'};
+            return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline'};
         case 'SET_VEHICLE_POSITION':
             return { ...state, vehiclePosition: action.payload };
         case 'SET_DIRECTIONS':
             return { ...state, directions: action.payload };
-        case 'SET_STATUS_MESSAGE':
-            return { ...state, statusMessage: action.payload };
+        case 'SET_STATUS_MESSAGE_KEY':
+            return { ...state, statusMessageKey: action.payload };
         default:
             return state;
     }
@@ -95,8 +97,9 @@ function simulationReducer(state: State, action: Action): State {
 
 
 export default function DriverDashboardPage() {
-  const [state, dispatch] = useReducer(simulationReducer, initialState);
-  const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessage } = state;
+  const { t } = useAppContext();
+  const [state, dispatch] = useReducer(simulationReducer, getInitialState());
+  const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessageKey } = state;
 
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('stand');
@@ -194,8 +197,8 @@ export default function DriverDashboardPage() {
         return (
           <Card className="border-dashed border-primary animate-pulse">
             <CardHeader>
-              <CardTitle className="text-primary">Nova Solicitação de Corrida!</CardTitle>
-              <CardDescription>Um passageiro próximo precisa de uma viagem.</CardDescription>
+              <CardTitle className="text-primary">{t('driver_request_title')}</CardTitle>
+              <CardDescription>{t('driver_request_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
@@ -203,14 +206,14 @@ export default function DriverDashboardPage() {
                 <p className="font-semibold">Ana Sousa (4.8 <Star className="inline w-4 h-4 text-yellow-400 fill-yellow-400" />)</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">De: Ponto de Partida</p>
-                <p className="text-sm text-muted-foreground">Para: Destino Final</p>
+                <p className="text-sm text-muted-foreground">{t('driver_request_from')}</p>
+                <p className="text-sm text-muted-foreground">{t('driver_request_to')}</p>
               </div>
               <p className="text-xl font-bold text-right">{formatCurrency(12.50)}</p>
             </CardContent>
             <CardContent className="flex gap-2">
-              <Button variant="outline" className="w-full" onClick={() => dispatch({ type: 'DECLINE_RIDE' })}>Recusar</Button>
-              <Button className="w-full" onClick={() => dispatch({ type: 'ACCEPT_RIDE' })}>Aceitar</Button>
+              <Button variant="outline" className="w-full" onClick={() => dispatch({ type: 'DECLINE_RIDE' })}>{t('decline_button')}</Button>
+              <Button className="w-full" onClick={() => dispatch({ type: 'ACCEPT_RIDE' })}>{t('accept_button')}</Button>
             </CardContent>
           </Card>
         );
@@ -218,11 +221,11 @@ export default function DriverDashboardPage() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-primary">Aguardando Passageiro</CardTitle>
+                    <CardTitle className="text-primary">{t('driver_pickup_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p>Você chegou ao local de partida. Aguarde o passageiro e inicie a viagem.</p>
-                    <Button className="w-full mt-4" onClick={() => dispatch({type: 'START_TRIP_TO_DESTINATION'})}><PlayCircle className="mr-2"/> Iniciar Viagem para o Destino</Button>
+                    <p>{t('driver_pickup_desc')}</p>
+                    <Button className="w-full mt-4" onClick={() => dispatch({type: 'START_TRIP_TO_DESTINATION'})}><PlayCircle className="mr-2"/> {t('driver_pickup_start_button')}</Button>
                 </CardContent>
             </Card>
         )
@@ -230,7 +233,7 @@ export default function DriverDashboardPage() {
         return (
           <Card className="border-dashed">
             <CardContent className="p-8 flex flex-col items-center justify-center text-center min-h-36">
-              <p className="font-semibold text-muted-foreground">{statusMessage}</p>
+              <p className="font-semibold text-muted-foreground">{t(statusMessageKey)}</p>
             </CardContent>
           </Card>
         );
@@ -259,16 +262,16 @@ export default function DriverDashboardPage() {
             <Card>
                 <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Status Online</CardTitle>
+                    <CardTitle>{t('driver_online_status_title')}</CardTitle>
                     <div className="flex items-center gap-2">
                     <span className={`font-semibold ${isOnline ? 'text-primary' : 'text-muted-foreground'}`}>
-                        {isOnline ? 'Online' : 'Offline'}
+                        {isOnline ? t('status_online') : t('status_offline')}
                     </span>
                     <Switch checked={isOnline} onCheckedChange={(checked) => dispatch({ type: 'TOGGLE_ONLINE', payload: checked })} />
                     </div>
                 </div>
                 <CardDescription>
-                    {isOnline ? 'Você está visível e pronto para receber pedidos.' : 'Você não está recebendo solicitações de corrida.'}
+                    {isOnline ? t('driver_online_desc') : t('driver_offline_desc')}
                 </CardDescription>
                 </CardHeader>
                  {isOnline && (
@@ -276,50 +279,50 @@ export default function DriverDashboardPage() {
                     <Separator />
                     <CardContent className="pt-6 space-y-6">
                     <div>
-                        <Label className="font-semibold">Tipos de Serviço Ativos:</Label>
+                        <Label className="font-semibold">{t('driver_service_types_label')}:</Label>
                         <div className="space-y-3 mt-3">
                         <div className="flex items-center space-x-3">
                             <Checkbox id="passengers" checked={services.passengers} onCheckedChange={() => handleServiceChange('passengers')} />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
-                            <Car className="h-4 w-4" /> Passageiros (Táxi)
+                            <Car className="h-4 w-4" /> {t('driver_service_taxi')}
                             </Label>
                         </div>
                         <div className="flex items-center space-x-3">
                             <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={() => handleServiceChange('deliveries')} />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
-                            <Package className="h-4 w-4" /> Entregas Pequenas
+                            <Package className="h-4 w-4" /> {t('driver_service_delivery')}
                             </Label>
                         </div>
                         </div>
                     </div>
                     <Separator />
                     <div>
-                        <Label className="font-semibold">Fila de Operação:</Label>
+                        <Label className="font-semibold">{t('driver_queue_label')}:</Label>
                         <RadioGroup value={queueMode} onValueChange={setQueueMode} className="mt-3 space-y-2">
                         <div className="flex items-center space-x-3">
                             <RadioGroupItem value="global" id="globalQueue" />
-                            <Label htmlFor="globalQueue" className="font-normal">Fila Global</Label>
+                            <Label htmlFor="globalQueue" className="font-normal">{t('driver_queue_global')}</Label>
                         </div>
                         <div className="flex items-center space-x-3">
                             <RadioGroupItem value="stand" id="standQueue" />
-                            <Label htmlFor="standQueue" className="font-normal">Fila de Ponto de Táxi</Label>
+                            <Label htmlFor="standQueue" className="font-normal">{t('driver_queue_stand')}</Label>
                         </div>
                          <div className="flex items-center space-x-3">
                             <RadioGroupItem value="both" id="bothQueues" />
-                            <Label htmlFor="bothQueues" className="font-normal">Ambos</Label>
+                            <Label htmlFor="bothQueues" className="font-normal">{t('driver_queue_both')}</Label>
                         </div>
                         </RadioGroup>
                         {queueMode === 'stand' && (
                         <div className="mt-4 pl-8">
-                            <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">Escolha o Ponto de Táxi</Label>
+                            <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">{t('driver_select_stand_label')}</Label>
                             <Select defaultValue="aeroporto-chegadas">
                             <SelectTrigger id="taxiStand">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="aeroporto-chegadas">Aeroporto - Chegadas</SelectItem>
-                                <SelectItem value="estacao-oriente">Estação do Oriente</SelectItem>
-                                <SelectItem value="praca-comercio">Praça do Comércio</SelectItem>
+                                <SelectItem value="aeroporto-chegadas">{t('driver_stand_airport')}</SelectItem>
+                                <SelectItem value="estacao-oriente">{t('driver_stand_oriente')}</SelectItem>
+                                <SelectItem value="praca-comercio">{t('driver_stand_comercio')}</SelectItem>
                             </SelectContent>
                             </Select>
                         </div>
@@ -333,17 +336,17 @@ export default function DriverDashboardPage() {
             {isOnline && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Posição na Fila</CardTitle>
+                  <CardTitle>{t('driver_queue_position_title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-around text-center">
                   <div>
                     <p className="text-3xl font-bold">5</p>
-                    <p className="text-xs text-muted-foreground">Sua Posição</p>
+                    <p className="text-xs text-muted-foreground">{t('driver_your_position')}</p>
                   </div>
                    <Separator orientation="vertical" className="h-12" />
                   <div>
                     <p className="text-3xl font-bold">12</p>
-                    <p className="text-xs text-muted-foreground">Total na Fila</p>
+                    <p className="text-xs text-muted-foreground">{t('driver_total_in_queue')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -351,10 +354,10 @@ export default function DriverDashboardPage() {
 
             <Card className="border-primary/50">
                 <CardHeader>
-                    <CardTitle>Simulação de Viagem</CardTitle>
+                    <CardTitle>{t('driver_simulation_title')}</CardTitle>
                 </CardHeader>
                  <CardContent className="flex items-center justify-between">
-                     <Label htmlFor="simulation-switch">Ativar Simulação</Label>
+                     <Label htmlFor="simulation-switch">{t('driver_simulation_enable')}</Label>
                     <Switch id="simulation-switch" checked={isSimulating} onCheckedChange={() => dispatch({ type: 'TOGGLE_SIMULATION' })} />
                  </CardContent>
             </Card>
