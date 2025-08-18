@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { List, DollarSign, Package, User, Car, Users, BrainCircuit, HeartHandshake, Zap } from 'lucide-react';
-import TransversalModules from '@/components/landing/transversal-modules';
 import TechIntegrations from '@/components/landing/tech-integrations';
 import Footer from '@/components/landing/footer';
 import { LandingHeader } from '@/components/landing/landing-header';
@@ -89,8 +88,6 @@ export default function LandingPage() {
                         </div>
                     </section>
                     
-                    <TransversalModules />
-
                     <TechIntegrations />
 
                     <section className="special-services-section">
