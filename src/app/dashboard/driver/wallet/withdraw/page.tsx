@@ -1,7 +1,7 @@
 
 'use client';
-import WithdrawPageContents from '@/app/(dashboard)/passenger/wallet/withdraw/page';
+import WithdrawPageContents from '@/components/shared/wallet/withdraw-page-contents';
 
 export default function WithdrawPage() {
-    return <WithdrawPageContents />
+    return <WithdrawPageContents role="driver" />
 }

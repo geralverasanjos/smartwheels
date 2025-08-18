@@ -1,7 +1,7 @@
 
 'use client';
-import ReceivePageContents from '@/app/(dashboard)/passenger/wallet/receive/page';
+import ReceivePageContents from '@/components/shared/wallet/receive-page-contents';
 
 export default function ReceivePage() {
-    return <ReceivePageContents />
+    return <ReceivePageContents role="driver" />
 }

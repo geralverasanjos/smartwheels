@@ -1,8 +1,8 @@
 
 'use client';
 
-import AddFundsPageContents from '@/app/(dashboard)/passenger/wallet/add-funds/page';
+import AddFundsPageContents from '@/components/shared/wallet/add-funds-page-contents';
 
 export default function AddFundsPage() {
-    return <AddFundsPageContents />
+    return <AddFundsPageContents role="passenger" />
 }

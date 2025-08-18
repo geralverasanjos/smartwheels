@@ -10,16 +10,16 @@ import Link from 'next/link';
 
 // Dados de exemplo (virão da API)
 const walletData = {
-    balance: 47.50,
+    balance: 8500.00,
 };
 
 const transactionHistory = [
-    { id: 1, type: 'top-up', date: 'Hoje, 10:30', description: 'Carregamento de Saldo', amount: 20.00 },
-    { id: 2, type: 'trip', date: 'Hoje, 09:15', description: 'Viagem com Carlos S.', amount: -9.50 },
-    { id: 3, type: 'transfer-in', date: 'Ontem', description: 'Recebido de @mario.p', amount: 15.00 },
+    { id: 1, type: 'withdraw', date: 'Hoje, 14:00', description: 'Retirada para conta bancária', amount: -1000.00 },
+    { id: 2, type: 'trip', date: 'Hoje, 09:15', description: 'Ganhos da frota', amount: 150.75 },
+    { id: 3, type: 'top-up', date: 'Ontem', description: 'Carregamento de Saldo', amount: 500.00 },
 ];
 
-export default function DriverWalletPage() {
+export default function FleetManagerWalletPage() {
     const { t } = useAppContext();
 
     const getTransactionIcon = (type: string) => {
@@ -39,8 +39,8 @@ export default function DriverWalletPage() {
         switch (type) {
             case 'top-up':
             case 'transfer-in':
-                return 'text-green-500';
             case 'trip':
+                return 'text-green-500';
             case 'transfer-out':
             case 'withdraw':
                 return 'text-destructive';
@@ -64,10 +64,10 @@ export default function DriverWalletPage() {
                     <CardTitle className="text-5xl font-bold">€{walletData.balance.toFixed(2)}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
-                    <Button asChild><Link href="/driver/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/withdraw"><ArrowDown /> {t('btn_withdraw')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/transfer"><Send /> {t('btn_transfer')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/receive"><QrCode /> {t('btn_receive')}</Link></Button>
+                    <Button asChild><Link href="/dashboard/fleet-manager/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/fleet-manager/wallet/withdraw"><ArrowDown /> {t('btn_withdraw')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/fleet-manager/wallet/transfer"><Send /> {t('btn_transfer')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/fleet-manager/wallet/receive"><QrCode /> {t('btn_receive')}</Link></Button>
                 </CardContent>
             </Card>
 

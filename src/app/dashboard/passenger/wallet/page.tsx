@@ -19,7 +19,7 @@ const transactionHistory = [
     { id: 3, type: 'transfer-in', date: 'Ontem', description: 'Recebido de @mario.p', amount: 15.00 },
 ];
 
-export default function DriverWalletPage() {
+export default function PassengerWalletPage() {
     const { t } = useAppContext();
 
     const getTransactionIcon = (type: string) => {
@@ -64,10 +64,10 @@ export default function DriverWalletPage() {
                     <CardTitle className="text-5xl font-bold">€{walletData.balance.toFixed(2)}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
-                    <Button asChild><Link href="/driver/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/withdraw"><ArrowDown /> {t('btn_withdraw')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/transfer"><Send /> {t('btn_transfer')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/driver/wallet/receive"><QrCode /> {t('btn_receive')}</Link></Button>
+                    <Button asChild><Link href="/dashboard/passenger/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/withdraw"><ArrowDown /> {t('btn_withdraw')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/transfer"><Send /> {t('btn_transfer')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/receive"><QrCode /> {t('btn_receive')}</Link></Button>
                 </CardContent>
             </Card>
 

@@ -1,8 +1,7 @@
 
 'use client';
-import TransferPageContents from '@/app/(dashboard)/passenger/wallet/transfer/page';
+import TransferPageContents from '@/components/shared/wallet/transfer-page-contents';
 
 export default function TransferPage() {
-    return <TransferPageContents />
+    return <TransferPageContents role="passenger" />
 }
-
