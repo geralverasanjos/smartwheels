@@ -103,7 +103,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                 <SidebarMenu>
                     {navItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} legacyBehavior passHref>
+                            <Link href={item.href}>
                                 <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey as any)}>
                                     <item.icon />
                                     <span>{t(item.labelKey as any)}</span>
@@ -116,7 +116,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
             <SidebarFooter>
                 <SidebarMenu>
                      <SidebarMenuItem>
-                        <Link href="/dashboard/settings" legacyBehavior passHref>
+                        <Link href="/dashboard/settings">
                             <SidebarMenuButton isActive={pathname === "/dashboard/settings"} tooltip={t('menu_settings')}>
                                 <Settings />
                                 <span>{t('menu_settings')}</span>
@@ -124,7 +124,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                         </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <Link href="/dashboard/support" legacyBehavior passHref>
+                        <Link href="/dashboard/support">
                             <SidebarMenuButton isActive={pathname === "/dashboard/support"} className="support-button-glow" tooltip={t('menu_support')}>
                                 <LifeBuoy />
                                 <span>{t('menu_support')}</span>
@@ -133,7 +133,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                     </SidebarMenuItem>
                     <SidebarSeparator />
                      <SidebarMenuItem>
-                        <Link href="/" legacyBehavior passHref>
+                        <Link href="/">
                             <SidebarMenuButton tooltip="Logout">
                                 <LogOut />
                                 <span>Logout</span>
