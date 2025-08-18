@@ -59,6 +59,7 @@ const driverNav = [
     { href: "/dashboard/driver/promotions", icon: Award, labelKey: "menu_promotions" },
     { href: "/dashboard/driver/referral", icon: Users, labelKey: "menu_referral" },
     { href: "/dashboard/driver/chat", icon: MessageSquare, labelKey: "menu_chat" },
+    { href: "/dashboard/driver/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/driver/profile", icon: User, labelKey: "menu_profile" },
 ];
 
@@ -73,6 +74,7 @@ const fleetManagerNav = [
     { href: "/dashboard/fleet-manager/wallet", icon: Wallet, labelKey: "menu_wallet" },
     { href: "/dashboard/fleet-manager/promotions", icon: Award, labelKey: "menu_promotions" },
     { href: "/dashboard/fleet-manager/refer", icon: Award, labelKey: "menu_refer" },
+    { href: "/dashboard/fleet-manager/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/fleet-manager/profile", icon: User, labelKey: "menu_profile" },
 ];
 
