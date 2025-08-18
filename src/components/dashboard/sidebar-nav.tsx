@@ -67,6 +67,7 @@ const fleetManagerNav = [
     { href: "/dashboard/fleet-manager/monitoring", icon: Tv, labelKey: "menu_monitoring" },
     { href: "/dashboard/fleet-manager/drivers", icon: Users, labelKey: "menu_drivers" },
     { href: "/dashboard/fleet-manager/vehicles", icon: Car, labelKey: "menu_vehicles" },
+    { href: "/dashboard/fleet-manager/earnings", icon: AreaChart, labelKey: "menu_earnings" },
     { href: "/dashboard/fleet-manager/reports", icon: FileText, labelKey: "menu_reports" },
     { href: "/dashboard/payments", icon: CreditCard, labelKey: "menu_payments" },
     { href: "/dashboard/fleet-manager/wallet", icon: Wallet, labelKey: "menu_wallet" },

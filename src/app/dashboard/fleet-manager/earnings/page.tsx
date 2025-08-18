@@ -1,25 +1,24 @@
 'use client';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign, ArrowDown, Banknote } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import Link from "next/link";
 import React, { useState, useEffect } from 'react';
 import PaymentsPage from "../../payments/page";
 
-
 const data = [
-  { day: 'Seg', earnings: 120 },
-  { day: 'Ter', earnings: 150 },
-  { day: 'Qua', earnings: 180 },
-  { day: 'Qui', earnings: 130 },
-  { day: 'Sex', earnings: 250 },
-  { day: 'Sáb', earnings: 300 },
-  { day: 'Dom', earnings: 220 },
+  { day: 'Seg', earnings: 1200 },
+  { day: 'Ter', earnings: 1500 },
+  { day: 'Qua', earnings: 1800 },
+  { day: 'Qui', earnings: 1300 },
+  { day: 'Sex', earnings: 2500 },
+  { day: 'Sáb', earnings: 3000 },
+  { day: 'Dom', earnings: 2200 },
 ];
 
-export default function DriverEarnings() {
+export default function FleetEarningsPage() {
     const { t } = useAppContext();
     const [isClient, setIsClient] = useState(false);
 
@@ -30,8 +29,8 @@ export default function DriverEarnings() {
   return (
     <div className="space-y-8">
        <div>
-        <h1 className="text-3xl font-bold font-headline">{t('earnings_page_title')}</h1>
-        <p className="text-muted-foreground">{t('earnings_page_subtitle')}</p>
+        <h1 className="text-3xl font-bold font-headline">{t('earnings_page_title_fleet')}</h1>
+        <p className="text-muted-foreground">{t('earnings_page_subtitle_fleet')}</p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +40,7 @@ export default function DriverEarnings() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€180,50</div>
+            <div className="text-2xl font-bold">€1180,50</div>
             <p className="text-xs text-muted-foreground">{t('earnings_today_desc')}</p>
           </CardContent>
         </Card>
@@ -51,7 +50,7 @@ export default function DriverEarnings() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€1.130,00</div>
+            <div className="text-2xl font-bold">€11.300,00</div>
              <p className="text-xs text-muted-foreground">{t('earnings_week_desc')}</p>
           </CardContent>
         </Card>
@@ -61,7 +60,7 @@ export default function DriverEarnings() {
             <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€850,00</div>
+            <div className="text-2xl font-bold">€8500,00</div>
             <p className="text-xs text-muted-foreground">{t('earnings_available_desc')}</p>
           </CardContent>
         </Card>

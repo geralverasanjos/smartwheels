@@ -1,4 +1,3 @@
-
 'use client';
 import { useAppContext } from '@/contexts/app-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -69,4 +68,3 @@ export default function FleetHistoryPage() {
         </Card>
     );
 }
-
