@@ -30,9 +30,6 @@ import {
   Star,
   PlayCircle,
   ThumbsUp,
-  LucideProps,
-  Send,
-  Bike,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
@@ -43,27 +40,18 @@ import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 
-const serviceCategories = [
-  { id: 'economico', icon: Car, title: 'Econômico', description: 'Opção de baixo custo para o seu dia a dia.', price: 6.50, eta: '~5 min' },
-  { id: 'smart', icon: Car, title: 'Smart', description: 'Serviços eficientes e rápidos, ideais para o dia a dia.', price: 8.00, eta: '~5 min' },
-  { id: 'executivo', icon: Briefcase, title: 'Executivo', description: 'Ideal para viagens de negócios, oferece espaço e conforto premium.', price: 15.00, eta: '~4 min' },
-  { id: 'van', icon: Users, title: 'Van', description: 'Ideal para grupos ou bagagem extra, com amplo espaço e conforto.', price: 18.00, eta: '~8 min' },
-  { id: 'pet', icon: Dog, title: 'Pet', description: 'Transporte seguro e confortável para o seu animal de estimação.', price: 10.00, eta: '~6 min' }
-];
-
 const paymentMethods = [
-    {id: 'wallet', icon: Wallet, label: 'Carteira SmartWheels', value: '€ 37,50'},
-    {id: 'card', icon: CreditCard, label: '**** 1234', value: 'Crédito'},
-    {id: 'pix', icon: Landmark, label: 'PIX', value: ''},
-    {id: 'mbway', icon: Landmark, label: 'MB WAY', value: ''},
-    {id: 'cash', icon: Landmark, label: 'Dinheiro', value: ''},
+    {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
+    {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
+    {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
+    {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
+    {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
 ];
 
 type Address = {
@@ -108,7 +96,7 @@ type Action =
 
 const initialState: State = {
   step: 'address',
-  origin: { text: 'R. João Saraiva 7, 1700-248 Lisboa, Portugal', coords: null },
+  origin: { text: '', coords: null },
   destination: { text: '', coords: null },
   driverPosition: DRIVER_INITIAL_POSITION,
   directions: null,
@@ -145,7 +133,7 @@ function reducer(state: State, action: Action): State {
 
 export default function RequestTransportPage() {
   const { toast } = useToast();
-  const { language } = useAppContext();
+  const { language, t } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
   const { geocode, reverseGeocode } = useGeocoding();
   const { isLoaded } = useGoogleMaps();
@@ -153,24 +141,35 @@ export default function RequestTransportPage() {
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip } = state;
-  
+
+  const serviceCategories = [
+    { id: 'economico', icon: Car, title: t('transport_service_economic_title'), description: t('transport_service_economic_desc'), price: 6.50, eta: t('eta_5min') },
+    { id: 'smart', icon: Car, title: t('transport_service_smart_title'), description: t('transport_service_smart_desc'), price: 8.00, eta: t('eta_5min') },
+    { id: 'executivo', icon: Briefcase, title: t('transport_service_executive_title'), description: t('transport_service_executive_desc'), price: 15.00, eta: t('eta_4min') },
+    { id: 'van', icon: Users, title: t('transport_service_van_title'), description: t('transport_service_van_desc'), price: 18.00, eta: t('eta_8min') },
+    { id: 'pet', icon: Dog, title: t('transport_service_pet_title'), description: t('transport_service_pet_desc'), price: 10.00, eta: t('eta_6min') }
+  ];
+
   useEffect(() => {
     async function getInitialOriginCoords() {
-      if (isLoaded && initialState.origin.text && !initialState.origin.coords) {
-        try {
-          const coords = await geocode(initialState.origin.text);
-          dispatch({ type: 'SET_ORIGIN', payload: { ...initialState.origin, coords } });
-        } catch (error) {
-          console.error("Failed to geocode initial address:", error);
-        }
+      if (isLoaded && t && !origin.coords) {
+          const initialAddress = t('initial_address');
+          if (initialAddress !== 'initial_address') {
+            try {
+              const coords = await geocode(initialAddress);
+              dispatch({ type: 'SET_ORIGIN', payload: { text: initialAddress, coords } });
+            } catch (error) {
+              console.error("Failed to geocode initial address:", error);
+            }
+          }
       }
     }
     getInitialOriginCoords();
-  }, [isLoaded, geocode]);
+  }, [isLoaded, geocode, t, origin.coords]);
 
   const handleRequestRide = () => {
       if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
-          toast({ title: "Erro", description: "Por favor, selecione uma origem e um destino válidos.", variant: "destructive" });
+          toast({ title: t('error_title'), description: t('error_select_origin_destination'), variant: "destructive" });
           return;
       }
     dispatch({ type: 'REQUEST_RIDE' });
@@ -180,8 +179,8 @@ export default function RequestTransportPage() {
   const handleConfirm = () => {
     dispatch({ type: 'CONFIRM_PAYMENT' });
     toast({
-      title: 'Procurando Motorista...',
-      description: 'Sua solicitação foi enviada. Estamos procurando o motorista mais próximo.',
+      title: t('searching_driver_title'),
+      description: t('searching_driver_desc'),
     });
   };
 
@@ -206,22 +205,22 @@ export default function RequestTransportPage() {
     }
   }, [selectingField, reverseGeocode]);
 
-  const handleUseCurrentLocation = () => {
-      if(navigator.geolocation){
-          navigator.geolocation.getCurrentPosition(async (position) => {
-              const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-              const address = await reverseGeocode(coords);
-              dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-              if(map) map.panTo(coords);
-          })
-      }
-  }
+  const handleUseCurrentLocation = useCallback(() => {
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+            const address = await reverseGeocode(coords);
+            dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
+            if(map) map.panTo(coords);
+        })
+    }
+}, [reverseGeocode, map]);
 
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
     toast({
-        title: "Selecione no mapa",
-        description: `Clique no mapa para definir o local de ${field === 'origin' ? 'partida' : 'destino'}.`,
+        title: t('select_on_map_title'),
+        description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }),
     })
   }
 
@@ -242,7 +241,7 @@ export default function RequestTransportPage() {
   }, []);
   
   const handleRating = () => {
-    toast({ title: 'Avaliação Enviada', description: 'Obrigado pelo seu feedback!' });
+    toast({ title: t('rating_sent_title'), description: t('rating_sent_desc') });
     dispatch({ type: 'RESET' });
   }
 
@@ -323,31 +322,31 @@ export default function RequestTransportPage() {
             return (
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle className="font-headline text-2xl">Onde vamos?</CardTitle>
+                  <CardTitle className="font-headline text-2xl">{t('where_to_title')}</CardTitle>
                   <CardDescription>
-                    Insira os locais de partida e chegada.
+                    {t('where_to_desc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="origin">Origem</Label>
+                        <Label htmlFor="origin">{t('origin_label')}</Label>
                         <div className="flex gap-2">
                              <AutocompleteInput 
                                 onPlaceSelect={(place) => handlePlaceSelect(place, 'origin')}
                                 value={origin.text}
-                                placeholder='Ex: Av. da Liberdade, 100, Lisboa'
+                                placeholder={t('origin_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_ORIGIN', payload: { text: '', coords: null } })}
                             />
                             <Button variant="outline" size="icon" onClick={() => handleSelectOnMap('origin')}><MapPin className="h-4 w-4"/></Button>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="destination">Destino</Label>
+                        <Label htmlFor="destination">{t('destination_label')}</Label>
                         <div className="flex gap-2">
                             <AutocompleteInput 
                                 onPlaceSelect={(place) => handlePlaceSelect(place, 'destination')}
                                 value={destination.text}
-                                placeholder='Ex: Av. da Liberdade, 100, Lisboa'
+                                placeholder={t('destination_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_DESTINATION', payload: { text: '', coords: null } })}
                             />
                             <Button variant="outline" size="icon" onClick={() => handleSelectOnMap('destination')}><MapPin className="h-4 w-4"/></Button>
@@ -361,7 +360,7 @@ export default function RequestTransportPage() {
                     onClick={handleRequestRide}
                     disabled={!origin.coords || !destination.coords}
                   >
-                    Solicitar Corrida
+                    {t('request_ride_button')}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </CardFooter>
@@ -372,7 +371,7 @@ export default function RequestTransportPage() {
               <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="font-headline text-2xl">
-                    Selecione o tipo de serviço
+                    {t('select_service_title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-3">
@@ -386,11 +385,11 @@ export default function RequestTransportPage() {
                   ))}
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
-                  <Button size="lg" className="w-full text-lg" onClick={() => dispatch({ type: 'SET_STEP', payload: 'payment' })}>
-                    Continuar
+                   <Button size="lg" className="w-full text-lg" onClick={() => dispatch({ type: 'SET_STEP', payload: 'payment' })}>
+                    {t('continue_button')}
                   </Button>
                   <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'address' })}>
-                    Voltar
+                    {t('back_button')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -399,8 +398,8 @@ export default function RequestTransportPage() {
             return (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Pagamento</CardTitle>
-                        <CardDescription>Selecione o método de pagamento</CardDescription>
+                        <CardTitle>{t('payment_title')}</CardTitle>
+                        <CardDescription>{t('payment_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {paymentMethods.map(method => {
@@ -415,9 +414,9 @@ export default function RequestTransportPage() {
                                 >
                                     <Icon className="w-6 h-6 text-muted-foreground"/>
                                     <div className="flex-1">
-                                        <p className="font-bold">{method.label}</p>
+                                        <p className="font-bold">{t(method.label as any)}</p>
                                     </div>
-                                    <p className="text-sm text-muted-foreground">{method.value}</p>
+                                    <p className="text-sm text-muted-foreground">{method.id === 'card' ? t(method.value as any) : method.value}</p>
                                 </div>
                             )
                         })}
@@ -425,14 +424,14 @@ export default function RequestTransportPage() {
                     <CardFooter className="flex-col gap-2">
                         <Separator className="mb-4" />
                         <div className="w-full flex justify-between text-lg font-bold">
-                            <span>Total:</span>
+                            <span>{t('total_label')}:</span>
                             <span>{formatCurrency(servicePrice)}</span>
                         </div>
                         <Button size="lg" className="w-full text-lg mt-4" onClick={handleConfirm}>
-                            Confirmar Corrida
+                            {t('confirm_ride_button')}
                         </Button>
                         <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'service' })}>
-                            Voltar
+                            {t('back_button')}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -442,8 +441,8 @@ export default function RequestTransportPage() {
                 <Card className="flex flex-col items-center justify-center h-full text-center">
                     <CardContent className="p-8">
                         <Loader2 className="mx-auto h-16 w-16 animate-spin text-primary mb-6" />
-                        <h2 className="text-2xl font-semibold font-headline">Procurando motorista...</h2>
-                        <p className="text-muted-foreground mt-2">Por favor, aguarde enquanto conectamos você ao motorista mais próximo.</p>
+                        <h2 className="text-2xl font-semibold font-headline">{t('searching_driver_title')}</h2>
+                        <p className="text-muted-foreground mt-2">{t('searching_driver_desc')}</p>
                     </CardContent>
                 </Card>
             );
@@ -454,8 +453,8 @@ export default function RequestTransportPage() {
                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
                             <CheckCircle className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle className="font-headline">Motorista a Caminho!</CardTitle>
-                        <CardDescription>O seu motorista, Carlos, está a 5 minutos de distância.</CardDescription>
+                        <CardTitle className="font-headline">{t('driver_enroute_title')}</CardTitle>
+                        <CardDescription>{t('driver_enroute_desc', { name: 'Carlos', time: 5 })}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Separator />
@@ -483,7 +482,7 @@ export default function RequestTransportPage() {
                     </CardContent>
                     <CardFooter>
                          <Button variant="destructive" className="w-full" onClick={() => dispatch({ type: 'CANCEL_RIDE' })}>
-                           <X className="mr-2 h-4 w-4" /> Cancelar Viagem
+                           <X className="mr-2 h-4 w-4" /> {t('cancel_ride_button')}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -495,12 +494,12 @@ export default function RequestTransportPage() {
                   <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
                     <CheckCircle className="h-10 w-10 text-primary" />
                   </div>
-                  <CardTitle className="font-headline">O seu motorista chegou!</CardTitle>
-                  <CardDescription>Por favor, entre no veículo para iniciar a sua viagem.</CardDescription>
+                  <CardTitle className="font-headline">{t('driver_arrived_title')}</CardTitle>
+                  <CardDescription>{t('driver_arrived_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" disabled>
-                    <PlayCircle className="mr-2" /> Aguardando início da viagem...
+                    <PlayCircle className="mr-2" /> {t('awaiting_trip_start_button')}
                   </Button>
                 </CardContent>
               </Card>
@@ -512,11 +511,11 @@ export default function RequestTransportPage() {
                          <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
                             <Car className="h-10 w-10 text-primary" />
                         </div>
-                        <CardTitle>Viagem em Andamento</CardTitle>
-                        <CardDescription>Aproveite sua viagem!</CardDescription>
+                        <CardTitle>{t('trip_inprogress_title')}</CardTitle>
+                        <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-center text-sm text-muted-foreground">Destino: {destination.text}</p>
+                        <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
                     </CardContent>
                 </Card>
             )
@@ -525,8 +524,8 @@ export default function RequestTransportPage() {
                  <Card>
                     <CardHeader className="text-center">
                         <ThumbsUp className="mx-auto h-10 w-10 text-primary mb-4" />
-                        <CardTitle>Avalie sua Viagem</CardTitle>
-                        <CardDescription>Seu feedback nos ajuda a melhorar.</CardDescription>
+                        <CardTitle>{t('rating_title')}</CardTitle>
+                        <CardDescription>{t('rating_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex justify-center gap-2">
@@ -542,11 +541,11 @@ export default function RequestTransportPage() {
                             ))}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="comment">Adicione um comentário (opcional)</Label>
-                            <Textarea id="comment" placeholder="Deixe sua mensagem..." />
+                            <Label htmlFor="comment">{t('rating_comment_label')}</Label>
+                            <Textarea id="comment" placeholder={t('rating_comment_placeholder')} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Adicione uma gorjeta (opcional)</Label>
+                            <Label>{t('rating_tip_label')}</Label>
                              <div className="flex gap-2">
                                 {[0.5, 1, 2, 5].map(amount => (
                                     <Button key={amount} variant={tip === amount ? "default" : "outline"} onClick={() => dispatch({type: 'SET_TIP', payload: amount})}>
@@ -554,13 +553,13 @@ export default function RequestTransportPage() {
                                     </Button>
                                 ))}
                                  <Button variant={tip === null ? "default" : "outline"} onClick={() => dispatch({type: 'SET_TIP', payload: null})}>
-                                     Nenhuma
+                                     {t('rating_no_tip_button')}
                                 </Button>
                             </div>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" onClick={handleRating}>Enviar Avaliação</Button>
+                        <Button className="w-full" onClick={handleRating}>{t('rating_submit_button')}</Button>
                     </CardFooter>
                 </Card>
             )
