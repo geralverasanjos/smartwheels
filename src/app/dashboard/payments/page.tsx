@@ -49,13 +49,20 @@ const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 )
 
+const MBWayIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" {...props}>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#D12027"/>
+        <path d="M11.5 14.5h1v-5h-1v5zm3.75-2.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75zm-6-2c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zm1.5 4c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75zm3-2.5c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75z" fill="#D12027"/>
+    </svg>
+)
+
 const initialPaymentMethods = [
-  { id: 'cash', type: 'Dinheiro', details: 'payment_method_cash_desc', icon: Banknote, isDefault: false },
-  { id: 'wallet', type: 'Wallet', details: 'passenger.booking.payment_wallet_balance', value: 50.00, icon: Wallet, isDefault: true },
-  { id: 'card1', type: 'Cartão de Crédito', details: 'Mastercard **** 1234', icon: CreditCard, isDefault: false },
-  { id: 'pix1', type: 'PIX', details: 'vinicius@email.com', icon: Send, isDefault: false },
-  { id: 'mbway1', type: 'MB WAY', details: '+351 912 345 678', icon: () => <Image src="https://imgs.search.brave.com/eEExT7B_iP3yA49p3q2iGoY2xxD3QcWlE2AbE1G45u8/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9jZG4u/Y2RuLmlvL2U1ZGIx/NDg2MWQ0MjQ5NmJi/YjFkYjQ2ZmFkOGM3/ZTk5LzQzOWExMGIx/MjA1MTQxZjI5NmY4/YjMzYTBmMDMzODFm/L01CV0FZX2ljb25f/Y29yLnN2Zw.svg" alt="MB WAY" width={24} height={24} />, isDefault: false },
-  { id: 'paypal1', type: 'PayPal', details: 'vinicius@paypal.com', icon: PayPalIcon, isDefault: false },
+  { id: 'cash', typeKey: 'payment_method_type_cash', details: 'payment_method_cash_desc', icon: Banknote, isDefault: false },
+  { id: 'wallet', typeKey: 'payment_method_type_wallet', details: 'passenger.booking.payment_wallet_balance', value: 50.00, icon: Wallet, isDefault: true },
+  { id: 'card1', typeKey: 'payment_method_type_credit_card', detailsText: 'Mastercard **** 1234', icon: CreditCard, isDefault: false },
+  { id: 'pix1', typeKey: 'payment_method_type_pix', detailsText: 'vinicius@email.com', icon: Send, isDefault: false },
+  { id: 'mbway1', typeKey: 'payment_method_type_mbway', detailsText: '+351 912 345 678', icon: MBWayIcon, isDefault: false },
+  { id: 'paypal1', typeKey: 'payment_method_type_paypal', detailsText: 'vinicius@paypal.com', icon: PayPalIcon, isDefault: false },
 ];
 
 export default function PaymentsPage() {
@@ -94,9 +101,9 @@ export default function PaymentsPage() {
             <div key={method.id} className="flex items-center gap-4 rounded-lg border p-4">
               <method.icon className="h-6 w-6 text-muted-foreground" />
               <div className="flex-1">
-                <p className="font-semibold">{t(method.type as any) || method.type}</p>
+                <p className="font-semibold">{t(method.typeKey as any)}</p>
                 <p className="text-sm text-muted-foreground">
-                    {method.id === 'wallet' ? `${t(method.details as any)}: ${new Intl.NumberFormat(language.value, { style: 'currency', currency: language.currency.code }).format(method.value || 0)}` : t(method.details as any) || method.details}
+                    {method.detailsText ? method.detailsText : (method.id === 'wallet' && method.value ? `${t(method.details as any)}: ${new Intl.NumberFormat(language.value, { style: 'currency', currency: language.currency.code }).format(method.value)}` : t(method.details as any))}
                 </p>
               </div>
               <div className="flex items-center gap-4">

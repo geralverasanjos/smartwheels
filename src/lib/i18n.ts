@@ -1,5 +1,24 @@
 
 export const translations = {
+  "my_account": {
+    "pt-PT": "Minha Conta",
+    "pt-BR": "Minha Conta",
+    "en-US": "My Account",
+    "es-ES": "Mi Cuenta",
+    "fr-FR": "Mon Compte",
+    "de-DE": "Mein Konto",
+    "it-IT": "Il Mio Account",
+    "ja-JP": "マイアカウント",
+    "zh-CN": "我的账户",
+    "ru-RU": "Мой аккаунт",
+    "ar-SA": "حسابي",
+    "hi-IN": "मेरा खाता",
+    "ko-KR": "내 계정",
+    "he-IL": "החשבון שלי",
+    "uk-UA": "Мій акаунт",
+    "id-ID": "Akun Saya",
+    "th-TH": "บัญชีของฉัน"
+  },
   "btn_passenger_title": {
     "pt-PT": "Passageiro",
     "pt-BR": "Passageiro",
@@ -2945,7 +2964,26 @@ export const translations = {
     "id-ID": "R. João Saraiva 7, 1700-248 Lisboa, Portugal",
     "th-TH": "ร. จอห์น ซาไรวา 7, 1700-248 ลิสบอน, โปรตุเกส"
   },
-    "delivery_title": {
+  "select_language": {
+    "pt-PT": "Selecione o idioma",
+    "pt-BR": "Selecione o idioma",
+    "en-US": "Select language",
+    "es-ES": "Seleccionar idioma",
+    "fr-FR": "Sélectionner la langue",
+    "de-DE": "Sprache auswählen",
+    "it-IT": "Seleziona lingua",
+    "ja-JP": "言語を選択",
+    "zh-CN": "选择语言",
+    "ru-RU": "Выберите язык",
+    "ar-SA": "اختر اللغة",
+    "hi-IN": "भाषा चुनें",
+    "ko-KR": "언어 선택",
+    "he-IL": "בחר שפה",
+    "uk-UA": "Виберіть мову",
+    "id-ID": "Pilih bahasa",
+    "th-TH": "เลือกภาษา"
+  },
+  "delivery_title": {
     "pt-PT": "Solicitar uma entrega",
     "pt-BR": "Solicitar uma entrega",
     "en-US": "Request a delivery",
@@ -5034,6 +5072,120 @@ export const translations = {
     "uk-UA": "Виберіть розмову, щоб почати спілкування.",
     "id-ID": "Pilih percakapan untuk mulai mengobrol.",
     "th-TH": "เลือกการสนทนาเพื่อเริ่มแชท"
+  },
+  "payment_method_type_cash": {
+    "pt-PT": "Dinheiro",
+    "pt-BR": "Dinheiro",
+    "en-US": "Cash",
+    "es-ES": "Efectivo",
+    "fr-FR": "Espèces",
+    "de-DE": "Bargeld",
+    "it-IT": "Contanti",
+    "ja-JP": "現金",
+    "zh-CN": "现金",
+    "ru-RU": "Наличные",
+    "ar-SA": "نقدًا",
+    "hi-IN": "नकद",
+    "ko-KR": "현금",
+    "he-IL": "מזומן",
+    "uk-UA": "Готівка",
+    "id-ID": "Tunai",
+    "th-TH": "เงินสด"
+  },
+  "payment_method_type_wallet": {
+    "pt-PT": "Carteira",
+    "pt-BR": "Carteira",
+    "en-US": "Wallet",
+    "es-ES": "Billetera",
+    "fr-FR": "Portefeuille",
+    "de-DE": "Brieftasche",
+    "it-IT": "Portafoglio",
+    "ja-JP": "ウォレット",
+    "zh-CN": "钱包",
+    "ru-RU": "Кошелек",
+    "ar-SA": "المحفظة",
+    "hi-IN": "वॉलेट",
+    "ko-KR": "지갑",
+    "he-IL": "ארנק",
+    "uk-UA": "Гаманець",
+    "id-ID": "Dompet",
+    "th-TH": "กระเป๋าเงิน"
+  },
+  "payment_method_type_credit_card": {
+    "pt-PT": "Cartão de Crédito",
+    "pt-BR": "Cartão de Crédito",
+    "en-US": "Credit Card",
+    "es-ES": "Tarjeta de Crédito",
+    "fr-FR": "Carte de crédit",
+    "de-DE": "Kreditkarte",
+    "it-IT": "Carta di Credito",
+    "ja-JP": "クレジットカード",
+    "zh-CN": "信用卡",
+    "ru-RU": "Кредитная карта",
+    "ar-SA": "بطاقة الائتمan",
+    "hi-IN": "क्रेडिट कार्ड",
+    "ko-KR": "신용 카드",
+    "he-IL": "כרטיס אשראי",
+    "uk-UA": "Кредитна картка",
+    "id-ID": "Kartu Kredit",
+    "th-TH": "บัตรเครดิต"
+  },
+  "payment_method_type_pix": {
+    "pt-PT": "PIX",
+    "pt-BR": "PIX",
+    "en-US": "PIX",
+    "es-ES": "PIX",
+    "fr-FR": "PIX",
+    "de-DE": "PIX",
+    "it-IT": "PIX",
+    "ja-JP": "PIX",
+    "zh-CN": "PIX",
+    "ru-RU": "PIX",
+    "ar-SA": "PIX",
+    "hi-IN": "PIX",
+    "ko-KR": "PIX",
+    "he-IL": "PIX",
+    "uk-UA": "PIX",
+    "id-ID": "PIX",
+    "th-TH": "PIX"
+  },
+  "payment_method_type_mbway": {
+    "pt-PT": "MB WAY",
+    "pt-BR": "MB WAY",
+    "en-US": "MB WAY",
+    "es-ES": "MB WAY",
+    "fr-FR": "MB WAY",
+    "de-DE": "MB WAY",
+    "it-IT": "MB WAY",
+    "ja-JP": "MB WAY",
+    "zh-CN": "MB WAY",
+    "ru-RU": "MB WAY",
+    "ar-SA": "MB WAY",
+    "hi-IN": "MB WAY",
+    "ko-KR": "MB WAY",
+    "he-IL": "MB WAY",
+    "uk-UA": "MB WAY",
+    "id-ID": "MB WAY",
+    "th-TH": "MB WAY"
+  },
+  "payment_method_type_paypal": {
+    "pt-PT": "PayPal",
+    "pt-BR": "PayPal",
+    "en-US": "PayPal",
+    "es-ES": "PayPal",
+    "fr-FR": "PayPal",
+    "de-DE": "PayPal",
+    "it-IT": "PayPal",
+    "ja-JP": "PayPal",
+    "zh-CN": "PayPal",
+    "ru-RU": "PayPal",
+    "ar-SA": "PayPal",
+    "hi-IN": "PayPal",
+    "ko-KR": "PayPal",
+    "he-IL": "PayPal",
+    "uk-UA": "PayPal",
+    "id-ID": "PayPal",
+    "th-TH": "PayPal"
   }
 }
 export const languages = [
@@ -5059,6 +5211,7 @@ export const languages = [
 export type TranslationKeys = keyof typeof translations;
 
   
+
 
 
 
