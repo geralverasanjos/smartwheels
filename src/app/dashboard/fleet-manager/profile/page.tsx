@@ -1,21 +1,28 @@
 'use client';
+import { useState, useEffect } from 'react';
+import ProfileForm from '@/components/shared/ProfileForm';
+import { getFleetManagerProfile } from '@/services/profileService';
+import type { UserProfile } from '@/types';
+import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User } from 'lucide-react';
 
-export default function PlaceholderPage() {
+export default function FleetManagerProfilePage() {
     const { t } = useAppContext();
+    const [userData, setUserData] = useState<UserProfile | null>(null);
+
+    useEffect(() => {
+        getFleetManagerProfile().then(setUserData);
+    }, []);
+
+    if (!userData) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
+    }
+
     return (
-        <Card className="mt-4">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><User /> {t('menu_profile')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="text-center text-muted-foreground py-16">
-                    <h2 className="text-2xl font-semibold">{t('page_under_construction')}</h2>
-                    <p>{t('page_under_construction_desc')}</p>
-                </div>
-            </CardContent>
-        </Card>
+        <ProfileForm 
+            userData={userData}
+            titleKey="fleet_profile_title"
+            descriptionKey="fleet_profile_desc"
+        />
     );
 }

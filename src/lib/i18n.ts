@@ -859,7 +859,7 @@ export const Translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "¿Qué te gustaría hacer hoy?",
+    "es-ES": "Qué te gustaría hacer hoy?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",
@@ -3039,6 +3039,44 @@ export const Translations = {
     "uk-UA": "Ваша інформація була успішно оновлена.",
     "id-ID": "Informasi Anda telah berhasil diperbarui.",
     "th-TH": "ข้อมูลของคุณได้รับการอัปเดตเรียบร้อยแล้ว"
+  },
+  "fleet_profile_title": {
+    "pt-PT": "Perfil da Frota",
+    "pt-BR": "Perfil da Frota",
+    "en-US": "Fleet Profile",
+    "es-ES": "Perfil de la Flota",
+    "fr-FR": "Profil de la Flotte",
+    "de-DE": "Flottenprofil",
+    "it-IT": "Profilo della Flotta",
+    "ja-JP": "フリートプロフィール",
+    "zh-CN": "车队资料",
+    "ru-RU": "Профиль автопарка",
+    "ar-SA": "ملف الأسطول",
+    "hi-IN": "बेड़ा प्रोफ़ाइल",
+    "ko-KR": "차량 프로필",
+    "he-IL": "פרופיל צי רכב",
+    "uk-UA": "Профіль автопарку",
+    "id-ID": "Profil Armada",
+    "th-TH": "โปรไฟล์กองยาน"
+  },
+  "fleet_profile_desc": {
+    "pt-PT": "Gerencie as informações da sua empresa e os dados de contacto.",
+    "pt-BR": "Gerencie as informações da sua empresa e os dados de contato.",
+    "en-US": "Manage your company information and contact details.",
+    "es-ES": "Gestiona la información de tu empresa y los datos de contacto.",
+    "fr-FR": "Gérez les informations de votre entreprise et vos coordonnées.",
+    "de-DE": "Verwalten Sie Ihre Unternehmensinformationen und Kontaktdaten.",
+    "it-IT": "Gestisci le informazioni della tua azienda e i dettagli di contatto.",
+    "ja-JP": "会社情報と連絡先の詳細を管理します。",
+    "zh-CN": "管理您的公司信息和联系方式。",
+    "ru-RU": "Управляйте информацией о вашей компании и контактными данными.",
+    "ar-SA": "إدارة معلومات شركتك وتفاصيل الاتصال.",
+    "hi-IN": "अपनी कंपनी की जानकारी और संपर्क विवरण प्रबंधित करें।",
+    "ko-KR": "회사 정보 및 연락처 세부 정보를 관리합니다.",
+    "he-IL": "נהל את פרטי החברה ופרטי יצירת הקשר שלך.",
+    "uk-UA": "Керуйте інформацією про вашу компанію та контактними даними.",
+    "id-ID": "Kelola informasi perusahaan dan detail kontak Anda.",
+    "th-TH": "จัดการข้อมูลบริษัทและรายละเอียดการติดต่อของคุณ"
   }
 };
 export const languages = [
@@ -3065,6 +3103,7 @@ export const languages = [
 export type TranslationKeys = keyof typeof Translations;
 
     
+
 
 
 
