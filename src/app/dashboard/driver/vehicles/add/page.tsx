@@ -42,6 +42,10 @@ const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
                             <SelectItem value="xl">{t('category_family_name')}</SelectItem>
                             <SelectItem value="eco">{t('category_eco_name')}</SelectItem>
                             <SelectItem value="acessível">{t('vehicle_type_accessible')}</SelectItem>
+                            <SelectItem value="moto_economica">{t('mototaxi_service_economic_title')}</SelectItem>
+                            <SelectItem value="moto_rapida">{t('mototaxi_service_fast_title')}</SelectItem>
+                            <SelectItem value="moto_bau">{t('mototaxi_service_box_title')}</SelectItem>
+                            <SelectItem value="tuk_tuk">{t('mototaxi_service_tuktuk_title')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
