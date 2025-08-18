@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 
@@ -16,8 +16,17 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(languages[0]); // Default to pt-PT
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const t = useCallback((key: TranslationKeys, replacements?: Record<string, string | number>) => {
+    if (!isClient) {
+      return key; // Render the key on the server or before hydration
+    }
+    
     const langKey = language.value as keyof typeof Translations[typeof key];
     let translation = Translations[key]?.[langKey] || key;
     
@@ -28,7 +37,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return translation;
-  }, [language]);
+  }, [language, isClient]);
 
   return (
     <AppContext.Provider value={{ language, setLanguage, t }}>
