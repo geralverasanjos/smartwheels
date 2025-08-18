@@ -13,17 +13,43 @@ import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { handleVehicleFee } from '@/lib/payments';
 
-// --- Sub-componente para o Passo 1: Detalhes do Veículo ---
-const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
+const FileUploadField = ({ label, id, onFileChange }: { label: string, id: string, onFileChange: (fileName: string) => void }) => {
     const { t } = useAppContext();
     const [fileName, setFileName] = useState('');
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setFileName(event.target.files[0].name);
+        const file = event.target.files && event.target.files[0];
+        if (file) {
+            setFileName(file.name);
+            onFileChange(file.name);
         } else {
             setFileName('');
+            onFileChange('');
         }
+    };
+
+    return (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <label htmlFor={id} className="flex items-center gap-4 px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
+                <UploadCloud className="h-8 w-8 text-muted-foreground"/>
+                <div>
+                    <span className="font-semibold text-primary">{t('btn_choose_files')}</span>
+                    <p className="text-xs text-muted-foreground">{fileName || t('no_file_chosen_label')}</p>
+                </div>
+            </label>
+            <Input id={id} type="file" className="hidden" onChange={handleFileChange} />
+        </div>
+    );
+};
+
+// --- Sub-componente para o Passo 1: Detalhes do Veículo ---
+const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
+    const { t } = useAppContext();
+    const [files, setFiles] = useState({ carPhoto: '', docPhoto: '', permitPhoto: '' });
+
+    const handleFileChange = (id: string, fileName: string) => {
+        setFiles(prev => ({ ...prev, [id]: fileName }));
     };
     
     return (
@@ -54,16 +80,10 @@ const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
                 <div className="space-y-2"><Label>{t('vehicle_year_label')}</Label><Input type="number" placeholder={t('year_placeholder')} /></div>
                 <div className="space-y-2"><Label>{t('vehicle_color_label')}</Label><Input placeholder={t('color_placeholder')} /></div>
                 <div className="space-y-2"><Label>{t('license_plate_label')}</Label><Input placeholder={t('license_plate_placeholder')} /></div>
-                 <div className="space-y-2 md:col-span-2">
-                    <Label>{t('photos_and_docs_label')}</Label>
-                     <label htmlFor="file-upload" className="flex items-center gap-4 px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                        <UploadCloud className="h-8 w-8 text-muted-foreground"/>
-                        <div>
-                             <span className="font-semibold text-primary">{t('btn_choose_files')}</span>
-                             <p className="text-xs text-muted-foreground">{fileName || t('no_file_chosen_label')}</p>
-                        </div>
-                    </label>
-                    <Input id="file-upload" type="file" multiple className="hidden" onChange={handleFileChange} />
+                <div className="md:col-span-2 space-y-4">
+                    <FileUploadField id="carPhoto" label={t('vehicle_photo_label')} onFileChange={(fileName) => handleFileChange('carPhoto', fileName)} />
+                    <FileUploadField id="docPhoto" label={t('vehicle_doc_photo_label')} onFileChange={(fileName) => handleFileChange('docPhoto', fileName)} />
+                    <FileUploadField id="permitPhoto" label={t('permit_photo_label')} onFileChange={(fileName) => handleFileChange('permitPhoto', fileName)} />
                 </div>
             </CardContent>
             <CardFooter>
