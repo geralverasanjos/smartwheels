@@ -62,6 +62,7 @@ type State = {
   directions: google.maps.DirectionsResult | null;
   selectingField: 'origin' | 'destination' | null;
   rating: number;
+  tip: number | null;
   selectedPayment: string;
   vehicleType: 'motorcycle' | 'car';
 };
@@ -74,6 +75,7 @@ type Action =
   | { type: 'SET_DIRECTIONS'; payload: google.maps.DirectionsResult | null }
   | { type: 'SET_SELECTING_FIELD'; payload: State['selectingField'] }
   | { type: 'SET_RATING', payload: number }
+  | { type: 'SET_TIP', payload: number | null }
   | { type: 'REQUEST_DELIVERY' }
   | { type: 'DRIVER_ARRIVED' }
   | { type: 'TRIP_START' }
@@ -92,6 +94,7 @@ const initialState: State = {
   directions: null,
   selectingField: null,
   rating: 0,
+  tip: null,
   selectedPayment: 'wallet',
   vehicleType: 'motorcycle',
 };
@@ -105,6 +108,7 @@ function reducer(state: State, action: Action): State {
         case 'SET_DIRECTIONS': return { ...state, directions: action.payload };
         case 'SET_SELECTING_FIELD': return { ...state, selectingField: action.payload };
         case 'SET_RATING': return { ...state, rating: action.payload };
+        case 'SET_TIP': return { ...state, tip: action.payload };
         case 'REQUEST_DELIVERY': return { ...state, step: 'payment' };
         case 'DRIVER_ARRIVED': return { ...state, step: 'driver_arrived' };
         case 'TRIP_START': return { ...state, step: 'trip_inprogress' };
@@ -126,7 +130,7 @@ export default function PassengerDeliveryPage() {
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { step, origin, destination, driverPosition, directions, selectingField, rating, selectedPayment, vehicleType } = state;
+  const { step, origin, destination, driverPosition, directions, selectingField, rating, selectedPayment, vehicleType, tip } = state;
   
   const paymentMethods = [
       {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
@@ -520,6 +524,19 @@ export default function PassengerDeliveryPage() {
                         <div className="space-y-2">
                             <Label htmlFor="comment">{t('rating_comment_label')}</Label>
                             <Textarea id="comment" placeholder={t('rating_comment_placeholder')} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t('rating_tip_label')}</Label>
+                             <div className="flex gap-2">
+                                {[0.5, 1, 2, 5].map(amount => (
+                                    <Button key={amount} variant={tip === amount ? "default" : "outline"} onClick={() => dispatch({type: 'SET_TIP', payload: amount})}>
+                                        {formatCurrency(amount)}
+                                    </Button>
+                                ))}
+                                 <Button variant={tip === null ? "default" : "outline"} onClick={() => dispatch({type: 'SET_TIP', payload: null})}>
+                                     {t('rating_no_tip_button')}
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                     <CardFooter>
