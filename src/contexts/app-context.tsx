@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { languages, translations } from '@/lib/i18n';
+import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 
 type Language = (typeof languages)[0];
@@ -18,8 +18,8 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(languages[0]); // Default to pt-PT
 
   const t = useCallback((key: TranslationKeys, replacements?: Record<string, string | number>) => {
-    const langKey = language.value as keyof typeof translations[typeof key];
-    let translation = translations[key]?.[langKey] || key;
+    const langKey = language.value as keyof typeof Translations[typeof key];
+    let translation = Translations[key]?.[langKey] || key;
     
     if (replacements) {
         Object.keys(replacements).forEach(rKey => {

@@ -1,5 +1,5 @@
 
-export const translations = {
+export const Translations = {
   "my_account": {
     "pt-PT": "Minha Conta",
     "pt-BR": "Minha Conta",
@@ -1137,8 +1137,27 @@ export const translations = {
     "ko-KR": "페이지 공사 중",
     "he-IL": "הדף בבנייה",
     "uk-UA": "Сторінка в розробці",
-    "id-ID": "Halaman dalam pembangunan",
-    "th-TH": "หน้าเว็บอยู่ระหว่างการก่อสร้าง"
+    "id-ID": "Halaman Sedang Dibangun",
+    "th-TH": "หน้าอยู่ระหว่างการก่อสร้าง"
+  },
+  "fleet_dashboard_title": {
+    "pt-PT": "Painel de Frota",
+    "pt-BR": "Painel de Frota",
+    "en-US": "Fleet Dashboard",
+    "es-ES": "Panel de flota",
+    "fr-FR": "Tableau de bord de la flotte",
+    "de-DE": "Flotten-Dashboard",
+    "it-IT": "Dashboard della flotta",
+    "ja-JP": "フリートダッシュボード",
+    "zh-CN": "车队仪表板",
+    "ru-RU": "Панель управления автопарком",
+    "ar-SA": "لوحة تحكم الأسطول",
+    "hi-IN": "बेड़ा डैशबोर्ड",
+    "ko-KR": "차량 대시보드",
+    "he-IL": "לוח מחוונים של צי רכב",
+    "uk-UA": "Панель управління автопарком",
+    "id-ID": "Dasbor Armada",
+    "th-TH": "แดชบอร์ดกองยาน"
   },
   "page_under_construction_desc": {
     "pt-PT": "Estamos a trabalhar para melhorar esta página. Por favor, volte mais tarde.",
@@ -1655,22 +1674,22 @@ export const translations = {
   },
   "where_to_desc": {
     "pt-PT": "Insira os locais de partida e chegada.",
-    "pt-BR": "Insira os locais de partida e chegada.",
+    "pt-BR": "Insira os detalhes para enviar o seu pacote.",
     "en-US": "Enter the departure and arrival locations.",
     "es-ES": "Introduce los lugares de salida y llegada.",
     "fr-FR": "Saisissez les lieux de départ et d'arrivée.",
     "de-DE": "Geben Sie die Abfahrts- und Ankunftsorte ein.",
     "it-IT": "Inserisci i luoghi di partenza e di arrivo.",
-    "ja-JP": "出発地と到着地を入力してください。",
-    "zh-CN": "输入出发和到达地点。",
-    "ru-RU": "Введите места отправления и прибытия.",
-    "ar-SA": "أدخل مواقع المغادرة والوصول.",
-    "hi-IN": "प्रस्थान और आगमन के स्थान दर्ज करें।",
-    "ko-KR": "출발지와 도착지를 입력하세요.",
-    "he-IL": "הזן את מיקומי היציאה וההגעה.",
-    "uk-UA": "Введіть місця відправлення та прибуття.",
-    "id-ID": "Masukkan lokasi keberangkatan dan kedatangan.",
-    "th-TH": "ป้อนสถานที่ต้นทางและปลายทาง"
+    "ja-JP": "荷物を送るための詳細を入力してください。",
+    "zh-CN": "输入寄送包裹的详细信息。",
+    "ru-RU": "Введите данные для отправки вашей посылки.",
+    "ar-SA": "أدخل التفاصيل لإرسال طردك.",
+    "hi-IN": "अपना पैकेज भेजने के लिए विवरण दर्ज करें।",
+    "ko-KR": "패키지를 보내기 위한 세부 정보를 입력하세요.",
+    "he-IL": "הזן את הפרטים למשלוח החבילה שלך.",
+    "uk-UA": "Введіть дані для відправлення вашої посилки.",
+    "id-ID": "Masukkan detail untuk mengirim paket Anda.",
+    "th-TH": "ป้อนรายละเอียดเพื่อส่งพัสดุของคุณ"
   },
   "origin_label": {
     "pt-PT": "Origem",
@@ -3304,7 +3323,7 @@ export const translations = {
     "he-IL": "אנא המתן בזמן שאנו מקשרים אותך לשליח הקרוב ביותר.",
     "uk-UA": "Будь ласка, зачекайте, поки ми з'єднаємо вас з найближчим кур'єром.",
     "id-ID": "Harap tunggu sementara kami menghubungkan Anda dengan kurir terdekat.",
-    "th-TH": "โปรดรอสักครู่ในขณะที่เราเชื่อมต่อคุณกับคนส่งของที่ใกล้ที่สุด"
+    "th-TH": "กำลังค้นหาคนส่งของ..."
   },
   "delivery_enroute_title": {
     "pt-PT": "Entregador a Caminho!",
@@ -3417,7 +3436,7 @@ export const translations = {
     "ko-KR": "배달 시작 대기 중...",
     "he-IL": "ממתין לתחילת המשלוח...",
     "uk-UA": "Очікування початку доставки...",
-    "id-ID": "Menunggu dimulainya pengiriman...",
+    "id-ID": "Menunggu perjalanan dimulai...",
     "th-TH": "กำลังรอการจัดส่งเริ่มต้น..."
   },
   "delivery_inprogress_title": {
@@ -4060,7 +4079,7 @@ export const translations = {
     "ru-RU": "Площадь Коммерции",
     "ar-SA": "ساحة التجارة",
     "hi-IN": "कॉमर्सियो स्क्वायर",
-    "ko-KR": "코메르시우 광장",
+    "ko-KR": "코เม르시우 광장",
     "he-IL": "כיכר קומרסיו",
     "uk-UA": "Площа Комерції",
     "id-ID": "Alun-Alun Comércio",
@@ -4197,7 +4216,7 @@ export const translations = {
     "he-IL": "נראה שעדיין לא ביצעת איתנו נסיעות או משלוחים.",
     "uk-UA": "Схоже, ви ще не здійснювали з нами жодних поїздок чи доставок.",
     "id-ID": "Sepertinya Anda belum melakukan perjalanan atau pengiriman apa pun dengan kami.",
-    "th-TH": "ดูเหมือนว่าคุณยังไม่เคยเดินทางหรือจัดส่งกับเราเลย"
+    "th-TH": "ที่นี่คุณสามารถดูการเดินทาง การจัดส่ง และธุรกรรมที่ผ่านมาทั้งหมดของคุณได้"
   },
   "history_trip_type": {
     "pt-PT": "Tipo",
@@ -4484,25 +4503,6 @@ export const translations = {
     "id-ID": "Metode Pembayaran Tersimpan",
     "th-TH": "วิธีการชำระเงินที่บันทึกไว้"
   },
-  "payment_method_cash": {
-    "pt-PT": "Dinheiro",
-    "pt-BR": "Dinheiro",
-    "en-US": "Cash",
-    "es-ES": "Efectivo",
-    "fr-FR": "Espèces",
-    "de-DE": "Bargeld",
-    "it-IT": "Contanti",
-    "ja-JP": "現金",
-    "zh-CN": "现金",
-    "ru-RU": "Наличные",
-    "ar-SA": "نقدًا",
-    "hi-IN": "नकद",
-    "ko-KR": "현금",
-    "he-IL": "מזומן",
-    "uk-UA": "Готівка",
-    "id-ID": "Tunai",
-    "th-TH": "เงินสด"
-  },
   "payment_method_cash_desc": {
     "pt-PT": "Pague em dinheiro diretamente ao motorista.",
     "pt-BR": "Pague em dinheiro diretamente ao motorista.",
@@ -4737,18 +4737,18 @@ export const translations = {
     "en-US": "Select a type",
     "es-ES": "Selecciona un tipo",
     "fr-FR": "Sélectionnez un type",
-    "de-DE": "Wählen Sie einen Typ",
-    "it-IT": "Seleziona un tipo",
-    "ja-JP": "タイプを選択",
-    "zh-CN": "选择一个类型",
-    "ru-RU": "Выберите тип",
-    "ar-SA": "اختر نوعًا",
-    "hi-IN": "एक प्रकार चुनें",
-    "ko-KR": "유형 선택",
-    "he-IL": "בחר סוג",
-    "uk-UA": "Виберіть тип",
-    "id-ID": "Pilih tipe",
-    "th-TH": "เลือกประเภท"
+    "de-DE": "Schlüsseltyp auswählen",
+    "it-IT": "Seleziona tipo di chiave",
+    "ja-JP": "キータイプを選択",
+    "zh-CN": "选择密钥类型",
+    "ru-RU": "Выберите тип ключа",
+    "ar-SA": "اختر نوع المفتاح",
+    "hi-IN": "कुंजी प्रकार चुनें",
+    "ko-KR": "키 유형 선택",
+    "he-IL": "בחר סוג מפתח",
+    "uk-UA": "Виберіть тип ключа",
+    "id-ID": "Pilih jenis kunci",
+    "th-TH": "เลือกประเภทคีย์"
   },
   "payment_method_credit_card": {
     "pt-PT": "Cartão de Crédito",
@@ -5187,8 +5187,10 @@ export const translations = {
     "id-ID": "PayPal",
     "th-TH": "PayPal"
   }
-}
+    
+};
 export const languages = [
+
     { value: "pt-PT", label: "Português (Portugal)", flagCode: "pt", currency: { code: "EUR", symbol: "€" } },
     { value: "pt-BR", label: "Português (Brasil)", flagCode: "br", currency: { code: "BRL", symbol: "R$" } },
     { value: "en-US", label: "English", flagCode: "us", currency: { code: "USD", symbol: "$" } },
@@ -5208,10 +5210,6 @@ export const languages = [
     { value: "th-TH", label: "ภาษาไทย", flagCode: "th", currency: { code: "THB", symbol: "฿" } },
     
 ];
-export type TranslationKeys = keyof typeof translations;
+export type TranslationKeys = keyof typeof Translations;
 
-  
-
-
-
-
+    
