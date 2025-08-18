@@ -242,8 +242,8 @@ export default function DriverDashboardPage() {
 
 
   return (
-    <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh-10rem)]">
-        <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+    <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
+        <div className="md:col-span-2 rounded-lg bg-muted min-h-[400px] md:min-h-0 relative overflow-hidden">
             <Map>
               {isSimulating && (
                 <>
@@ -255,7 +255,7 @@ export default function DriverDashboardPage() {
               {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
             </Map>
         </div>
-        <div className="md:col-span-1 flex flex-col gap-6 overflow-y-auto">
+        <div className="md:col-span-1 flex flex-col gap-6">
             
             {isSimulating && renderCurrentActionCard()}
             
