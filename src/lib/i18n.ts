@@ -1102,6 +1102,44 @@ export const translations = {
     "id-ID": "Manajer Armada",
     "th-TH": "ผู้จัดการกองยาน"
   },
+  "page_under_construction": {
+    "pt-PT": "Página em Construção",
+    "pt-BR": "Página em Construção",
+    "en-US": "Page Under Construction",
+    "es-ES": "Página en construcción",
+    "fr-FR": "Page en construction",
+    "de-DE": "Seite im Aufbau",
+    "it-IT": "Pagina in costruzione",
+    "ja-JP": "ページは工事中です",
+    "zh-CN": "页面正在建设中",
+    "ru-RU": "Страница находится в разработке",
+    "ar-SA": "الصفحة قيد الإنشاء",
+    "hi-IN": "पृष्ठ निर्माणाधीन है",
+    "ko-KR": "페이지 공사 중",
+    "he-IL": "הדף בבנייה",
+    "uk-UA": "Сторінка в розробці",
+    "id-ID": "Halaman dalam pembangunan",
+    "th-TH": "หน้าเว็บอยู่ระหว่างการก่อสร้าง"
+  },
+  "page_under_construction_desc": {
+    "pt-PT": "Estamos a trabalhar para melhorar esta página. Por favor, volte mais tarde.",
+    "pt-BR": "Estamos trabalhando para melhorar esta página. Por favor, volte mais tarde.",
+    "en-US": "We are working to improve this page. Please come back later.",
+    "es-ES": "Estamos trabajando para mejorar esta página. Vuelve más tarde, por favor.",
+    "fr-FR": "Nous travaillons à l'amélioration de cette page. Veuillez revenir plus tard.",
+    "de-DE": "Wir arbeiten daran, diese Seite zu verbessern. Bitte kommen Sie später wieder.",
+    "it-IT": "Stiamo lavorando per migliorare questa pagina. Per favore, torna più tardi.",
+    "ja-JP": "このページを改善しています。後でもう一度お越しください。",
+    "zh-CN": "我们正在努力改进此页面。请稍后再回来。",
+    "ru-RU": "Мы работаем над улучшением этой страницы. Пожалуйста, зайдите позже.",
+    "ar-SA": "نحن نعمل على تحسين هذه الصفحة. يرجى العودة في وقت لاحق.",
+    "hi-IN": "हम इस पृष्ठ को बेहतर बनाने के लिए काम कर रहे हैं। कृपया बाद में वापस आएं।",
+    "ko-KR": "이 페이지를 개선하기 위해 노력하고 있습니다. 나중에 다시 방문해 주세요.",
+    "he-IL": "אנחנו עובדים על שיפור הדף הזה. בבקשה תחזור מאוחר יותר.",
+    "uk-UA": "Ми працюємо над покращенням цієї сторінки. Будь ласка, зайдіть пізніше.",
+    "id-ID": "Kami sedang berupaya meningkatkan halaman ini. Silakan kembali lagi nanti.",
+    "th-TH": "เรากำลังดำเนินการปรับปรุงหน้านี้อยู่ โปรดกลับมาใหม่ในภายหลัง"
+  },
   "driver_panel_map_placeholder": {
     "pt-PT": "Aguardando novas corridas...",
     "pt-BR": "Aguardando novas corridas...",
@@ -4939,6 +4977,63 @@ export const translations = {
     "uk-UA": "Зберегти",
     "id-ID": "Simpan",
     "th-TH": "บันทึก"
+  },
+  "chat_search_placeholder": {
+    "pt-PT": "Procurar conversas...",
+    "pt-BR": "Procurar conversas...",
+    "en-US": "Search conversations...",
+    "es-ES": "Buscar conversaciones...",
+    "fr-FR": "Rechercher des conversations...",
+    "de-DE": "Gespräche suchen...",
+    "it-IT": "Cerca conversazioni...",
+    "ja-JP": "会話を検索...",
+    "zh-CN": "搜索对话...",
+    "ru-RU": "Поиск разговоров...",
+    "ar-SA": "البحث في المحادثات...",
+    "hi-IN": "बातचीत खोजें...",
+    "ko-KR": "대화 검색...",
+    "he-IL": "חפש שיחות...",
+    "uk-UA": "Пошук розмов...",
+    "id-ID": "Cari percakapan...",
+    "th-TH": "ค้นหาการสนทนา..."
+  },
+  "chat_type_message_placeholder": {
+    "pt-PT": "Digite sua mensagem...",
+    "pt-BR": "Digite sua mensagem...",
+    "en-US": "Type your message...",
+    "es-ES": "Escribe tu mensaje...",
+    "fr-FR": "Tapez votre message...",
+    "de-DE": "Geben Sie Ihre Nachricht ein...",
+    "it-IT": "Digita il tuo messaggio...",
+    "ja-JP": "メッセージを入力...",
+    "zh-CN": "输入您的消息...",
+    "ru-RU": "Введите ваше сообщение...",
+    "ar-SA": "اكتب رسالتك...",
+    "hi-IN": "अपना संदेश टाइप करें...",
+    "ko-KR": "메시지를 입력하세요...",
+    "he-IL": "הקלד את הודעתך...",
+    "uk-UA": "Введіть ваше повідомлення...",
+    "id-ID": "Ketik pesan Anda...",
+    "th-TH": "พิมพ์ข้อความของคุณ..."
+  },
+  "chat_select_conversation": {
+    "pt-PT": "Selecione uma conversa para começar a conversar.",
+    "pt-BR": "Selecione uma conversa para começar a conversar.",
+    "en-US": "Select a conversation to start chatting.",
+    "es-ES": "Selecciona una conversación para empezar a chatear.",
+    "fr-FR": "Sélectionnez une conversation pour commencer à discuter.",
+    "de-DE": "Wählen Sie ein Gespräch aus, um mit dem Chatten zu beginnen.",
+    "it-IT": "Seleziona una conversazione per iniziare a chattare.",
+    "ja-JP": "会話を選択してチャットを開始します。",
+    "zh-CN": "选择一个对话开始聊天。",
+    "ru-RU": "Выберите разговор, чтобы начать общение.",
+    "ar-SA": "حدد محادثة لبدء الدردشة.",
+    "hi-IN": "चैटिंग शुरू करने के लिए एक बातचीत चुनें।",
+    "ko-KR": "대화를 선택하여 채팅을 시작하세요.",
+    "he-IL": "בחר שיחה כדי להתחיל לשוחח.",
+    "uk-UA": "Виберіть розмову, щоб почати спілкування.",
+    "id-ID": "Pilih percakapan untuk mulai mengobrol.",
+    "th-TH": "เลือกการสนทนาเพื่อเริ่มแชท"
   }
 }
 export const languages = [
@@ -4964,5 +5059,6 @@ export const languages = [
 export type TranslationKeys = keyof typeof translations;
 
   
+
 
 
