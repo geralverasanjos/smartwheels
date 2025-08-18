@@ -41,8 +41,7 @@ const passengerNav = [
     { href: "/dashboard/passenger/delivery", icon: Truck, labelKey: "menu_delivery" },
     { href: "/dashboard/passenger/history", icon: History, labelKey: "menu_history" },
     { href: "/dashboard/passenger/wallet", icon: Wallet, labelKey: "menu_wallet" },
-    { href: "/dashboard/passenger/billing", icon: CreditCard, labelKey: "menu_billing" },
-    { href: "/dashboard/passenger/payments", icon: CreditCard, labelKey: "menu_payments" },
+    { href: "/dashboard/payments", icon: CreditCard, labelKey: "menu_payments" },
     { href: "/dashboard/passenger/chat", icon: MessageSquare, labelKey: "menu_chat" },
     { href: "/dashboard/passenger/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/passenger/profile", icon: User, labelKey: "menu_profile" },
@@ -54,8 +53,7 @@ const driverNav = [
     { href: "/dashboard/driver/earnings", icon: AreaChart, labelKey: "menu_earnings" },
     { href: "/dashboard/driver/history", icon: History, labelKey: "menu_history" },
     { href: "/dashboard/driver/wallet", icon: Wallet, labelKey: "menu_wallet" },
-    { href: "/dashboard/driver/billing", icon: CreditCard, labelKey: "menu_billing" },
-    { href: "/dashboard/driver/payments", icon: CreditCard, labelKey: "menu_payments" },
+    { href: "/dashboard/payments", icon: CreditCard, labelKey: "menu_payments" },
     { href: "/dashboard/driver/vehicles", icon: Car, labelKey: "menu_vehicles" },
     { href: "/dashboard/driver/stands", icon: Building2, labelKey: "menu_stands" },
     { href: "/dashboard/driver/promotions", icon: Award, labelKey: "menu_promotions" },
@@ -70,8 +68,7 @@ const fleetManagerNav = [
     { href: "/dashboard/fleet-manager/drivers", icon: Users, labelKey: "menu_drivers" },
     { href: "/dashboard/fleet-manager/vehicles", icon: Car, labelKey: "menu_vehicles" },
     { href: "/dashboard/fleet-manager/reports", icon: FileText, labelKey: "menu_reports" },
-    { href: "/dashboard/fleet-manager/billing", icon: CreditCard, labelKey: "menu_billing" },
-    { href: "/dashboard/fleet-manager/payments", icon: CreditCard, labelKey: "menu_payments" },
+    { href: "/dashboard/payments", icon: CreditCard, labelKey: "menu_payments" },
     { href: "/dashboard/fleet-manager/wallet", icon: Wallet, labelKey: "menu_wallet" },
     { href: "/dashboard/fleet-manager/promotions", icon: Award, labelKey: "menu_promotions" },
     { href: "/dashboard/fleet-manager/refer", icon: Award, labelKey: "menu_refer" },
@@ -82,7 +79,6 @@ const fleetManagerNav = [
 const navConfig = {
     passenger: passengerNav,
     driver: driverNav,
-    fleet: fleetManagerNav,
     'fleet-manager': fleetManagerNav,
 };
 
@@ -136,7 +132,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                         <Link href="/">
                             <SidebarMenuButton tooltip="Logout">
                                 <LogOut />
-                                <span>Logout</span>
+                                <span>{t('logout')}</span>
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>

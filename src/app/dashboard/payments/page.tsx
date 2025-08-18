@@ -1,0 +1,251 @@
+'use client';
+import { useState } from 'react';
+import { useAppContext } from '@/contexts/app-context';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import {
+  CreditCard,
+  Landmark,
+  Wallet,
+  Trash2,
+  Edit,
+  PlusCircle,
+  Banknote,
+  Send,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
+
+const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M7.333 22.455c-1.35 0-2.32-.903-2.614-2.112l-1.38-6.953c-.158-.79.46-1.507 1.264-1.507h3.81c2.443 0 4.127-1.398 4.708-3.955.334-1.484.02-2.775-.85-3.64C11.53.51 10.035 0 8.396 0H2.617C1.782 0 1.07.64 1.002 1.45L0 8.018V8.5h4.43c.69 0 1.253.543 1.31 1.232l.533 6.95c.12 1.57.24 1.83.24 1.83.003.01.004.014.004.014.18 1.34 1.22 2.21 2.41 2.21h.403v.002c1.35 0 2.32-.903 2.613-2.112l1.343-6.742c.158-.79-.46-1.508-1.264-1.508h-3.08c-1.18 0-2.22-.84-2.5-1.98l-.208-1.29c-.11-.67.4-1.24.96-1.24h7.04c1.93 0 3.22.844 3.69 2.94.47 2.1-.24 3.9-1.53 5.08-1.29 1.18-3.13 1.8-5.26 1.8h-.83c-.76 0-1.41.59-1.5 1.35l-1.04 6.13c-.24 1.41-1.29 2.45-2.63 2.45h-.2zm9.352-19.14c-1.35 0-2.32.903-2.614 2.112l-1.38 6.953c-.158.79.46 1.507 1.263 1.507h3.81c2.443 0 4.127-1.398 4.708-3.955.335-1.484.02-2.775-.85-3.64-1.26-1.27-2.755-1.977-4.397-1.977h-.54z"/>
+    </svg>
+)
+
+const initialPaymentMethods = [
+  { id: 'cash', type: 'Dinheiro', details: 'payment_method_cash_desc', icon: Banknote, isDefault: false },
+  { id: 'wallet', type: 'Wallet', details: 'passenger.booking.payment_wallet_balance', value: 50.00, icon: Wallet, isDefault: true },
+  { id: 'card1', type: 'Cartão de Crédito', details: 'Mastercard **** 1234', icon: CreditCard, isDefault: false },
+  { id: 'pix1', type: 'PIX', details: 'vinicius@email.com', icon: Send, isDefault: false },
+  { id: 'mbway1', type: 'MB WAY', details: '+351 912 345 678', icon: () => <Image src="https://imgs.search.brave.com/eEExT7B_iP3yA49p3q2iGoY2xxD3QcWlE2AbE1G45u8/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9jZG4u/Y2RuLmlvL2U1ZGIx/NDg2MWQ0MjQ5NmJi/YjFkYjQ2ZmFkOGM3/ZTk5LzQzOWExMGIx/MjA1MTQxZjI5NmY4/YjMzYTBmMDMzODFm/L01CV0FZX2ljb25f/Y29yLnN2Zw.svg" alt="MB WAY" width={24} height={24} />, isDefault: false },
+  { id: 'paypal1', type: 'PayPal', details: 'vinicius@paypal.com', icon: PayPalIcon, isDefault: false },
+];
+
+export default function PaymentsPage() {
+  const { t, language } = useAppContext();
+  const { toast } = useToast();
+  const [paymentMethods, setPaymentMethods] = useState(initialPaymentMethods);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<any>(null);
+
+  const handleAddNewMethod = (values: any) => {
+    // Logic to add a new payment method
+    console.log(values);
+    toast({ title: t('payment_method_add_success_title'), description: t('payment_method_add_success_desc') });
+    setIsDialogOpen(false);
+  };
+
+  const handleDeleteMethod = (id: string) => {
+    setPaymentMethods(prev => prev.filter(method => method.id !== id));
+    toast({ title: t('payment_method_delete_success_title'), description: t('payment_method_delete_success_desc'), variant: 'destructive' });
+  };
+  
+  const handleSetDefault = (id: string) => {
+      setPaymentMethods(prev => prev.map(method => ({...method, isDefault: method.id === id})));
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('payment_methods_title')}</CardTitle>
+          <CardDescription>{t('payment_methods_desc_payment')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <h3 className="font-semibold">{t('payment_methods_saved_title')}</h3>
+          {paymentMethods.map(method => (
+            <div key={method.id} className="flex items-center gap-4 rounded-lg border p-4">
+              <method.icon className="h-6 w-6 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="font-semibold">{t(method.type as any) || method.type}</p>
+                <p className="text-sm text-muted-foreground">
+                    {method.id === 'wallet' ? `${t(method.details as any)}: ${new Intl.NumberFormat(language.value, { style: 'currency', currency: language.currency.code }).format(method.value || 0)}` : t(method.details as any) || method.details}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleSetDefault(method.id)}>
+                    <RadioGroup value={method.isDefault ? method.id : ''} className="flex items-center">
+                        <RadioGroupItem value={method.id} id={method.id}/>
+                    </RadioGroup>
+                    <Label htmlFor={method.id} className="text-sm text-muted-foreground cursor-pointer">{t('payment_method_default')}</Label>
+                 </div>
+                <Button variant="ghost" size="icon" onClick={() => { setEditingMethod(method); setIsDialogOpen(true); }}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteMethod(method.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {t('btn_add_payment_method')}
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <AddEditPaymentMethodForm 
+                    onSubmit={handleAddNewMethod} 
+                    editingMethod={editingMethod}
+                />
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (values: any) => void; editingMethod: any | null }) => {
+    const { t } = useAppContext();
+    const [methodType, setMethodType] = useState(editingMethod?.type || 'Cartão de Crédito');
+    
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const values = Object.fromEntries(formData.entries());
+        onSubmit(values);
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <DialogHeader>
+                <DialogTitle>{editingMethod ? t('payment_method_edit_title') : t('payment_method_add_title')}</DialogTitle>
+                <DialogDescription>{t('payment_method_add_desc')}</DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="method-type">{t('payment_method_type_label')}</Label>
+                    <Select value={methodType} onValueChange={setMethodType}>
+                        <SelectTrigger id="method-type">
+                            <SelectValue placeholder={t('payment_method_select_placeholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Cartão de Crédito">{t('payment_method_credit_card')}</SelectItem>
+                            <SelectItem value="PIX">PIX</SelectItem>
+                            <SelectItem value="MB WAY">MB WAY</SelectItem>
+                            <SelectItem value="PayPal">PayPal</SelectItem>
+                            <SelectItem value="Conta Bancária">{t('payment_method_bank_account')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {methodType === 'PIX' && (
+                    <>
+                        <div className="space-y-2">
+                            <Label htmlFor="pix-name">{t('name_label')}</Label>
+                            <Input id="pix-name" name="name" defaultValue={editingMethod?.name} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="pix-key-type">{t('payment_method_pix_key_type')}</Label>
+                             <Select name="pix_key_type">
+                                <SelectTrigger id="pix-key-type">
+                                    <SelectValue placeholder={t('payment_method_pix_key_type_placeholder')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="phone">{t('payment_method_pix_phone')}</SelectItem>
+                                    <SelectItem value="email">{t('email_label')}</SelectItem>
+                                    <SelectItem value="cpf">{t('payment_method_pix_cpf')}</SelectItem>
+                                    <SelectItem value="random">{t('payment_method_pix_random')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="pix-key">{t('payment_method_pix_key')}</Label>
+                            <Input id="pix-key" name="pix_key" />
+                        </div>
+                    </>
+                )}
+
+                {methodType === 'MB WAY' && (
+                     <>
+                        <div className="space-y-2">
+                            <Label htmlFor="mbway-name">{t('name_label')}</Label>
+                            <Input id="mbway-name" name="name" defaultValue={editingMethod?.name} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mbway-phone">{t('payment_method_pix_phone')}</Label>
+                            <Input id="mbway-phone" name="phone" type="tel" defaultValue={editingMethod?.phone} />
+                        </div>
+                    </>
+                )}
+                 {methodType === 'PayPal' && (
+                     <div className="space-y-2">
+                        <Label htmlFor="paypal-email">{t('email_label')}</Label>
+                        <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.email} />
+                    </div>
+                 )}
+
+                {(methodType === 'Cartão de Crédito' || methodType === 'Conta Bancária') && (
+                     <>
+                        <div className="space-y-2">
+                            <Label htmlFor="card-name">{t('payment_method_card_name')}</Label>
+                            <Input id="card-name" name="card_name" defaultValue={editingMethod?.card_name} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="card-number">{t('payment_method_card_number')}</Label>
+                            <Input id="card-number" name="card_number" defaultValue={editingMethod?.card_number} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label htmlFor="card-expiry">{t('payment_method_card_expiry')}</Label>
+                                <Input id="card-expiry" name="card_expiry" placeholder="MM/AA" defaultValue={editingMethod?.card_expiry} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="card-cvv">CVV</Label>
+                                <Input id="card-cvv" name="card_cvv" defaultValue={editingMethod?.card_cvv} />
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button type="button" variant="ghost">{t('cancel_button')}</Button>
+                </DialogClose>
+                <Button type="submit">{editingMethod ? t('save_button') : t('add_button')}</Button>
+            </DialogFooter>
+        </form>
+    )
+}
