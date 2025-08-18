@@ -43,5 +43,5 @@ export const useGeocoding = () => {
     [isLoaded]
   );
 
-  return { geocode, reverseGeocode };
+  return { geocode, reverseGeocode, isLoaded };
 };

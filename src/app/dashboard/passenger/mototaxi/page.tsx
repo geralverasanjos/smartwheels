@@ -196,7 +196,7 @@ export default function PassengerMotoTaxiPage() {
   const { toast } = useToast();
   const { language, t } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
-  const { reverseGeocode } = useGeocoding();
+  const { reverseGeocode, isLoaded } = useGeocoding();
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -209,10 +209,24 @@ export default function PassengerMotoTaxiPage() {
     { id: 'tuk_tuk', icon: TukTukIcon, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') }
   ];
 
+  const handleUseCurrentLocation = useCallback(() => {
+    if(!isLoaded) return;
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+            const address = await reverseGeocode(coords);
+            dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
+            if(map) map.panTo(coords);
+        }, (error) => {
+            console.error("Geolocation error:", error);
+            toast({ title: t('location_error_title'), description: t('location_error_desc'), variant: "destructive" });
+        })
+    }
+  }, [isLoaded, reverseGeocode, map, toast, t]);
+
   useEffect(() => {
     handleUseCurrentLocation();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [handleUseCurrentLocation]);
 
   useEffect(() => {
     if (initialState.origin.text === '') {
@@ -258,19 +272,7 @@ export default function PassengerMotoTaxiPage() {
     }
   }, [selectingField, reverseGeocode]);
 
-  const handleUseCurrentLocation = useCallback(() => {
-      if(navigator.geolocation){
-          navigator.geolocation.getCurrentPosition(async (position) => {
-              const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-              const address = await reverseGeocode(coords);
-              dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-              if(map) map.panTo(coords);
-          }, (error) => {
-              console.error("Geolocation error:", error);
-              toast({ title: t('location_error_title'), description: t('location_error_desc'), variant: "destructive" });
-          })
-      }
-  }, [reverseGeocode, map, toast, t]);
+  
 
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
