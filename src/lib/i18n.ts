@@ -1045,6 +1045,25 @@ export const translations = {
     "id-ID": "Lihat detail",
     "th-TH": "ดูรายละเอียด"
   },
+  "my_account": {
+    "pt-PT": "A minha conta",
+    "pt-BR": "Minha conta",
+    "en-US": "My account",
+    "es-ES": "Mi cuenta",
+    "fr-FR": "Mon compte",
+    "de-DE": "Mein Konto",
+    "it-IT": "Il mio account",
+    "ja-JP": "マイアカウント",
+    "zh-CN": "我的账户",
+    "ru-RU": "Мой аккаунт",
+    "ar-SA": "حسابي",
+    "hi-IN": "मेरा खाता",
+    "ko-KR": "내 계정",
+    "he-IL": "החשבון שלי",
+    "uk-UA": "Мій обліковий запис",
+    "id-ID": "Akun saya",
+    "th-TH": "บัญชีของฉัน"
+  },
   "menu_history": {
     "pt-PT": "Histórico",
     "pt-BR": "Histórico",
