@@ -16,7 +16,7 @@ const mockPassengerProfile: UserProfile = {
     phone: '+351 987 654 321',
     nif: '123456789',
     address: 'Avenida da Liberdade, 456, 1250-142 Lisboa',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://placehold.co/100x100/32CD32/FFFFFF.png?text=AS',
 };
 
 const mockFleetManagerProfile: UserProfile = {

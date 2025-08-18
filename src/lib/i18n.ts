@@ -859,7 +859,7 @@ export const Translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "Qué te gustaría hacer hoy?",
+    "es-ES": "Qué te gustaría fazer hoje?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",
@@ -3077,6 +3077,44 @@ export const Translations = {
     "uk-UA": "Керуйте інформацією про вашу компанію та контактними даними.",
     "id-ID": "Kelola informasi perusahaan dan detail kontak Anda.",
     "th-TH": "จัดการข้อมูลบริษัทและรายละเอียดการติดต่อของคุณ"
+  },
+  "passenger_profile_title": {
+    "pt-PT": "Meu Perfil",
+    "pt-BR": "Meu Perfil",
+    "en-US": "My Profile",
+    "es-ES": "Mi Perfil",
+    "fr-FR": "Mon Profil",
+    "de-DE": "Mein Profil",
+    "it-IT": "Il Mio Profilo",
+    "ja-JP": "マイプロフィール",
+    "zh-CN": "我的个人资料",
+    "ru-RU": "Мой профиль",
+    "ar-SA": "ملفي الشخصي",
+    "hi-IN": "मेरी प्रोफ़ाइल",
+    "ko-KR": "내 프로필",
+    "he-IL": "הפרופיל שלי",
+    "uk-UA": "Мій профіль",
+    "id-ID": "Profil Saya",
+    "th-TH": "โปรไฟล์ของฉัน"
+  },
+  "passenger_profile_desc": {
+    "pt-PT": "Mantenha os seus dados de contacto e preferências atualizados.",
+    "pt-BR": "Mantenha seus dados de contato e preferências atualizados.",
+    "en-US": "Keep your contact details and preferences up to date.",
+    "es-ES": "Mantén tus datos de contacto y preferencias actualizados.",
+    "fr-FR": "Gardez vos coordonnées et vos préférences à jour.",
+    "de-DE": "Halten Sie Ihre Kontaktdaten und Präferenzen auf dem neuesten Stand.",
+    "it-IT": "Mantieni aggiornati i tuoi dati di contatto e le tue preferenze.",
+    "ja-JP": "連絡先の詳細と設定を最新の状態に保ちます。",
+    "zh-CN": "保持您的联系方式和偏好是最新的。",
+    "ru-RU": "Держите свои контактные данные и предпочтения в актуальном состоянии.",
+    "ar-SA": "حافظ على تحديث تفاصيل الاتصال والتفضيلات الخاصة بك.",
+    "hi-IN": "अपने संपर्क विवरण और वरीयताओं को अद्यतन रखें।",
+    "ko-KR": "연락처 세부 정보와 기본 설정을 최신 상태로 유지하세요.",
+    "he-IL": "שמור על עדכניות פרטי הקשר וההעדפות שלך.",
+    "uk-UA": "Тримайте свої контактні дані та вподобання в актуальному стані.",
+    "id-ID": "Selalu perbarui detail kontak dan preferensi Anda.",
+    "th-TH": "ปรับปรุงรายละเอียดการติดต่อและการตั้งค่าของคุณให้เป็นปัจจุบันอยู่เสมอ"
   }
 };
 export const languages = [
@@ -3103,6 +3141,7 @@ export const languages = [
 export type TranslationKeys = keyof typeof Translations;
 
     
+
 
 
 

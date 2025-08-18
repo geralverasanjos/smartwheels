@@ -1,21 +1,28 @@
 'use client';
+import { useState, useEffect } from 'react';
+import ProfileForm from '@/components/shared/ProfileForm';
+import { getPassengerProfile } from '@/services/profileService';
+import type { UserProfile } from '@/types';
+import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { User } from 'lucide-react';
 
-export default function PlaceholderPage() {
+export default function PassengerProfilePage() {
     const { t } = useAppContext();
+    const [userData, setUserData] = useState<UserProfile | null>(null);
+
+    useEffect(() => {
+        getPassengerProfile().then(setUserData);
+    }, []);
+
+    if (!userData) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
+    }
+
     return (
-        <Card className="mt-4">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><User /> {t('menu_profile')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="text-center text-muted-foreground py-16">
-                    <h2 className="text-2xl font-semibold">{t('page_under_construction')}</h2>
-                    <p>{t('page_under_construction_desc')}</p>
-                </div>
-            </CardContent>
-        </Card>
+        <ProfileForm 
+            userData={userData}
+            titleKey="passenger_profile_title"
+            descriptionKey="passenger_profile_desc"
+        />
     );
 }
