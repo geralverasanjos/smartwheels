@@ -1,0 +1,21 @@
+'use client';
+import { useAppContext } from '@/contexts/app-context';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Truck } from 'lucide-react';
+
+export default function PlaceholderPage() {
+    const { t } = useAppContext();
+    return (
+        <Card className="mt-4">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Truck /> {t('menu_delivery')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-center text-muted-foreground py-16">
+                    <h2 className="text-2xl font-semibold">{t('page_under_construction')}</h2>
+                    <p>{t('page_under_construction_desc')}</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
