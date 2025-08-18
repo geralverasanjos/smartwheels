@@ -1,71 +1,68 @@
 'use client';
-import { useAppContext } from '@/contexts/app-context';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LifeBuoy } from 'lucide-react';
-import { empatheticSupport } from '@/ai/flows/empathetic-support';
-import { useState } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useAppContext } from '@/contexts/app-context';
+import { driverFaqs, passengerFaqs, fleetManagerFaqs } from '@/data/faq';
+import type { FAQ } from '@/data/faq';
+
+const CONTACT_DETAILS = {
+    email: "geralveras@gmail.com",
+    whatsapp_pt: "+351931740149",
+    whatsapp_br: "+5591992947001"
+};
+
+const FaqSection = ({ faqs }: { faqs: FAQ[] }) => {
+    const { t } = useAppContext();
+    return (
+        <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, index) => (
+                <AccordionItem value={`item-${index}`} key={index}>
+                    <AccordionTrigger>{t(faq.questionKey)}</AccordionTrigger>
+                    <AccordionContent>{t(faq.answerKey)}</AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
+    )
+}
 
 export default function SupportPage() {
     const { t, language } = useAppContext();
-    const [query, setQuery] = useState('');
-    const [response, setResponse] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError('');
-        setResponse('');
-        try {
-            const result = await empatheticSupport({ query, language: language.label });
-            setResponse(result.response);
-        } catch (err) {
-            setError('Failed to get a response from the support bot. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+    const whatsappNumberToShow = language.value === 'pt-BR' 
+        ? CONTACT_DETAILS.whatsapp_br 
+        : CONTACT_DETAILS.whatsapp_pt;
+    
     return (
-        <Card className="mt-4">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><LifeBuoy /> {t('menu_support')}</CardTitle>
-                <CardDescription>Converse com nosso assistente de IA para obter ajuda.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <Textarea
-                        placeholder="Descreva seu problema aqui..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        rows={5}
-                        disabled={isLoading}
-                    />
-                    <Button type="submit" disabled={isLoading || !query}>
-                        {isLoading ? 'Enviando...' : 'Enviar para Suporte'}
-                    </Button>
-                </form>
-                {error && (
-                    <Alert variant="destructive" className="mt-4">
-                        <AlertTitle>Erro</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-                {response && (
-                     <Card className="mt-6 bg-secondary">
-                        <CardHeader>
-                            <CardTitle>Resposta do Suporte</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p>{response}</p>
-                        </CardContent>
-                    </Card>
-                )}
-            </CardContent>
-        </Card>
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-3xl font-bold font-headline">{t('support_page_title')}</h1>
+                <p className="text-muted-foreground">{t('support_page_subtitle')}</p>
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('support_contact_title')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <p><strong>{t('email_label')}:</strong> <a href={`mailto:${CONTACT_DETAILS.email}`} className="text-primary hover:underline">{CONTACT_DETAILS.email}</a></p>
+                    <p><strong>WhatsApp:</strong> <a href={`https://wa.me/${whatsappNumberToShow}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{whatsappNumberToShow}</a></p>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('support_faq_title')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <h3 className="font-semibold text-lg mb-4">{t('support_faq_passenger')}</h3>
+                    <FaqSection faqs={passengerFaqs} />
+                    <h3 className="font-semibold text-lg mt-8 mb-4">{t('support_faq_driver')}</h3>
+                    <FaqSection faqs={driverFaqs} />
+                    <h3 className="font-semibold text-lg mt-8 mb-4">{t('support_faq_fleet')}</h3>
+                    <FaqSection faqs={fleetManagerFaqs} />
+                </CardContent>
+            </Card>
+        </div>
     );
 }
