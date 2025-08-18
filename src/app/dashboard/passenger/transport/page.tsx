@@ -569,7 +569,7 @@ export default function RequestTransportPage() {
   }
 
   return (
-    <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh-10rem)]">
+    <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
       <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
         {isLoaded ? (
             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
@@ -587,7 +587,7 @@ export default function RequestTransportPage() {
             <Loader2 className="h-12 w-12 animate-spin text-primary"/>
         )}
       </div>
-      <div className="md:col-span-1 h-full overflow-y-auto">
+      <div className="md:col-span-1 md:overflow-y-auto">
         {isLoaded ? renderContent() : (
             <Card className="h-full flex flex-col items-center justify-center">
                 <CardContent>

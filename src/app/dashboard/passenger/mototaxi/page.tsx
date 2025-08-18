@@ -625,8 +625,8 @@ export default function PassengerMotoTaxiPage() {
   }
 
   return (
-    <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh-10rem)]">
-      <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+    <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
+      <div className="md:col-span-2 rounded-lg bg-muted min-h-[400px] md:min-h-0 relative overflow-hidden">
         <Map onMapLoad={setMap} onMapClick={handleMapClick}>
             {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} label="O"/>}
             {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} label="D"/>}
@@ -639,7 +639,7 @@ export default function PassengerMotoTaxiPage() {
             {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
         </Map>
       </div>
-      <div className="md:col-span-1 h-full overflow-y-auto">
+      <div className="md:col-span-1 md:overflow-y-auto">
         {renderContent()}
       </div>
     </div>
