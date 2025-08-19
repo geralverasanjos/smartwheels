@@ -174,6 +174,16 @@ export default function RequestTransportPage() {
                 if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
                     dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
                 }
+                // Added checks for other status changes
+                if (rideData.status === 'at_pickup') {
+                    dispatch({ type: 'DRIVER_ARRIVED' });
+                } else if (rideData.status === 'in_progress') {
+                    dispatch({ type: 'TRIP_START' });
+                } else if (rideData.status === 'completed') {
+                    dispatch({ type: 'TRIP_FINISH' });
+                } else if (rideData.status === 'cancelled') {
+                    dispatch({ type: 'CANCEL_RIDE' });
+                }
             }
         });
 
