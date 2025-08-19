@@ -15,12 +15,12 @@ export default function FleetManagerPanelLayout({ children }: { children: ReactN
       return;
     }
 
-    // user is null, meaning not logged in.
+    // user is null, meaning not logged in. Redirect to the fleet manager login page.
     if (user === null) {
       router.push('/auth?role=fleet-manager'); 
     } else if (user.role !== 'fleet-manager') {
-      // user is logged in, but not a fleet manager.
-      router.push('/auth'); 
+      // user is logged in, but not a fleet manager. Redirect to the correct login.
+      router.push('/auth?role=fleet-manager'); 
     }
   }, [user, router]);
 
@@ -38,6 +38,10 @@ export default function FleetManagerPanelLayout({ children }: { children: ReactN
     return <DashboardLayout role="fleet-manager">{children}</DashboardLayout>;
   }
 
-  // Before redirect, render nothing.
-  return null;
+  // Before redirect, render a loader.
+  return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin" />
+      </div>
+    );
 }

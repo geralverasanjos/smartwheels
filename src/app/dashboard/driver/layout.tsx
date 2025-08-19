@@ -16,12 +16,12 @@ export default function DriverPanelLayout({ children }: { children: ReactNode })
       return;
     }
 
-    // user is null, meaning not logged in. Redirect to login.
+    // user is null, meaning not logged in. Redirect to login for driver role.
     if (user === null) {
       router.push('/auth?role=driver');
     } else if (user.role !== 'driver') {
-      // user is logged in, but not a driver. Redirect to the generic auth page.
-      router.push('/auth');
+      // user is logged in, but not a driver. Redirect to the driver login page.
+      router.push('/auth?role=driver');
     }
   }, [user, router]);
 
@@ -40,6 +40,10 @@ export default function DriverPanelLayout({ children }: { children: ReactNode })
   }
 
   // If the user is not a driver or is null, this will be the state before the redirect kicks in.
-  // Returning null prevents rendering anything until the redirect happens.
-  return null;
+  // Returning a loader prevents rendering anything until the redirect happens.
+  return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin" />
+      </div>
+    );
 }
