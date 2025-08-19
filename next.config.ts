@@ -38,6 +38,20 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async rewrites() {
+    // This is a temporary workaround for a CORS issue in the dev environment.
+    // In a real production environment, you would want to configure CORS properly on your server.
+    return [
+      {
+        source: '/api/auth/:path*',
+        destination: `https://identitytoolkit.googleapis.com/:path*`,
+      },
+       {
+        source: '/api/firestore/:path*',
+        destination: `https://firestore.googleapis.com/:path*`,
+      },
+    ];
+  },
 };
 
 export default withPWA(nextConfig);
