@@ -14,8 +14,7 @@ interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKeys, replacements?: Record<string, string | number>) => string;
-  user: UserProfile | null | undefined; // Allow undefined for loading state
-  role: 'driver' | 'passenger' | 'fleet-manager' | null;
+  user: UserProfile | null | undefined; // undefined: loading, null: not logged in, UserProfile: logged in
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,8 +22,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(languages[0]); // Default to pt-PT
   const [isClient, setIsClient] = useState(false);
-  const [user, setUser] = useState<UserProfile | null | undefined>(undefined); // Start as undefined
-  const [role, setRole] = useState<'driver' | 'passenger' | 'fleet-manager' | null>(null);
+  const [user, setUser] = useState<UserProfile | null | undefined>(undefined); // Start as undefined (loading)
 
  useEffect(() => {
     setIsClient(true);
@@ -52,28 +50,21 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const profileData = await getUserProfileByAuthId(firebaseUser.uid);
         if (profileData) {
-          const fullUserProfile: UserProfile = {
-            ...profileData, // Contains role, name, email, etc. from Firestore
-            id: firebaseUser.uid, // Ensure the auth UID is the primary ID
-          };
-          setUser(fullUserProfile);
-          setRole(profileData.role);
+          setUser(profileData);
         } else {
-          // Authenticated but no profile yet, this might happen during signup
-          setUser(null); // Or a minimal user object
-          setRole(null);
+          // Authenticated but no profile in DB, treat as not logged in for app purposes
+          setUser(null); 
         }
       } else {
         // User logged out
         setUser(null);
-        setRole(null);
       }
     });
     return () => unsubscribe();
   }, []);
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, t, user, role }}>
+    <AppContext.Provider value={{ language, setLanguage, t, user }}>
       {children}
     </AppContext.Provider>
   );

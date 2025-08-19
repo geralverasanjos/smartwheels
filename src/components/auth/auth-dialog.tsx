@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/app-context';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { db } from '@/lib/firebase';
-import { Card, CardContent } from '@/components/ui/card';
 import { getUserProfileByAuthId } from '@/services/profileService';
 import type { UserProfile } from '@/types';
 
@@ -19,7 +18,7 @@ interface AuthDialogProps {
   isOpen: boolean; 
   setIsOpen: (open: boolean) => void;
   role: string;
-  onSuccess: (user: any) => void;
+  onSuccess: (user: UserProfile) => void;
   isPage?: boolean;
 }
 
@@ -37,8 +36,6 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
   const [authError, setAuthError] = useState('');
 
   const auth = getAuth();
-
-  const formattedRole = t(`role_${role.toLowerCase()}` as any);
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +63,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
       await setDoc(userDocRef, profileData, { merge: true });
       
       if (onSuccess) {
-          onSuccess({ ...user, role: signupRole });
+          onSuccess(profileData);
       }
       setIsOpen(false);
     } catch (error: any) {
@@ -87,9 +84,12 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
       const userProfile = await getUserProfileByAuthId(userCredential.user.uid);
-      if (onSuccess) {
-        // Pass the full user object with the role to the success callback
-        onSuccess({ ...userCredential.user, ...userProfile });
+      
+      if (userProfile && onSuccess) {
+        onSuccess(userProfile);
+      } else {
+        // Handle case where user is authenticated but profile doesn't exist
+        setAuthError('Could not find user profile. Please try signing up.');
       }
       setIsOpen(false);
     } catch (error: any) {
@@ -176,6 +176,8 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
   if (isPage) {
     return formContent;
   }
+
+  const formattedRole = t(`role_${role.toLowerCase()}` as any);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

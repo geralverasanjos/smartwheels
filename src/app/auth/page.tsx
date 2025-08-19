@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AuthDialog from '@/components/auth/auth-dialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAppContext } from '@/contexts/app-context';
-import { User } from 'firebase/auth';
 import type { UserProfile } from '@/types';
 
 export default function AuthPage() {
