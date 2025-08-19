@@ -54,8 +54,8 @@ export default function DriverChatPage() {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[calc(100vh-10rem)]">
-            <Card className="md:col-span-1 flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:h-[calc(100vh-10rem)]">
+            <Card className="md:col-span-1 flex flex-col h-[calc(50vh)] md:h-full">
                 <CardHeader>
                     <CardTitle>{t('menu_chat')}</CardTitle>
                     <div className="relative mt-2">
@@ -91,7 +91,7 @@ export default function DriverChatPage() {
                    </div>
                 </CardContent>
             </Card>
-            <Card className="md:col-span-3 flex flex-col">
+            <Card className="md:col-span-3 flex flex-col h-[calc(80vh)] md:h-full">
                  {selectedConversation ? (
                     <>
                         <CardHeader className="flex-row items-center gap-3 space-y-0 border-b">

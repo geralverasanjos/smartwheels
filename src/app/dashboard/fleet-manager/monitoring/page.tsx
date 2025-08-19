@@ -103,8 +103,8 @@ export default function FleetMonitoringPage() {
     if (!isLoaded) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
 
     return (
-        <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh_-_8rem)]">
-            <div className="md:col-span-2 h-full w-full">
+        <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
+            <div className="md:col-span-2 h-[50vh] md:h-full w-full">
                  <Map>
                     {vehicles.map(vehicle => (
                         <MarkerF
