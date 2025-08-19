@@ -11,6 +11,9 @@ import { useAppContext } from '@/contexts/app-context';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from '@/components/ui/card';
+import { getUserProfileByAuthId } from '@/services/profileService';
+import type { UserProfile } from '@/types';
+
 
 interface AuthDialogProps {
   isOpen: boolean; 
@@ -49,7 +52,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
       const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
       const user = userCredential.user;
       
-      const profileData = {
+      const profileData: UserProfile = {
         id: user.uid,
         email: signupEmail,
         name: signupName || 'New User',
@@ -81,13 +84,16 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
   const handleSigninSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    try { 
+    try {
       const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
+      const userProfile = await getUserProfileByAuthId(userCredential.user.uid);
       if (onSuccess) {
-          onSuccess(userCredential.user);
+        // Pass the full user object with the role to the success callback
+        onSuccess({ ...userCredential.user, ...userProfile });
       }
       setIsOpen(false);
     } catch (error: any) {
+      console.error("Signin error:", error);
       setAuthError('Invalid email or password. Please try again.');
     }
   };

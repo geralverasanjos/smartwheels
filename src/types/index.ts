@@ -10,16 +10,17 @@ export interface Promotion {
 }
 
 export interface UserProfile {
-    id?: string;
+    id: string;
     name: string;
     email: string;
     phone: string;
-    nif: string;
+    nif: string; 
     address: string;
     avatarUrl?: string;
-    balance: number;
+    balance: number; 
+    role: 'passenger' | 'driver' | 'fleet-manager';
     rating?: number;
-    activeVehicleId?: string;
+    activeVehicleId?: string; // Optional, only for drivers
 }
 
 export interface Trip {

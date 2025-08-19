@@ -6,15 +6,15 @@ import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 import { auth } from '@/lib/firebase';
 import { getUserProfileByAuthId } from '@/services/profileService';
+import type { UserProfile } from '@/types';
 
 type Language = (typeof languages)[0];
 
 interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  // Add user and role to the context
   t: (key: TranslationKeys, replacements?: Record<string, string | number>) => string;
-  user: (User & { role?: 'driver' | 'passenger' | 'fleet-manager' }) | null;
+  user: UserProfile | null | undefined; // Allow undefined for loading state
   role: 'driver' | 'passenger' | 'fleet-manager' | null;
 }
 
@@ -23,8 +23,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(languages[0]); // Default to pt-PT
   const [isClient, setIsClient] = useState(false);
-  // Add state for user and role
-  const [user, setUser] = useState<(User & { role?: 'driver' | 'passenger' | 'fleet-manager' }) | null>(null);
+  const [user, setUser] = useState<UserProfile | null | undefined>(undefined); // Start as undefined
   const [role, setRole] = useState<'driver' | 'passenger' | 'fleet-manager' | null>(null);
 
  useEffect(() => {
@@ -49,27 +48,27 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, [language, isClient]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is signed in, fetch their profile
-        getUserProfileByAuthId(firebaseUser.uid)
-          .then(profileData => {
-            if (profileData) {
-              setUser({ ...firebaseUser, ...profileData });
-              setRole(profileData.role);
-            } else {
-              // User is authenticated but profile doesn't exist
-              setUser(firebaseUser);
-              setRole(null); // Or set to 'unassigned' or similar
-            }
-          });
+        const profileData = await getUserProfileByAuthId(firebaseUser.uid);
+        if (profileData) {
+          const fullUserProfile: UserProfile = {
+            ...profileData, // Contains role, name, email, etc. from Firestore
+            id: firebaseUser.uid, // Ensure the auth UID is the primary ID
+          };
+          setUser(fullUserProfile);
+          setRole(profileData.role);
+        } else {
+          // Authenticated but no profile yet, this might happen during signup
+          setUser(null); // Or a minimal user object
+          setRole(null);
+        }
       } else {
         // User logged out
-        setUser(null); // Clear basic Firebase user state
-        setRole(null); // Clear role state
+        setUser(null);
+        setRole(null);
       }
     });
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
