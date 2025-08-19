@@ -110,8 +110,8 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
             <SidebarContent>
                 <SidebarMenu>
                     {navItems.map((item) => (
-                        <SidebarMenuItem key={item.href} onClick={handleLinkClick}>
-                            <Link href={item.href}>
+                         <SidebarMenuItem key={item.href} onClick={handleLinkClick}>
+                            <Link href={item.href.startsWith('/dashboard/payments') ? `${item.href}?from=${pathname}` : item.href}>
                                 <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey as any)}>
                                     <item.icon />
                                     <span>{t(item.labelKey as any)}</span>

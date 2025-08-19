@@ -15,14 +15,11 @@ export default function AuthPage() {
     const [role, setRole] = useState(initialRole);
 
     const handleSuccess = (loggedInUser: UserProfile) => {
-        console.log("handleSuccess called with user:", loggedInUser);
-        console.log(loggedInUser);
         // Use the role from the successfully logged-in user profile for redirection
         const targetRole = loggedInUser.role || 'passenger';
-        console.log("Redirecting to dashboard for role:", targetRole);
         router.push(`/dashboard/${targetRole}`);
     };
- console.log("AuthPage rendering...");
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
             <Card className="w-full max-w-md">
