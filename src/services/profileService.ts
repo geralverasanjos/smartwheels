@@ -62,3 +62,18 @@ export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfi
     }
     return null; // User ID not found in any profile collection
 };
+
+export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
+    const docRef = doc(db, `${role}s`, userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as UserProfile;
+    } else {
+        console.warn(`Profile with ID ${userId} and role ${role} not found.`);
+        return null;
+    }
+};
+
+
+    

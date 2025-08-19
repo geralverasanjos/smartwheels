@@ -10,8 +10,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Car, Package, User, Star, Loader2, PlayCircle, ShieldCheck, CheckCircle, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import Map from '@/components/map';
-import { Button } from '@/components/ui/button';
+import { Map } from '@/components/map';
+import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { useCurrency } from '@/lib/currency';
 import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
@@ -23,7 +23,6 @@ import { getVehicleById } from '@/services/vehicleService';
 import type { Trip, UserProfile, Vehicle, Message, RideRequest } from '@/types';
 import { sendMessage } from '@/services/chatService';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import StatCard from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
@@ -717,3 +716,5 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
+
+    
