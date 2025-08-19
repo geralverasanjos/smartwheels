@@ -31,7 +31,7 @@ export const getDriverTripHistory = async (): Promise<Trip[]> => {
     const driverId = getUserId();
     const historyCollection = collection(db, 'tripHistory');
     const q = query(
-        historyCollection, 
+        historyCollection,
         where("driverId", "==", driverId),
         orderBy("date", "desc")
     );
@@ -41,6 +41,6 @@ export const getDriverTripHistory = async (): Promise<Trip[]> => {
     querySnapshot.forEach((doc) => {
         trips.push({ id: doc.id, ...doc.data() } as Trip);
     });
-    
+
     return trips;
 };

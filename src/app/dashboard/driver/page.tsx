@@ -44,7 +44,9 @@ type State = {
 type Action =
   | { type: 'TOGGLE_ONLINE'; payload: boolean }
   | { type: 'TOGGLE_SIMULATION' }
+  | { type: 'START_SIMULATION'; payload: 'request' } // Added payload to indicate the initial step
   | { type: 'ACCEPT_RIDE' }
+  | { type: 'SIMULATION_STEP', payload: State['simulationStep'] } // Added for clearer simulation step transitions
   | { type: 'DECLINE_RIDE' }
   | { type: 'ARRIVE_AT_PICKUP' }
   | { type: 'START_TRIP_TO_DESTINATION' }
@@ -54,6 +56,7 @@ type Action =
   | { type: 'SET_STATUS_MESSAGE_KEY', payload: TranslationKeys };
   
 const getInitialState = (): State => ({
+  isRideActive: false, // Track if a ride is currently active
   isOnline: false,
   isSimulating: false,
   simulationStep: 'idle',
@@ -63,6 +66,8 @@ const getInitialState = (): State => ({
 });
 
 async function handleFinishRide() {
+    // Assuming these IDs are available in the component state or context
+    // Replace with actual logic to get driverId, passengerId, vehicleId
     const finalTripData: Omit<Trip, 'id'> = {
         type: 'trip',
         passengerName: tripData.passengerName!,
@@ -73,6 +78,8 @@ async function handleFinishRide() {
         destinationAddress: tripData.destinationAddress!,
         distance: tripData.distance!,
         duration: tripData.duration!,
+        passengerId: 'mock_passenger_id', // Replace with actual passenger ID
+        vehicleId: 'mock_vehicle_id', // Replace with actual vehicle ID
         driverId: 'mock_driver_id', // Replace with actual driver ID
     };
     try {
@@ -87,35 +94,42 @@ async function handleFinishRide() {
 function simulationReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'TOGGLE_ONLINE':
-            return { ...state, isOnline: action.payload, statusMessageKey: action.payload ? 'driver_status_waiting' : 'driver_status_offline' };
+            return { ...getInitialState(), isOnline: action.payload, statusMessageKey: action.payload ? 'driver_status_waiting' : 'driver_status_offline' };
         case 'TOGGLE_SIMULATION':
             const isSimulating = !state.isSimulating;
             if (isSimulating && state.isOnline) {
                  return {
-                    ...getInitialState(),
+                    ...state, // Keep current online status and position
                     isOnline: state.isOnline,
                     isSimulating,
                     simulationStep: 'request',
                     statusMessageKey: 'driver_status_new_request',
                     vehiclePosition: state.vehiclePosition,
+                    isRideActive: true, // Mark ride as active during simulation
                 };
             }
             return {
-                ...getInitialState(),
+                ...state, // Keep current online status and position
                 isOnline: state.isOnline,
                 isSimulating: false,
                 statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline',
                 vehiclePosition: state.vehiclePosition,
+                isRideActive: false, // No active ride when simulation is off
             };
         case 'ACCEPT_RIDE':
-            return { ...state, simulationStep: 'enroute_to_pickup', statusMessageKey: 'driver_status_pickup_enroute' };
+            return { ...state, simulationStep: 'enroute_to_pickup', statusMessageKey: 'driver_status_pickup_enroute', isRideActive: true };
         case 'DECLINE_RIDE':
-             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting' };
+             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting', isRideActive: false };
         case 'ARRIVE_AT_PICKUP':
             return { ...state, simulationStep: 'at_pickup', statusMessageKey: 'driver_status_pickup_arrived' };
         case 'START_TRIP_TO_DESTINATION':
             return { ...state, simulationStep: 'enroute_to_destination', statusMessageKey: 'driver_status_destination_enroute' };
         case 'FINISH_RIDE':
+            // The handleFinishRide function already contains the Firestore saving logic
+            // We don't need to call it here directly in the reducer
+            return { ...getInitialState(), isOnline: state.isOnline, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline', isSimulating: state.isSimulating };
+         case 'SIMULATION_STEP':
+            // This case is specifically for updating the simulation step from effects
             handleFinishRide();
             return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline'};
         case 'SET_VEHICLE_POSITION':
@@ -123,6 +137,8 @@ function simulationReducer(state: State, action: Action): State {
         case 'SET_DIRECTIONS':
             return { ...state, directions: action.payload };
         case 'SET_STATUS_MESSAGE_KEY':
+            return { ...state, statusMessageKey: action.payload };
+        case 'START_SIMULATION':
             return { ...state, statusMessageKey: action.payload };
         default:
             return state;
@@ -202,8 +218,8 @@ export default function DriverDashboardPage() {
         };
 
         if (simulationStep === 'enroute_to_pickup') {
-            checkArrival(PASSENGER_PICKUP, 'ARRIVE_AT_PICKUP');
-        } else if (simulationStep === 'enroute_to_destination') {
+            checkArrival(PASSENGER_PICKUP, 'ARRIVE_AT_PICKUP'); // Assuming arrival triggers ARRIVE_AT_PICKUP
+        } else if (simulationStep === 'enroute_to_destination') {            
             checkArrival(TRIP_DESTINATION, 'FINISH_RIDE');
         }
     }, [vehiclePosition, simulationStep]);
