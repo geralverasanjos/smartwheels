@@ -10,12 +10,15 @@ export interface Promotion {
 }
 
 export interface UserProfile {
+    id?: string;
     name: string;
     email: string;
     phone: string;
     nif: string;
     address: string;
     avatarUrl?: string;
+    rating?: number;
+    activeVehicleId?: string;
 }
 
 export interface Trip {
@@ -33,4 +36,18 @@ export interface Trip {
     passengerId: string; // ID of the passenger who took the trip
     vehicleId: string; // ID of the vehicle used for the trip
     duration: number; // in minutes
+}
+
+export interface Vehicle {
+    id: string;
+    driverId: string;
+    make: string;
+    model: string;
+    year: string;
+    color: string;
+    plate: string;
+    status: 'active' | 'pending' | 'rejected' | 'maintenance' | 'inactive';
+    imageUrl?: string;
+    aiHint?: string;
+    allowedServices: ('passengers' | 'deliveries')[];
 }

@@ -16,16 +16,19 @@ const getProfile = async (role: 'passenger' | 'driver' | 'fleet-manager'): Promi
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-        return docSnap.data() as UserProfile;
+        return { id: docSnap.id, ...docSnap.data() } as UserProfile;
     } else {
         // Se o perfil não existir, podemos criar um com dados padrão
         const defaultProfile: UserProfile = {
+            id: userId,
             name: 'Novo Utilizador',
             email: 'user@example.com',
             phone: '',
             nif: '',
             address: '',
             avatarUrl: `https://placehold.co/100x100.png?text=${role.substring(0,1).toUpperCase()}`,
+            rating: 4.8, // Default rating
+            activeVehicleId: 'mock_vehicle_id', // Default vehicle
         };
         await setDoc(docRef, defaultProfile);
         return defaultProfile;

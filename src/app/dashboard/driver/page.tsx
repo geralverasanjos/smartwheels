@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, User, Star, Loader2, PlayCircle } from 'lucide-react';
+import { Car, Package, User, Star, Loader2, PlayCircle, ShieldCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,12 @@ import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import type { TranslationKeys } from '@/lib/i18n';
 import { saveTripHistory } from '@/services/historyService';
-import type { Trip } from '@/types';
+import { getDriverProfile } from '@/services/profileService';
+import { getVehicleById } from '@/services/vehicleService';
+import type { Trip, UserProfile, Vehicle } from '@/types';
+import StatCard from '@/components/ui/stat-card';
+import { Badge } from '@/components/ui/badge';
+
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 const PASSENGER_PICKUP = { lat: 38.74, lng: -9.15 };
@@ -44,9 +49,9 @@ type State = {
 type Action =
   | { type: 'TOGGLE_ONLINE'; payload: boolean }
   | { type: 'TOGGLE_SIMULATION' }
-  | { type: 'START_SIMULATION'; payload: 'request' } // Added payload to indicate the initial step
+  | { type: 'START_SIMULATION'; payload: 'request' }
   | { type: 'ACCEPT_RIDE' }
-  | { type: 'SIMULATION_STEP', payload: State['simulationStep'] } // Added for clearer simulation step transitions
+  | { type: 'SIMULATION_STEP', payload: State['simulationStep'] } 
   | { type: 'DECLINE_RIDE' }
   | { type: 'ARRIVE_AT_PICKUP' }
   | { type: 'START_TRIP_TO_DESTINATION' }
@@ -56,7 +61,6 @@ type Action =
   | { type: 'SET_STATUS_MESSAGE_KEY', payload: TranslationKeys };
   
 const getInitialState = (): State => ({
-  isRideActive: false, // Track if a ride is currently active
   isOnline: false,
   isSimulating: false,
   simulationStep: 'idle',
@@ -64,31 +68,6 @@ const getInitialState = (): State => ({
   directions: null,
   statusMessageKey: 'driver_status_offline' as TranslationKeys,
 });
-
-async function handleFinishRide() {
-    // Assuming these IDs are available in the component state or context
-    // Replace with actual logic to get driverId, passengerId, vehicleId
-    const finalTripData: Omit<Trip, 'id'> = {
-        type: 'trip',
-        passengerName: tripData.passengerName!,
-        date: new Date().toISOString(),
-        value: tripData.value!,
-        status: 'completed',
-        originAddress: tripData.originAddress!,
-        destinationAddress: tripData.destinationAddress!,
-        distance: tripData.distance!,
-        duration: tripData.duration!,
-        passengerId: 'mock_passenger_id', // Replace with actual passenger ID
-        vehicleId: 'mock_vehicle_id', // Replace with actual vehicle ID
-        driverId: 'mock_driver_id', // Replace with actual driver ID
-    };
-    try {
-        await saveTripHistory(finalTripData);
-        console.log("Trip history saved successfully!");
-    } catch (error) {
-        console.error("Failed to save trip history:", error);
-    }
-}
 
 
 function simulationReducer(state: State, action: Action): State {
@@ -99,38 +78,32 @@ function simulationReducer(state: State, action: Action): State {
             const isSimulating = !state.isSimulating;
             if (isSimulating && state.isOnline) {
                  return {
-                    ...state, // Keep current online status and position
+                    ...state,
                     isOnline: state.isOnline,
                     isSimulating,
                     simulationStep: 'request',
                     statusMessageKey: 'driver_status_new_request',
                     vehiclePosition: state.vehiclePosition,
-                    isRideActive: true, // Mark ride as active during simulation
                 };
             }
             return {
-                ...state, // Keep current online status and position
+                ...state,
                 isOnline: state.isOnline,
                 isSimulating: false,
                 statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline',
                 vehiclePosition: state.vehiclePosition,
-                isRideActive: false, // No active ride when simulation is off
             };
         case 'ACCEPT_RIDE':
-            return { ...state, simulationStep: 'enroute_to_pickup', statusMessageKey: 'driver_status_pickup_enroute', isRideActive: true };
+            return { ...state, simulationStep: 'enroute_to_pickup', statusMessageKey: 'driver_status_pickup_enroute' };
         case 'DECLINE_RIDE':
-             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting', isRideActive: false };
+             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting' };
         case 'ARRIVE_AT_PICKUP':
             return { ...state, simulationStep: 'at_pickup', statusMessageKey: 'driver_status_pickup_arrived' };
         case 'START_TRIP_TO_DESTINATION':
             return { ...state, simulationStep: 'enroute_to_destination', statusMessageKey: 'driver_status_destination_enroute' };
         case 'FINISH_RIDE':
-            // The handleFinishRide function already contains the Firestore saving logic
-            // We don't need to call it here directly in the reducer
             return { ...getInitialState(), isOnline: state.isOnline, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline', isSimulating: state.isSimulating };
          case 'SIMULATION_STEP':
-            // This case is specifically for updating the simulation step from effects
-            handleFinishRide();
             return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline'};
         case 'SET_VEHICLE_POSITION':
             return { ...state, vehiclePosition: action.payload };
@@ -150,10 +123,53 @@ export default function DriverDashboardPage() {
   const { t } = useAppContext();
   const [state, dispatch] = useReducer(simulationReducer, getInitialState());
   const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessageKey } = state;
+  const [driver, setDriver] = useState<UserProfile | null>(null);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('stand');
   const { formatCurrency } = useCurrency();
+
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        const driverProfile = await getDriverProfile();
+        setDriver(driverProfile);
+        if (driverProfile?.activeVehicleId) {
+            const vehicleData = await getVehicleById(driverProfile.activeVehicleId);
+            setVehicle(vehicleData);
+        }
+        setLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const handleFinishRide = async () => {
+    if (!driver || !vehicle) return;
+
+    const finalTripData: Omit<Trip, 'id'> = {
+        type: 'trip',
+        passengerName: tripData.passengerName!,
+        date: new Date().toISOString(),
+        value: tripData.value!,
+        status: 'completed',
+        originAddress: tripData.originAddress!,
+        destinationAddress: tripData.destinationAddress!,
+        distance: tripData.distance!,
+        duration: tripData.duration!,
+        passengerId: 'mock_passenger_id',
+        vehicleId: vehicle.id,
+        driverId: driver.id!,
+    };
+    try {
+        await saveTripHistory(finalTripData);
+        dispatch({ type: 'SIMULATION_STEP', payload: 'idle' });
+        console.log("Trip history saved successfully!");
+    } catch (error) {
+        console.error("Failed to save trip history:", error);
+    }
+  };
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
     if (typeof window.google === 'undefined') return;
@@ -210,17 +226,17 @@ export default function DriverDashboardPage() {
     }, [simulationStep, vehiclePosition]);
 
     useEffect(() => {
-        const checkArrival = (target: google.maps.LatLngLiteral, nextStep: Action['type']) => {
+        const checkArrival = (target: google.maps.LatLngLiteral, nextStepAction: Action) => {
             const distance = Math.sqrt(Math.pow(vehiclePosition.lat - target.lat, 2) + Math.pow(vehiclePosition.lng - target.lng, 2));
             if (distance < 0.001) {
-                dispatch({ type: nextStep } as Action);
+                dispatch(nextStepAction);
             }
         };
 
         if (simulationStep === 'enroute_to_pickup') {
-            checkArrival(PASSENGER_PICKUP, 'ARRIVE_AT_PICKUP'); // Assuming arrival triggers ARRIVE_AT_PICKUP
+            checkArrival(PASSENGER_PICKUP, { type: 'ARRIVE_AT_PICKUP' });
         } else if (simulationStep === 'enroute_to_destination') {            
-            checkArrival(TRIP_DESTINATION, 'FINISH_RIDE');
+            checkArrival(TRIP_DESTINATION, { type: 'FINISH_RIDE' });
         }
     }, [vehiclePosition, simulationStep]);
   
@@ -290,6 +306,9 @@ export default function DriverDashboardPage() {
     }
   };
 
+  if (loading) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
+  }
 
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
@@ -307,6 +326,13 @@ export default function DriverDashboardPage() {
         </div>
         <div className="md:col-span-1 flex flex-col gap-6">
             
+            <div className="grid grid-cols-2 gap-4">
+                <StatCard icon={Star} title={driver?.rating?.toFixed(1) || 'N/A'} subtitle="Sua Avaliação"/>
+                <StatCard icon={ShieldCheck} title={vehicle?.plate || 'N/A'} subtitle="Veículo Ativo">
+                    {vehicle && <Badge>{t(`status_${vehicle.status}`)}</Badge>}
+                </StatCard>
+            </div>
+
             {isSimulating && renderCurrentActionCard()}
             
             <Card>
@@ -332,13 +358,13 @@ export default function DriverDashboardPage() {
                         <Label className="font-semibold">{t('driver_service_types_label')}:</Label>
                         <div className="space-y-3 mt-3">
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="passengers" checked={services.passengers} onCheckedChange={() => handleServiceChange('passengers')} />
+                            <Checkbox id="passengers" checked={services.passengers} onCheckedChange={() => handleServiceChange('passengers')} disabled={!vehicle?.allowedServices.includes('passengers')} />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
                             <Car className="h-4 w-4" /> {t('driver_service_taxi')}
                             </Label>
                         </div>
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={() => handleServiceChange('deliveries')} />
+                            <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={() => handleServiceChange('deliveries')} disabled={!vehicle?.allowedServices.includes('deliveries')} />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
                             <Package className="h-4 w-4" /> {t('driver_service_delivery')}
                             </Label>
