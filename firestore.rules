@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -11,78 +10,75 @@ service cloud.firestore {
 
     // Helper function to check if the user is the owner of the document
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Helper function to check user role from their profile
+    // Helper function to get user role from their profile
     function getRole(userId, role) {
       return get(/databases/$(database)/documents/$(role)s/$(userId)).data.role == role;
     }
-
-    // Profiles can be read by any authenticated user, but only updated by the owner.
-    match /passengers/{userId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isOwner(userId);
+    
+    // Rules for Passenger profiles
+    match /passengers/{passengerId} {
+      allow read, update: if isOwner(passengerId);
+      allow create: if isAuthenticated();
     }
 
-    match /drivers/{userId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isOwner(userId);
+    // Rules for Driver profiles
+    match /drivers/{driverId} {
+      allow read: if isAuthenticated(); // Passengers need to read some driver data
+      allow update: if isOwner(driverId);
+      allow create: if isAuthenticated();
     }
     
-    match /fleet-managers/{userId} {
-        allow read: if isAuthenticated();
-        allow create, update, delete: if isOwner(userId);
-    }
-    
-    // Ride Requests
-    match /rideRequests/{rideId} {
-      // Passengers can create requests and read/update their own requests.
-      // Drivers can read all pending requests and update requests they have accepted.
-      allow read: if isAuthenticated();
-      allow create: if isOwner(resource.data.passengerId);
-      allow update: if (isOwner(resource.data.passengerId) && request.resource.data.status == 'cancelled') || 
-                       (isAuthenticated() && getRole(request.auth.uid, 'driver'));
+    // Rules for Fleet Manager profiles
+    match /fleet-managers/{managerId} {
+      allow read, update: if isOwner(managerId);
+      allow create: if isAuthenticated();
     }
 
-    // Trips collection (history)
-    match /trips/{tripId} {
-        // Only the passenger or driver involved can read it.
-        // Trips are created by the server-side logic (or a trusted role), so creation is restricted.
-        allow read: if isAuthenticated() && (isOwner(resource.data.passengerId) || isOwner(resource.data.driverId));
-        allow create: if isAuthenticated(); // Should be locked down further in production with Cloud Functions
-        allow update, delete: if false; // History should be immutable
-    }
-
-    // Messages within a ride
-    match /messages/{messageId} {
-        // Only passenger or driver involved in the ride can read/write messages
-        allow read, write: if isAuthenticated() && 
-                             (get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid ||
-                              get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid);
-    }
-    
-     // Vehicles can be read by anyone, but only created/updated by their driver owner or a fleet manager.
+    // Rules for Vehicles
     match /vehicles/{vehicleId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAuthenticated() && getRole(request.auth.uid, 'driver');
+        // Allow any authenticated user to read vehicle data (e.g., passenger checking car details)
+        allow read: if isAuthenticated(); 
+        // Only the driver associated with the vehicle can update it
+        allow update: if isAuthenticated() && request.auth.uid == resource.data.driverId;
+        // Allow any authenticated user to create a vehicle record initially
+        allow create: if isAuthenticated();
     }
 
-    // Promotions can be read by anyone, but only managed by drivers or fleet managers
-    match /driver_promotions/{promoId} {
-        allow read: if isAuthenticated();
-        allow create, update, delete: if isAuthenticated() && getRole(request.auth.uid, 'driver');
+    // Rules for Ride Requests
+    match /rideRequests/{requestId} {
+        // Allow read for the involved passenger or driver
+        allow read: if isAuthenticated() && 
+                      (isOwner(resource.data.passengerId) || (resource.data.driverId != null && isOwner(resource.data.driverId)));
+                      
+        // Allow any authenticated user to create a ride request
+        allow create: if isAuthenticated();
+
+        // Allow passenger to cancel, or driver to accept/update
+        allow update: if isAuthenticated() &&
+                        (isOwner(resource.data.passengerId) || (isOwner(request.resource.data.driverId)));
     }
-     match /fleet_promotions/{promoId} {
-        allow read: if isAuthenticated();
-        allow create, update, delete: if isAuthenticated() && getRole(request.auth.uid, 'fleet-manager');
+
+    // Rules for Messages
+    match /messages/{messageId} {
+        // Messages can only be read by the passenger or driver involved in the ride
+        allow read: if isAuthenticated() &&
+                      get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid ||
+                      get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid;
+                      
+        // Messages can only be created by the passenger or driver involved in the ride
+        allow create: if isAuthenticated() &&
+                       (request.resource.data.senderId == request.auth.uid);
     }
     
-    // Taxi stands can be read by anyone, but only managed by drivers or fleet managers
-    match /taxi_stands/{standId} {
+    // Rules for Promotions
+    match /{role}_promotions/{promoId} {
+        // Let's assume for now that all authenticated users can read promotions
         allow read: if isAuthenticated();
-        allow create, update, delete: if isAuthenticated() && (getRole(request.auth.uid, 'driver') || getRole(request.auth.uid, 'fleet-manager'));
+        // Only allow write access for specific roles if needed (e.g. drivers/fleet managers)
+        allow write: if isAuthenticated() && (getRole(request.auth.uid, 'driver') || getRole(request.auth.uid, 'fleet-manager'));
     }
-
   }
 }
