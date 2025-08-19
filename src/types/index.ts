@@ -48,14 +48,6 @@ export interface Message {
     timestamp: any; // Use any for firebase.firestore.FieldValue or Date for now
 }
 
-export interface Vehicle {
-    id: string; // Firestore document ID
-    model: string;
-    plate: string;
-    type: 'taxi' | 'delivery' | 'mototaxi'; // Or other relevant types
-    status: 'active' | 'pending' | 'inactive';
-    driverId?: string; // ID of the driver associated with this vehicle (optional, if a vehicle can be unassigned)
-}
 
 export interface RideRequest {
  id: string;
@@ -63,7 +55,7 @@ export interface RideRequest {
  origin: string; // Using string for simplicity based on tripData in driver page
  destination: string; // Using string for simplicity
  serviceType: 'taxi' | 'delivery' | 'mototaxi';
- status: 'pending' | 'searching' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+ status: 'pending' | 'searching' | 'accepted' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled';
  timestamp: any; // Use any for firebase.firestore.FieldValue for now
  driverId?: string;
  vehicleId?: string;
@@ -72,7 +64,7 @@ export interface RideRequest {
 
 export interface Vehicle {
     id: string;
-    driverId: string;
+    driverId?: string;
     make: string;
     model: string;
     year: string;

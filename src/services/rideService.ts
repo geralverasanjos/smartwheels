@@ -32,7 +32,7 @@ export const getPendingRideRequests = async (): Promise<RideRequest[]> => {
         const rideRequestsRef = collection(db, 'rideRequests');
         const q = query(
             rideRequestsRef,
-            where('status', 'in', ['pending', 'searching']),
+            where('status', '==', 'pending'),
             orderBy('timestamp', 'asc')
         );
         const querySnapshot = await getDocs(q);
