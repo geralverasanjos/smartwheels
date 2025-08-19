@@ -16,12 +16,9 @@ export default function PassengerPanelLayout({ children }: { children: ReactNode
       return; 
     }
 
-    // user is null, meaning not logged in.
-    if (user === null) {
+    // user is null (not logged in) or not a passenger, redirect to the correct login page.
+    if (user === null || user.role !== 'passenger') {
       router.push('/auth?role=passenger');
-    } else if (user.role !== 'passenger') {
-      // user is logged in, but not a passenger. Redirect to the generic auth page.
-      router.push('/auth');
     }
   }, [user, router]);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 import { auth } from '@/lib/firebase';
@@ -49,12 +49,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const profileData = await getUserProfileByAuthId(firebaseUser.uid);
-        if (profileData) {
-          setUser(profileData);
-        } else {
-          // Authenticated but no profile in DB, treat as not logged in for app purposes
-          setUser(null); 
-        }
+        setUser(profileData);
       } else {
         // User logged out
         setUser(null);
