@@ -15,11 +15,8 @@ export default function FleetManagerPanelLayout({ children }: { children: ReactN
       return;
     }
 
-    // user is null, meaning not logged in. Redirect to the fleet manager login page.
-    if (user === null) {
-      router.push('/auth?role=fleet-manager'); 
-    } else if (user.role !== 'fleet-manager') {
-      // user is logged in, but not a fleet manager. Redirect to the correct login.
+    // user is null (not logged in) or not a fleet manager. Redirect to the fleet manager login page.
+    if (user === null || user.role !== 'fleet-manager') {
       router.push('/auth?role=fleet-manager'); 
     }
   }, [user, router]);

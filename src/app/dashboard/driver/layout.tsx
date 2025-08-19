@@ -16,11 +16,8 @@ export default function DriverPanelLayout({ children }: { children: ReactNode })
       return;
     }
 
-    // user is null, meaning not logged in. Redirect to login for driver role.
-    if (user === null) {
-      router.push('/auth?role=driver');
-    } else if (user.role !== 'driver') {
-      // user is logged in, but not a driver. Redirect to the driver login page.
+    // user is null (not logged in) or not a driver. Redirect to the driver login page.
+    if (user === null || user.role !== 'driver') {
       router.push('/auth?role=driver');
     }
   }, [user, router]);
