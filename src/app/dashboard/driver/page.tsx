@@ -1,35 +1,35 @@
+
 'use client';
 
 import { useState, useEffect, useReducer, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, User, Star, Loader2, PlayCircle, ShieldCheck } from 'lucide-react';
-import { Separator } from '@radix-ui/react-separator';
+import { Car, Package, User, Star, Loader2, PlayCircle, ShieldCheck, CheckCircle, X } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import Map from '@/components/map';
-import { Button } from '@/components/ui/button'; // Ensure Button is imported
+import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/lib/currency';
 import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { TranslationKeys } from '@/lib/i18n';
 import { saveTripHistory } from '@/services/historyService';
-import { getDriverProfile } from '@/services/profileService';
+import { getDriverProfile, getProfileByIdAndRole } from '@/services/profileService';
 import { getPendingRideRequests, updateRideStatus, acceptRideRequest } from '@/services/rideService';
-import { getVehicleById } from '@/services/vehicleService'; // Ensure getVehicleById is imported
-import type { Trip, UserProfile, Vehicle } from '@/types';
-import { getProfileByIdAndRole } from '@/services/profileService'; // Import the profile fetching function
-import type { Message } from '@/types';
-import { sendMessage } from '@/services/chatService'; // Import the sendMessage function
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // Import Avatar components
+import { getVehicleById } from '@/services/vehicleService';
+import type { Trip, UserProfile, Vehicle, Message, RideRequest } from '@/types';
+import { sendMessage } from '@/services/chatService';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import StatCard from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { collection, query, where, orderBy, onSnapshot, doc } from 'firebase/firestore';
-import { toast } from '@/components/ui/use-toast';
-// Simulation Data - REPLACE WITH REAL DATA FROM Firestore
+import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 const PASSENGER_PICKUP = { lat: 38.74, lng: -9.15 };
 const TRIP_DESTINATION = { lat: 38.725, lng: -9.13 };
@@ -43,16 +43,14 @@ const tripData: Partial<Trip> = {
     duration: 15, // minutes
 };
 
-
 type State = {
   isOnline: boolean;
   isSimulating: boolean;
-  simulationStep: 'idle' | 'request' | 'enroute_to_pickup' | 'at_pickup' | 'enroute_to_destination' | 'at_destination' | 'ride_accepted';
+  simulationStep: 'idle' | 'request' | 'enroute_to_pickup' | 'at_pickup' | 'enroute_to_destination' | 'at_destination' | 'ride_accepted' | 'trip_inprogress';
   vehiclePosition: { lat: number; lng: number };
   directions: google.maps.DirectionsResult | null;
   statusMessageKey: TranslationKeys;
 };
-
 
 type Action =
   | { type: 'TOGGLE_ONLINE'; payload: boolean }
@@ -77,7 +75,6 @@ const getInitialState = (): State => ({
   statusMessageKey: 'driver_status_offline' as TranslationKeys,
 });
 
-
 function simulationReducer(state: State, action: Action): State {
     switch (action.type) {
         case 'TOGGLE_ONLINE':
@@ -85,33 +82,30 @@ function simulationReducer(state: State, action: Action): State {
         case 'TOGGLE_SIMULATION':
             const isSimulating = !state.isSimulating;
             if (isSimulating && state.isOnline) {
- return {
+                return {
                     ...state,
-                    isOnline: state.isOnline,
                     isSimulating,
                     simulationStep: 'request',
                     statusMessageKey: 'driver_status_new_request',
-                    vehiclePosition: state.vehiclePosition,
                 };
             }
             return {
                 ...state,
-                isOnline: state.isOnline,
                 isSimulating: false,
+                simulationStep: 'idle',
                 statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline',
-                vehiclePosition: state.vehiclePosition,
             };
         case 'ACCEPT_RIDE':
- return { ...state, simulationStep: 'ride_accepted', statusMessageKey: 'driver_status_pickup_enroute' };
+            return { ...state, simulationStep: 'ride_accepted', statusMessageKey: 'driver_status_pickup_enroute' };
         case 'DECLINE_RIDE':
-             return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting' };
+            return { ...state, simulationStep: 'idle', statusMessageKey: 'driver_status_waiting' };
         case 'ARRIVE_AT_PICKUP':
             return { ...state, simulationStep: 'at_pickup', statusMessageKey: 'driver_status_pickup_arrived' };
         case 'START_TRIP_TO_DESTINATION':
-            return { ...state, simulationStep: 'enroute_to_destination', statusMessageKey: 'driver_status_destination_enroute' };
+            return { ...state, simulationStep: 'trip_inprogress', statusMessageKey: 'driver_status_destination_enroute' };
         case 'FINISH_RIDE':
-            return { ...getInitialState(), isOnline: state.isOnline, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline', isSimulating: state.isSimulating };
-         case 'SIMULATION_STEP':
+            return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline' };
+        case 'SIMULATION_STEP':
             return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline'};
         case 'SET_VEHICLE_POSITION':
             return { ...state, vehiclePosition: action.payload };
@@ -120,15 +114,15 @@ function simulationReducer(state: State, action: Action): State {
         case 'SET_STATUS_MESSAGE_KEY':
             return { ...state, statusMessageKey: action.payload };
         case 'START_SIMULATION':
-            return { ...state, statusMessageKey: action.payload };
+            return { ...state, simulationStep: 'request', statusMessageKey: 'driver_status_new_request' };
         default:
             return state;
     }
 }
 
-
 export default function DriverDashboardPage() {
   const { t } = useAppContext();
+  const { toast } = useToast();
   const [state, dispatch] = useReducer(simulationReducer, getInitialState());
   const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessageKey } = state;
   const [driver, setDriver] = useState<UserProfile | null>(null);
@@ -171,34 +165,29 @@ export default function DriverDashboardPage() {
     }
     fetchPendingRequests();
     const interval = setInterval(fetchPendingRequests, 10000); // Fetch every 10 seconds
+    return () => clearInterval(interval);
   }, [isOnline]);
   
-  // Listen for messages for the active ride
-useEffect(() => {
+  useEffect(() => {
     let unsubscribe: () => void;
-
     if (activeRideId) {
         const messagesCollectionRef = collection(db, 'messages');
-        const messagesQuery = query(
+        const q = query(
             messagesCollectionRef,
             where('rideId', '==', activeRideId),
             orderBy('timestamp', 'asc')
         );
-
-        unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+        unsubscribe = onSnapshot(q, (snapshot) => {
             const newMessages = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             } as Message));
             setMessages(newMessages);
-        }, (error) => {
-            console.error("Error listening to messages:", error);
         });
     }
-    return () => unsubscribe && unsubscribe(); // Cleanup listener on component unmount or activeRideId change
-}, [activeRideId]);
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, [activeRideId]);
 
-  // Listen for activeRideId to fetch passenger profile
   useEffect(() => {
     const fetchPassengerProfile = async () => {
       if (activeRideId) {
@@ -208,24 +197,28 @@ useEffect(() => {
 
           if (rideSnap.exists() && rideSnap.data()?.passengerId) {
             const passengerId = rideSnap.data().passengerId;
-            const profile = await getProfileByIdAndRole(passengerId, 'passenger'); // Assuming getProfileByIdAndRole exists
+            const profile = await getProfileByIdAndRole(passengerId, 'passenger');
             setAssignedPassengerProfile(profile);
           }
         } catch (error) {
           console.error("Error fetching passenger profile:", error);
         }
       } else {
-        setAssignedPassengerProfile(null); // Clear passenger profile when ride ends
+        setAssignedPassengerProfile(null);
       }
     };
     fetchPassengerProfile();
-}, [activeRideId]);
+  }, [activeRideId]);
+
   const handleFinishRide = async () => {
-    if (!driver || !vehicle) return;
+    if (!driver || !vehicle || !activeRideId) {
+      toast({ title: t('error_title'), description: t('driver_finish_no_data'), variant: "destructive" });
+      return;
+    }
 
     const finalTripData: Omit<Trip, 'id'> = {
         type: 'trip',
-        passengerName: tripData.passengerName!,
+        passengerName: assignedPassengerProfile?.name || tripData.passengerName!,
         date: new Date().toISOString(),
         value: tripData.value!,
         status: 'completed',
@@ -233,16 +226,25 @@ useEffect(() => {
         destinationAddress: tripData.destinationAddress!,
         distance: tripData.distance!,
         duration: tripData.duration!,
-        passengerId: 'mock_passenger_id',
+        passengerId: assignedPassengerProfile?.id || 'mock_passenger_id',
         vehicleId: vehicle.id,
         driverId: driver.id!,
     };
     try {
+        await updateRideStatus(activeRideId, 'completed');
+        console.log(`Ride request ${activeRideId} status updated to completed`);
+        toast({ title: t('trip_completed_title'), description: t('trip_completed_desc') });
+
         await saveTripHistory(finalTripData);
-        dispatch({ type: 'SIMULATION_STEP', payload: 'idle' });
         console.log("Trip history saved successfully!");
+        
+        dispatch({ type: 'FINISH_RIDE' });
+        setActiveRideId(null);
+        setAssignedPassengerProfile(null);
+        setMessages([]);
     } catch (error) {
-        console.error("Failed to save trip history:", error);
+        console.error("Failed to finish ride or save history:", error);
+        toast({ title: t('error_title'), description: t('error_finish_ride_failed'), variant: "destructive" });
     }
   };
   
@@ -253,7 +255,7 @@ useEffect(() => {
     }
     
     const driverId = driver.id!;
-    const vehicleId = driver.activeVehicleId; // Get vehicleId from driver profile
+    const vehicleId = driver.activeVehicleId;
 
     if (!vehicleId) {
         toast({ title: t('error_title'), description: t('driver_accept_no_vehicle'), variant: "destructive" });
@@ -262,26 +264,30 @@ useEffect(() => {
 
     try {
       await acceptRideRequest(requestId, driverId, vehicleId);
- setActiveRideId(requestId);
+      setActiveRideId(requestId);
       console.log(`Ride request ${requestId} accepted successfully!`);
- toast({ title: t('request_accepted_title'), description: t('request_accepted_desc') }); // Optional success toast
- dispatch({ type: 'ACCEPT_RIDE' });
+      toast({ title: t('request_accepted_title'), description: t('request_accepted_desc') });
+      dispatch({ type: 'ACCEPT_RIDE' });
       setPendingRequests(prevRequests => prevRequests.filter(req => req.id !== requestId));
+    } catch (error) {
+        console.error('Error accepting ride request:', error);
+        toast({ title: t('error_title'), description: t('error_accept_ride_failed'), variant: "destructive" });
     }
   };
   
   const handleStartTrip = async () => {
       if (!activeRideId) {
           toast({ title: t('error_title'), description: t('driver_start_no_ride'), variant: "destructive" });
+          return;
       }
       
       try {
           await updateRideStatus(activeRideId, 'in_progress');
           console.log(`Ride request ${activeRideId} status updated to in_progress`);
           toast({ title: t('trip_started_title'), description: t('trip_started_desc') });
-          dispatch({ type: 'START_TRIP_TO_DESTINATION' }); // Dispatch action to update UI state
+          dispatch({ type: 'START_TRIP_TO_DESTINATION' });
       } catch (error) {
- console.error('Error starting trip:', error);
+          console.error('Error starting trip:', error);
           toast({ title: t('error_title'), description: t('error_start_trip_failed'), variant: "destructive" });
       }
   }
@@ -296,19 +302,13 @@ useEffect(() => {
       await updateRideStatus(activeRideId, 'cancelled');
       console.log(`Ride request ${activeRideId} status updated to cancelled`);
       toast({ title: t('ride_cancelled_title'), description: t('ride_cancelled_desc') });
-
-      // Dispatch the UI action to reset the state after cancellation
-      // This might be the same as FINISH_RIDE or a specific CANCEL_RIDE action
-      dispatch({ type: 'FINISH_RIDE' }); // Assuming FINISH_RIDE resets state to waiting
-      setActiveRideId(null); // Clear the active ride ID
-
+      dispatch({ type: 'FINISH_RIDE' });
+      setActiveRideId(null);
     } catch (error) {
       console.error('Error cancelling trip:', error);
       toast({ title: t('error_title'), description: t('error_cancel_failed'), variant: "destructive" });
     }
   }
-  
-
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
     if (typeof window.google === 'undefined') return;
@@ -331,14 +331,16 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    if (simulationStep === 'enroute_to_pickup') {
-        handleDirections(vehiclePosition, PASSENGER_PICKUP);
-    } else if (simulationStep === 'enroute_to_destination') {
-        handleDirections(vehiclePosition, TRIP_DESTINATION);
-    } else {
-        dispatch({ type: 'SET_DIRECTIONS', payload: null });
+    if (isSimulating) {
+        if (simulationStep === 'enroute_to_pickup' || simulationStep === 'ride_accepted') {
+            handleDirections(vehiclePosition, PASSENGER_PICKUP);
+        } else if (simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') {
+            handleDirections(vehiclePosition, TRIP_DESTINATION);
+        } else {
+            dispatch({ type: 'SET_DIRECTIONS', payload: null });
+        }
     }
-  }, [simulationStep, handleDirections, vehiclePosition]);
+  }, [isSimulating, simulationStep, handleDirections, vehiclePosition]);
 
 
     useEffect(() => {
@@ -354,15 +356,17 @@ useEffect(() => {
                 });
             }, 1000);
         };
-
-        if (simulationStep === 'enroute_to_pickup') {
- interval = moveVehicle(PASSENGER_PICKUP);
-        } else if (simulationStep === 'enroute_to_destination') {
-            interval = moveVehicle(TRIP_DESTINATION);
+        
+        if (isSimulating) {
+            if (simulationStep === 'enroute_to_pickup' || simulationStep === 'ride_accepted') {
+                interval = moveVehicle(PASSENGER_PICKUP);
+            } else if (simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') {
+                interval = moveVehicle(TRIP_DESTINATION);
+            }
         }
-
+        
         return () => clearInterval(interval);
-    }, [simulationStep, vehiclePosition]);
+    }, [isSimulating, simulationStep, vehiclePosition]);
 
    useEffect(() => {
         const checkArrival = (target: google.maps.LatLngLiteral, nextStepAction: Action) => {
@@ -371,17 +375,19 @@ useEffect(() => {
                 dispatch(nextStepAction);
             }
         };
-    
-        if (simulationStep === 'enroute_to_pickup') {
-            checkArrival(PASSENGER_PICKUP, { type: 'ARRIVE_AT_PICKUP' });
-        } else if (simulationStep === 'enroute_to_destination') {            
-            checkArrival(TRIP_DESTINATION, { type: 'FINISH_RIDE' });
+        
+        if (isSimulating) {
+            if (simulationStep === 'enroute_to_pickup' || simulationStep === 'ride_accepted') {
+                checkArrival(PASSENGER_PICKUP, { type: 'ARRIVE_AT_PICKUP' });
+            } else if (simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') {            
+                checkArrival(TRIP_DESTINATION, { type: 'FINISH_RIDE' });
+            }
         }
-    }, [vehiclePosition, simulationStep]);
+    }, [isSimulating, vehiclePosition, simulationStep]);
   
  const renderPendingRequestsCard = () => {
     if (!isOnline || isSimulating) return null;
-    if (activeRideId) return null; // Hide pending requests if a ride is active
+    if (activeRideId) return null;
     return (
       <Card>
         <CardHeader>
@@ -401,7 +407,7 @@ useEffect(() => {
                   <p className="text-sm text-muted-foreground">
                     {t('to')}: {request.destination}
                   </p>
- <Button size="sm" className="mt-2" onClick={() => handleAcceptRequest(request.id)}>{t('accept_button')}</Button>
+                  <Button size="sm" className="mt-2" onClick={() => handleAcceptRequest(request.id)}>{t('accept_button')}</Button>
                 </div>
               ))}
             </div>
@@ -409,6 +415,8 @@ useEffect(() => {
         </CardContent>
       </Card>
     );
+  }
+
   const handleServiceChange = (service: keyof typeof services) => {
     setServices(prev => ({ ...prev, [service]: !prev[service] }));
   };
@@ -446,184 +454,127 @@ useEffect(() => {
               </div>
               <p className="text-xl font-bold text-right">{formatCurrency(tripData.value || 0)}</p>
             </CardContent>
-            <CardContent className="flex gap-2">
+            <CardFooter className="flex gap-2">
               <Button variant="outline" className="w-full" onClick={() => dispatch({ type: 'DECLINE_RIDE' })}>{t('decline_button')}</Button>
               <Button className="w-full" onClick={() => dispatch({ type: 'ACCEPT_RIDE' })}>{t('accept_button')}</Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         );
       case 'at_pickup':
         return (
+          <Card>
+            <CardHeader>
+                <CardTitle className="text-primary">{t('driver_pickup_title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>{t('driver_pickup_desc')}</p>
+                <Button className="w-full mt-4" onClick={handleStartTrip}><PlayCircle className="mr-2"/> {t('driver_pickup_start_button')}</Button>
+            </CardContent>
+          </Card>
+        );
+      case 'ride_accepted':
+      case 'enroute_to_pickup':
+        return (
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
+                <Car className="h-10 w-10 text-primary" />
+              </div>
+              <CardTitle className="font-headline">{t('driver_enroute_title')}</CardTitle>
+              <CardDescription>{t('driver_enroute_desc', { name: assignedPassengerProfile?.name || tripData.passengerName, time: 5 })}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-32 overflow-y-auto border rounded-md p-2 mt-4">
+                  {messages.map((msg) => (
+                      <div key={msg.id} className={`text-sm mb-1 ${msg.senderId === driver?.id ? 'text-right' : 'text-left'}`}>
+                          <span className={`inline-block p-2 rounded-lg ${msg.senderId === driver?.id ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                              {msg.text}
+                          </span>
+                      </div>
+                  ))}
+              </div>
+              <div className="mt-2 space-y-2">
+                <Label htmlFor="driver-chat-input">{t('chat_label')}</Label>
+                <Textarea id="driver-chat-input" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
+                <Button className="w-full" onClick={async () => {
+                  if (!currentMessage.trim() || !activeRideId || !driver?.id) return;
+                  try {
+                    await sendMessage(activeRideId, driver.id, currentMessage);
+                    setCurrentMessage('');
+                  } catch (error) {
+                    console.error('Error sending message:', error);
+                    toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
+                  }
+                }}>{t('send_button')}</Button>
+              </div>
+              <p className="text-center text-sm text-muted-foreground mt-4">{t('pickup_label')}: {tripData.originAddress}</p>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2">
+              <Button className="w-full mt-4" onClick={handleStartTrip} disabled={simulationStep !== 'at_pickup' || !activeRideId}><PlayCircle className="mr-2" /> {t('awaiting_trip_start_button')}</Button>
+              <Button variant="destructive" className="w-full" onClick={handleCancelTrip} disabled={simulationStep !== 'enroute_to_pickup' && simulationStep !== 'ride_accepted'}><X className="mr-2" /> {t('cancel_ride_button')}</Button>
+            </CardFooter>
+          </Card>
+        );
+      case 'trip_inprogress':
+        return (
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-primary">{t('driver_pickup_title')}</CardTitle>
+                <CardHeader className="text-center">
+                    <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
+                        <Car className="h-10 w-10 text-primary" />
+                    </div>
+                    <CardTitle>{t('trip_inprogress_title')}</CardTitle>
+                    <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <p>{t('driver_pickup_desc')}</p>
-                    <Button className="w-full mt-4" onClick={() => dispatch({type: 'START_TRIP_TO_DESTINATION'})}><PlayCircle className="mr-2"/> {t('driver_pickup_start_button')}</Button>
+                <CardContent className="space-y-4">
+                    <div className="h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                        {messages.length === 0 ? (
+                            <p className="text-center text-muted-foreground">{t('chat_no_messages')}</p>
+                        ) : (
+                            messages.map((msg) => {
+                                const senderProfile = msg.senderId === driver?.id ? driver : assignedPassengerProfile;
+                                const isDriver = msg.senderId === driver?.id;
+                                return (
+                                    <div key={msg.id} className={`flex items-start gap-2 ${isDriver ? 'flex-row-reverse' : ''}`}>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={senderProfile?.avatarUrl} />
+                                            <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className={`rounded-lg p-2 max-w-[80%] ${isDriver ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                                            <p className="font-semibold text-xs">{senderProfile?.name}</p>
+                                            <p className="text-sm">{msg.text}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="driver-chat-input-inprogress">{t('chat_label')}</Label>
+                        <Textarea id="driver-chat-input-inprogress" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
+                        <Button className="w-full" onClick={async () => {
+                            if (!currentMessage.trim() || !activeRideId || !driver?.id) return;
+                            try {
+                                await sendMessage(activeRideId, driver.id, currentMessage);
+                                setCurrentMessage('');
+                            } catch (error) {
+                                console.error('Error sending message:', error);
+                                toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
+                            }
+                        }}>{t('send_button')}</Button>
+                    </div>
+                    <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {tripData.destinationAddress}</p>
                 </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                    <Button className="w-full" onClick={handleFinishRide} disabled={!activeRideId}><CheckCircle className="mr-2" /> {t('end_trip_button')}</Button>
+                    <Button variant="destructive" className="w-full" onClick={handleCancelTrip}><X className="mr-2"/> {t('cancel_trip_button')}</Button>
+                </CardFooter>
             </Card>
-        )
- case 'enroute_to_pickup':
- case 'ride_accepted': // The driver is enroute after accepting
- return (
- <Card>
- <CardHeader className="text-center">
- <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
- <Car className="h-10 w-10 text-primary" />
- </div>
- <CardTitle className="font-headline">{t('driver_enroute_title')}</CardTitle>
- <CardDescription>{t('driver_enroute_desc', { name: tripData.passengerName, time: 5 })}</CardDescription>
- </CardHeader>
- <CardContent>
- <p className="text-center text-sm text-muted-foreground">{t('passenger_label')}: {tripData.passengerName}</p>{/* Add messages display area */}
-                <div className="h-32 overflow-y-auto border rounded-md p-2 mt-4">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`text-sm mb-1 ${msg.senderId === driver?.id ? 'text-right' : 'text-left'}`}>
-                            <span className={`inline-block p-2 rounded-lg ${msg.senderId === driver?.id ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
-                                {msg.text}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-                {/* Chat Input */}
-                <div className="mt-2 space-y-2">
- <Label htmlFor="driver-chat-input">{t('chat_label')}</Label>
- <Textarea
- id="driver-chat-input"
- value={currentMessage}
- onChange={(e) => setCurrentMessage(e.target.value)}
- />
- <Button className="w-full" onClick={async () => {
- if (!currentMessage.trim()) return; // Don't send empty messages
- if (!activeRideId) {
- toast({ title: t('error_title'), description: 'No active ride to send message.', variant: "destructive" });
- return;
- }
- const driverId = driver?.id; // Get driver ID from state
- if (!driverId) {
- toast({ title: t('error_title'), description: 'Driver not authenticated.', variant: "destructive" });
- return;
- }
- try {
- await sendMessage(activeRideId, driverId, currentMessage);
- setCurrentMessage(''); // Clear input
- } catch (error) {
- console.error('Error sending message:', error);
- toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
- }
- }}>{t('send_button')}</Button>
- </div>
- <p className="text-center text-sm text-muted-foreground">{t('pickup_label')}: {tripData.originAddress}</p>
- </CardContent>
- <CardFooter className="flex flex-col gap-2">
- {/* The button to start the trip will be enabled when simulationStep is 'at_pickup' */}
- <Button className="w-full mt-4" onClick={handleStartTrip} disabled={simulationStep !== 'at_pickup' || !activeRideId}><PlayCircle className="mr-2" /> {t('awaiting_trip_start_button')}</Button>
- <Button variant="destructive" className="w-full" onClick={handleCancelTrip} disabled={simulationStep !== 'enroute_to_pickup' && simulationStep !== 'ride_accepted'}><X className="mr-2" /> {t('cancel_ride_button')}</Button>
- </CardContent>
- </Card>);
-
- case 'trip_inprogress':
- return (
-                <Card>
-                    <CardHeader className="text-center">
-                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <Car className="h-10 w-10 text-primary" />
-                        </div>
-                        <CardTitle>{t('trip_inprogress_title')}</CardTitle>
-                        <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
- </CardHeader>
- <CardContent className="space-y-4"> {/* Adjusted CardContent for spacing */}
- {/* Chat Interface */}
- {/* Add messages display area */}
-                <div className="h-32 overflow-y-auto border rounded-md p-2 space-y-2">
-                    {messages.length === 0 ? (
-                        <p className="text-center text-muted-foreground">{t('chat_no_messages')}</p> // Placeholder if no messages
-                    ) : (
- messages.map((msg) => (
-                        <div key={msg.id} className={`text-sm ${msg.senderId === driver?.id ? 'text-right' : 'text-left'}`}>
-                           {/* Determine sender's profile */}
-                           {(() => {
-                             const senderProfile = msg.senderId === driver?.id ? driver : assignedPassengerProfile;
-                             const isDriver = msg.senderId === driver?.id;
-                             return (
-                               <div className={`flex items-start gap-2 ${isDriver ? 'flex-row-reverse' : ''}`}>
-                                 <Avatar className=\"h-8 w-8\">
-                                   <AvatarImage src={senderProfile?.avatarUrl} />
-                                   <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
-                                 </Avatar>
-                                 <div className={`rounded-lg p-2 max-w-[80%] ${isDriver ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
-                                   <p className=\"font-semibold text-xs\">{senderProfile?.name}</p>
-                                   <p className=\"text-sm\">{msg.text}</p>
-                                 </div>
-                               </div>
-                             );
-                           })()}
-                        </div>
- </div>
-                        <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {tripData.destinationAddress}</p> {/* Use tripData for destination */}
-                    </CardContent>
- {/* Chat Interface */}
-                {/* Add messages display area */}
-                <div className="h-32 overflow-y-auto border rounded-md p-2 mt-4">
-                    {messages.map((msg) => (
-                       <div key={msg.id} className={`text-sm ${msg.senderId === driver?.id ? 'text-right' : 'text-left'}`}>
-                           {/* Determine sender's profile */}
-                           {(() => {
-                             const senderProfile = msg.senderId === driver?.id ? driver : assignedPassengerProfile;
-                             const isDriver = msg.senderId === driver?.id;
-                             return (
-                               <div className={`flex items-start gap-2 ${isDriver ? 'flex-row-reverse' : ''}`}>
-                                 <Avatar className=\"h-8 w-8\">
-                                   <AvatarImage src={senderProfile?.avatarUrl} />
-                                   <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
-                                 </Avatar>
-                                 <div className={`rounded-lg p-2 max-w-[80%] ${isDriver ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
-                                   <p className=\"font-semibold text-xs\">{senderProfile?.name}</p>
-                                   <p className=\"text-sm\">{msg.text}</p>
-                                 </div>
-                               </div>
-                             );
-                           })()}
-                       </div>))}</div>
- <div className="mt-4 space-y-2">
- <Label htmlFor="driver-chat-input">{t('chat_label')}</Label>
- <Textarea
- id="driver-chat-input"
- placeholder={t('chat_placeholder')}
- value={currentMessage}
- onChange={(e) => setCurrentMessage(e.target.value)}
- />
- <Button className="w-full" onClick={async () => {
- if (!currentMessage.trim()) return; // Don't send empty messages
- if (!activeRideId) {
- toast({ title: t('error_title'), description: 'No active ride to send message.', variant: "destructive" });
- return;
- }
- const driverId = driver?.id; // Get driver ID from state
- if (!driverId) {
- toast({ title: t('error_title'), description: 'Driver not authenticated.', variant: "destructive" });
- return;
- }
- try {
- await sendMessage(activeRideId, driverId, currentMessage);
- setCurrentMessage(''); // Clear input
- } catch (error) {
- console.error('Error sending message:', error);
- toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
- }
- }}>{t('send_button')}</Button>
- </div>
-                    <CardFooter className="flex flex-col gap-2">
-                         <Button className="w-full" onClick={handleFinishRide}
-                         disabled={!activeRideId} // Disable if no active ride ID
-
-                         ><CheckCircle className="mr-2" /> {t('end_trip_button')}</Button>
-                         {/* Cancel Trip Button */}
-                         <Button variant="destructive" className="w-full" onClick={handleCancelTrip}><X className="mr-2"/> {t('cancel_trip_button')}</Button>
-                    </CardFooter>
-                </Card>);
+        );
+      default:
+        return null;
+    }
   };
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
@@ -633,11 +584,15 @@ useEffect(() => {
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
         <div className="md:col-span-2 rounded-lg bg-muted min-h-[400px] md:min-h-0 relative overflow-hidden">
             <Map>
-              {isSimulating && (
+              {isOnline && (
                 <>
                     <MarkerF position={vehiclePosition} icon={getVehicleIcon() as google.maps.Icon | null} />
-                    <MarkerF position={PASSENGER_PICKUP} label="P" />
-                    {simulationStep === 'enroute_to_destination' && <MarkerF position={TRIP_DESTINATION} label="D" />}
+                    {isSimulating && (
+                        <>
+                         <MarkerF position={PASSENGER_PICKUP} label="P" />
+                          {(simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') && <MarkerF position={TRIP_DESTINATION} label="D" />}
+                        </>
+                    )}
                 </>
               )}
               {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
@@ -646,13 +601,14 @@ useEffect(() => {
         <div className="md:col-span-1 flex flex-col gap-6">
             
             <div className="grid grid-cols-2 gap-4">
-                <StatCard icon={Star} title={driver?.rating?.toFixed(1) || 'N/A'} subtitle="Sua Avaliação"/>
-                <StatCard icon={ShieldCheck} title={vehicle?.model || 'N/A'} subtitle="Veículo Ativo">
-                    {vehicle && <Badge>{t(vehicle.status)}</Badge>}
+                <StatCard icon={Star} title={driver?.rating?.toFixed(1) || 'N/A'} subtitle={t('rating_label')}/>
+                <StatCard icon={ShieldCheck} title={vehicle?.model || 'N/A'} subtitle={t('active_vehicle_label')}>
+                    {vehicle && <Badge>{t(vehicle.status as any)}</Badge>}
                 </StatCard>
             </div>
 
-            {isSimulating && renderCurrentActionCard()}
+            {(isSimulating || activeRideId) && renderCurrentActionCard()}
+            {!isSimulating && !activeRideId && renderPendingRequestsCard()}
             
             <Card>
                 <CardHeader>
@@ -666,7 +622,7 @@ useEffect(() => {
                     </div>
                 </div>
                 <CardDescription>
-                    {isOnline ? t('driver_online_desc') : t('driver_offline_desc')}
+                    {t(statusMessageKey)}
                 </CardDescription>
                 </CardHeader>
                  {isOnline && (
@@ -728,7 +684,7 @@ useEffect(() => {
                 )}
             </Card>
 
-            {isOnline && (
+            {isOnline && !activeRideId && (
               <Card>
                 <CardHeader>
                   <CardTitle>{t('driver_queue_position_title')}</CardTitle>
@@ -746,7 +702,6 @@ useEffect(() => {
                 </CardContent>
               </Card>
             )}
-            {renderPendingRequestsCard()}
 
             <Card className="border-primary/50">
                 <CardHeader>
