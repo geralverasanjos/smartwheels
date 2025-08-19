@@ -17,3 +17,18 @@ export interface UserProfile {
     address: string;
     avatarUrl?: string;
 }
+
+export interface Trip {
+    id: string; // Firestore document ID
+    type: 'trip' | 'delivery';
+    passengerName: string;
+    driverId: string;
+    date: string; // ISO 8601 format
+    value: number;
+    earnings?: number; // Optional, can be calculated
+    status: 'completed' | 'cancelled';
+    originAddress: string;
+    destinationAddress: string;
+    distance: number; // in kilometers
+    duration: number; // in minutes
+}

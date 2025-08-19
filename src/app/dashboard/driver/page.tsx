@@ -14,10 +14,23 @@ import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/lib/currency';
 import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
+import type { TranslationKeys } from '@/lib/i18n';
+import { saveTripHistory } from '@/services/historyService';
+import type { Trip } from '@/types';
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 const PASSENGER_PICKUP = { lat: 38.74, lng: -9.15 };
 const TRIP_DESTINATION = { lat: 38.725, lng: -9.13 };
+
+const tripData: Partial<Trip> = {
+    passengerName: 'Ana Sousa',
+    value: 12.50,
+    originAddress: 'Av. da Liberdade, Lisboa',
+    destinationAddress: 'Rua Augusta, Lisboa',
+    distance: 5.2, // km
+    duration: 15, // minutes
+};
+
 
 type State = {
   isOnline: boolean;
@@ -40,8 +53,6 @@ type Action =
   | { type: 'SET_DIRECTIONS'; payload: google.maps.DirectionsResult | null }
   | { type: 'SET_STATUS_MESSAGE_KEY', payload: TranslationKeys };
   
-import type { TranslationKeys } from '@/lib/i18n';
-
 const getInitialState = (): State => ({
   isOnline: false,
   isSimulating: false,
@@ -50,6 +61,28 @@ const getInitialState = (): State => ({
   directions: null,
   statusMessageKey: 'driver_status_offline' as TranslationKeys,
 });
+
+async function handleFinishRide() {
+    const finalTripData: Omit<Trip, 'id'> = {
+        type: 'trip',
+        passengerName: tripData.passengerName!,
+        date: new Date().toISOString(),
+        value: tripData.value!,
+        status: 'completed',
+        originAddress: tripData.originAddress!,
+        destinationAddress: tripData.destinationAddress!,
+        distance: tripData.distance!,
+        duration: tripData.duration!,
+        driverId: 'mock_driver_id', // Replace with actual driver ID
+    };
+    try {
+        await saveTripHistory(finalTripData);
+        console.log("Trip history saved successfully!");
+    } catch (error) {
+        console.error("Failed to save trip history:", error);
+    }
+}
+
 
 function simulationReducer(state: State, action: Action): State {
     switch (action.type) {
@@ -83,6 +116,7 @@ function simulationReducer(state: State, action: Action): State {
         case 'START_TRIP_TO_DESTINATION':
             return { ...state, simulationStep: 'enroute_to_destination', statusMessageKey: 'driver_status_destination_enroute' };
         case 'FINISH_RIDE':
+            handleFinishRide();
             return { ...getInitialState(), isOnline: state.isOnline, isSimulating: state.isSimulating, statusMessageKey: state.isOnline ? 'driver_status_waiting' : 'driver_status_offline'};
         case 'SET_VEHICLE_POSITION':
             return { ...state, vehiclePosition: action.payload };
@@ -203,13 +237,13 @@ export default function DriverDashboardPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <User className="w-5 h-5 text-muted-foreground" />
-                <p className="font-semibold">Ana Sousa (4.8 <Star className="inline w-4 h-4 text-yellow-400 fill-yellow-400" />)</p>
+                <p className="font-semibold">{tripData.passengerName} (4.8 <Star className="inline w-4 h-4 text-yellow-400 fill-yellow-400" />)</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t('driver_request_from')}</p>
-                <p className="text-sm text-muted-foreground">{t('driver_request_to')}</p>
+                <p className="text-sm text-muted-foreground">{t('driver_request_from')} {tripData.originAddress}</p>
+                <p className="text-sm text-muted-foreground">{t('driver_request_to')} {tripData.destinationAddress}</p>
               </div>
-              <p className="text-xl font-bold text-right">{formatCurrency(12.50)}</p>
+              <p className="text-xl font-bold text-right">{formatCurrency(tripData.value || 0)}</p>
             </CardContent>
             <CardContent className="flex gap-2">
               <Button variant="outline" className="w-full" onClick={() => dispatch({ type: 'DECLINE_RIDE' })}>{t('decline_button')}</Button>
