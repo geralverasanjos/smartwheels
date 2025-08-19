@@ -33,6 +33,8 @@ import { useAppContext } from '@/contexts/app-context';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import type { UserRole } from './dashboard-layout';
+import { useSidebar } from '@/components/ui/sidebar';
+
 
 const passengerNav = [
     { href: "/dashboard/passenger", icon: LayoutGrid, labelKey: "passenger_panel_welcome_title" },
@@ -89,7 +91,14 @@ const navConfig = {
 export function DashboardSidebarNav({ role }: { role: UserRole }) {
     const { t } = useAppContext();
     const pathname = usePathname();
+    const { isMobile, setOpenMobile } = useSidebar();
     const navItems = navConfig[role];
+
+    const handleLinkClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     return (
         <>
@@ -101,7 +110,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
             <SidebarContent>
                 <SidebarMenu>
                     {navItems.map((item) => (
-                        <SidebarMenuItem key={item.href}>
+                        <SidebarMenuItem key={item.href} onClick={handleLinkClick}>
                             <Link href={item.href}>
                                 <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey as any)}>
                                     <item.icon />
@@ -114,7 +123,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
-                     <SidebarMenuItem>
+                     <SidebarMenuItem onClick={handleLinkClick}>
                         <Link href={`/dashboard/settings?from=${pathname}`}>
                             <SidebarMenuButton isActive={pathname === "/dashboard/settings"} tooltip={t('menu_settings')}>
                                 <Settings />
@@ -122,7 +131,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                             </SidebarMenuButton>
                         </Link>
                     </SidebarMenuItem>
-                    <SidebarMenuItem>
+                    <SidebarMenuItem onClick={handleLinkClick}>
                         <Link href={`/dashboard/support?from=${pathname}`}>
                             <SidebarMenuButton isActive={pathname === "/dashboard/support"} className="support-button-glow" tooltip={t('menu_support')}>
                                 <LifeBuoy />
@@ -131,7 +140,7 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                         </Link>
                     </SidebarMenuItem>
                     <SidebarSeparator />
-                     <SidebarMenuItem>
+                     <SidebarMenuItem onClick={handleLinkClick}>
                         <Link href="/">
                             <SidebarMenuButton tooltip="Logout">
                                 <LogOut />
