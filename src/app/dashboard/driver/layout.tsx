@@ -10,22 +10,27 @@ export default function DriverPanelLayout({ children }: { children: ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to login if user is not authenticated
-    // We check for `user === undefined` initially because the context might not be loaded yet.
-    // Once the context is loaded, `user` will be either a user object or `null`.
+    // Se o estado do utilizador ainda está a carregar (undefined), não fazemos nada.
     if (user === undefined) {
- // If user is authenticated but not a driver, redirect to unauthorized or their dashboard
+      return;
+    }
+
+    // Se o utilizador não está autenticado (null), redireciona para o login.
+    if (user === null) {
+      router.push('/auth');
     } else if (user.role && user.role !== 'driver') {
-      router.push('/auth'); // Redirect to your login page
+      // Se o utilizador está autenticado mas não é um motorista, redireciona.
+      // Poderíamos redirecionar para uma página de "não autorizado" ou para o painel correto.
+      router.push('/auth');
     }
   }, [user, router]);
 
-  return (
-    // Only render the layout if the user is authenticated and is a driver
-    // or if the user state is still loading (undefined)
-    <>
-      {(user === undefined || (user && user.role === 'driver')) && children}
-      <DashboardLayout role="driver">{children}</DashboardLayout>
-    </>
-  ); // Removed extra closing parenthesis
+  // Renderiza o conteúdo apenas se o utilizador for um motorista ou se o estado ainda estiver a carregar.
+  // Isto evita um piscar de ecrã do conteúdo antes do redirecionamento.
+  if (user === undefined || (user && user.role === 'driver')) {
+    return <DashboardLayout role="driver">{children}</DashboardLayout>;
+  }
+
+  // Se o utilizador não for um motorista, podemos renderizar um loader ou null enquanto redireciona.
+  return null;
 }
