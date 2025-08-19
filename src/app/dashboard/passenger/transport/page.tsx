@@ -1,3 +1,30 @@
+const handleRequestRide = async () => { // Make the function async
+      if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
+          toast({ title: t('error_title'), description: t('error_select_origin_destination'), variant: "destructive" });
+          return;
+      }
+
+      // Get the authenticated user's UID
+      const user = useAppContext().user; // Assuming user is available from context
+      if (!user || !user.id) { // Check if user and user.id exist
+          toast({ title: t('error_title'), description: 'User not authenticated.', variant: "destructive" });
+          return;
+      }
+
+      try {
+          // Call createRideRequest with the correct serviceType
+          await createRideRequest(user.id, origin.text, destination.text, selectedService as any); // Use selectedService
+          console.log('Ride request created successfully!'); // Log success
+          toast({ title: t('request_sent_title'), description: t('request_sent_desc') }); // Optional success toast
+      } catch (error) {
+          console.error('Error creating ride request:', error);
+          toast({ title: t('error_title'), description: t('error_request_failed'), variant: "destructive" }); // Error toast
+          return; // Stop the function if Firestore write fails
+      }
+
+    dispatch({ type: 'REQUEST_RIDE' });
+    handleDirections(origin.coords, destination.coords);
+  };
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -45,6 +72,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 
+import { createRideRequest } from '@/services/rideService';
 
 const paymentMethods = [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},

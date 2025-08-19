@@ -17,6 +17,7 @@ export interface UserProfile {
     nif: string;
     address: string;
     avatarUrl?: string;
+    balance: number;
     rating?: number;
     activeVehicleId?: string;
 }
@@ -37,6 +38,28 @@ export interface Trip {
     vehicleId: string; // ID of the vehicle used for the trip
     duration: number; // in minutes
 }
+
+export interface Vehicle {
+    id: string; // Firestore document ID
+    model: string;
+    plate: string;
+    type: 'taxi' | 'delivery' | 'mototaxi'; // Or other relevant types
+    status: 'active' | 'pending' | 'inactive';
+    driverId?: string; // ID of the driver associated with this vehicle (optional, if a vehicle can be unassigned)
+}
+
+export interface RideRequest {
+ id: string;
+ passengerId: string;
+ origin: string; // Using string for simplicity based on tripData in driver page
+ destination: string; // Using string for simplicity
+ serviceType: 'taxi' | 'delivery' | 'mototaxi';
+ status: 'pending' | 'searching' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+ timestamp: any; // Use any for firebase.firestore.FieldValue for now
+ driverId?: string;
+ vehicleId?: string;
+}
+
 
 export interface Vehicle {
     id: string;

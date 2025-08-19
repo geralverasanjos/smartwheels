@@ -45,6 +45,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppContext } from '@/contexts/app-context';
 
+import { createRideRequest } from '@/services/rideService';
 type Address = {
     text: string;
     coords: google.maps.LatLngLiteral | null;
