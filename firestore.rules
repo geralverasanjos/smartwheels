@@ -1,211 +1,53 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Nega o acesso a todos os documentos por defeito.
-    match /{document=**} {
-      allow read, write: if false;
+
+    // Allow public read of vehicles, but only authenticated writes
+    match /vehicles/{vehicleId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
-    // Permite que os utilizadores leiam e atualizem o seu próprio perfil.
-    // Impede a criação ou eliminação de perfis através das regras.
-    match /users/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Regras para Viagens (Trips)
-    // Permite que qualquer utilizador autenticado crie uma viagem.
-    // Permite que o passageiro ou o motorista associado à viagem a possam ler ou atualizar.
-    match /trips/{tripId} {
-      allow create: if request.auth != null;
-      allow read, update: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
-    }
-    
-    // Regras para Entregas (Deliveries)
-    // Semelhante às viagens.
-    match /deliveries/{deliveryId} {
-       allow create: if request.auth != null;
-       allow read, update: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
-    }
-
-    // Regras para Motoristas (Drivers)
-    // Permite a leitura pública dos perfis dos motoristas, mas apenas o próprio motorista pode editar.
+    // Drivers can read/write their own profile
     match /drivers/{driverId} {
-        allow read: if true;
-        allow update: if request.auth != null && request.auth.uid == driverId;
-// ... imports e admin.initializeApp() ...
-
-const db = admin.firestore();
-
-// Commission rate (e.g., 10%)
-const PLATFORM_COMMISSION_RATE = 0.10; // 10%
-
-// Cloud Function triggered when a ride request document is updated
-export const processRidePayment = functions.firestore
-  .document("rideRequests/{rideId}")
-  .onUpdate(async (change, context) => {
-    const beforeData = change.before.data();
-    const afterData = change.after.data();
-    const rideId = context.params.rideId;
-
-    // Check if the status has changed to 'completed'
-    // AND check if payment has NOT been processed yet
-    if (
-      beforeData.status !== "completed" &&
-      afterData.status === "completed" &&
-      !afterData.paymentProcessed // Check the new field
-    ) {
-      functions.logger.info(`Initiating payment processing for completed ride: ${rideId}`);
-
-      const rideValue = afterData.value; // Assuming ride value is stored here
-      const passengerId = afterData.passengerId;
-      const driverId = afterData.driverId;
-
-      // Basic validation
-      if (typeof rideValue !== "number" || !passengerId || !driverId) {
-        functions.logger.error(
-          `Missing required data for payment processing for ride ${rideId}`
-        );
-        // Consider updating the ride request status to an error state or adding an error field
-        return null; // Stop processing
-      }
-
-      const driverEarnings = rideValue * (1 - PLATFORM_COMMISSION_RATE);
-      const platformCommission = rideValue * PLATFORM_COMMISSION_RATE;
-
-      // Use a Firestore Transaction for atomic updates
-      try {
-        await db.runTransaction(async (transaction) => {
-          // Re-read the ride request document within the transaction
-          // to ensure we are working with the latest data and haven't been processed concurrently
-          const rideRequestRef = change.after.ref; // Reference to the ride request document
-          const rideRequestDoc = await transaction.get(rideRequestRef);
-          const rideRequestData = rideRequestDoc.data();
-
-          // **CRUCIAL Second Check within Transaction:**
-          // Verify status is still completed and paymentProcessed is still false
-          if (
-              !rideRequestDoc.exists ||
-              rideRequestData?.status !== 'completed' ||
-              rideRequestData?.paymentProcessed
-             ) {
-              functions.logger.info(`Ride ${rideId} already processed or status changed. Aborting transaction.`);
-              return; // Abort transaction
-          }
-
-
-          // 1. Get Passenger Profile and Debit Balance
-          const passengerRef = db.collection("passengers").doc(passengerId);
-          const passengerDoc = await transaction.get(passengerRef);
-
-          if (!passengerDoc.exists) {
-             functions.logger.error(`Passenger ${passengerId} not found for ride ${rideId}. Cannot process payment.`);
-             // Consider logging this as a critical error requiring manual intervention
-             // You might want to mark the ride request with a payment error status
-             throw new Error(`Passenger ${passengerId} not found.`); // Throw to roll back transaction
-          }
-          const currentPassengerBalance = passengerDoc.data()?.balance || 0;
-
-          // Optional: Check if passenger has enough balance if using pre-paid model
-          // if (currentPassengerBalance < rideValue) {
-          //      functions.logger.warn(`Passenger ${passengerId} has insufficient balance (${currentPassengerBalance}) for ride ${rideId} (${rideValue}).`);
-          //     // Consider marking ride with payment failed status, notifying passenger, etc.
-          //     throw new Error(`Insufficient balance for passenger ${passengerId}.`); // Throw to roll back transaction
-          // }
-
-          const newPassengerBalance = currentPassengerBalance - rideValue;
-          transaction.update(passengerRef, { balance: newPassengerBalance });
-          functions.logger.info(`Debited ${rideValue} from passenger ${passengerId}. New balance: ${newPassengerBalance}`);
-
-          // 2. Get Driver Profile and Credit Balance
-          const driverRef = db.collection("drivers").doc(driverId);
-          const driverDoc = await transaction.get(driverRef);
-
-          if (!driverDoc.exists) {
-              functions.logger.error(`Driver ${driverId} not found for ride ${rideId}. Cannot process payment earnings.`);
-              // Consider logging this as a critical error
-              // You might still want to debit passenger and log the driver's expected earnings
-              throw new Error(`Driver ${driverId} not found.`); // Throw to roll back transaction
-          }
-          const currentDriverBalance = driverDoc.data()?.balance || 0;
-          const newDriverBalance = currentDriverBalance + driverEarnings;
-          transaction.update(driverRef, { balance: newDriverBalance });
-          functions.logger.info(`Credited ${driverEarnings} to driver ${driverId}. New balance: ${newDriverBalance}`);
-
-          // 3. Record Transactions
-          const transactionsCollection = db.collection("transactions");
-
-          // Passenger Debit Transaction
-          transaction.set(transactionsCollection.doc(), {
-            userId: passengerId,
-            type: "ride_payment",
-            amount: -rideValue, // Negative amount for debit
-            currency: afterData.currency || "EUR", // Use currency from ride data if available
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            rideId: rideId,
-            description: `Payment for ride ${rideId}`,
-          });
-           functions.logger.info(`Recorded debit transaction for passenger ${passengerId} for ride ${rideId}`);
-
-
-          // Driver Credit Transaction
-          transaction.set(transactionsCollection.doc(), {
-            userId: driverId,
-            type: "ride_earnings", // Or 'ride_payment_credit'
-            amount: driverEarnings, // Positive amount for credit
-            currency: afterData.currency || "EUR",
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            rideId: rideId,
-            description: `Earnings for ride ${rideId}`,
-          });
-           functions.logger.info(`Recorded credit transaction for driver ${driverId} for ride ${rideId}`);
-
-
-          // Optional: Record Platform Commission Transaction
-           transaction.set(transactionsCollection.doc(), {
-             userId: 'platform_id', // A special ID for the platform account (if you track this)
-             type: "platform_commission",
-             amount: platformCommission,
-             currency: afterData.currency || "EUR",
-             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-             rideId: rideId,
-             description: `Commission for ride ${rideId}`,
-           });
-            functions.logger.info(`Recorded commission transaction for platform for ride ${rideId}`);
-
-          // 4. Mark the ride request as payment processed (within the same transaction)
-          transaction.update(rideRequestRef, { paymentProcessed: true });
-          functions.logger.info(`Marked ride request ${rideId} as paymentProcessed: true`);
-
-        });
-
-        functions.logger.info(`Ride payment processing completed successfully for ride ${rideId}`);
-
-      } catch (error: any) { // Explicitly type error
-        functions.logger.error(`Ride payment processing failed for ride ${rideId}:`, error);
-        // You might want to log this error to a specific collection for review
-        // or trigger an alert.
-        // Consider updating the ride request status to indicate a payment processing error.
-        // Note: Updating the status *outside* the transaction might be necessary if the transaction failed early.
-         try {
-             await change.after.ref.update({ paymentError: error.message }); // Example: add an error field
-             functions.logger.info(`Marked ride request ${rideId} with payment error.`);
-         } catch (updateError) {
-             functions.logger.error(`Failed to mark ride request ${rideId} with payment error:`, updateError);
-         }
-
-      }
-
-      return null; // Cloud Functions should return null or a Promise
-    } else {
-      // Status did not change to 'completed' or payment was already processed
-       if (afterData.status === 'completed' && afterData.paymentProcessed) {
-           functions.logger.info(`Ride ${rideId} status is completed but payment already processed.`);
-       }
-      return null;
+      allow read, write: if request.auth != null && request.auth.uid == driverId;
     }
-  });
+
+    // Passengers can read/write their own profile
+    match /passengers/{passengerId} {
+      allow read, write: if request.auth != null && request.auth.uid == passengerId;
     }
+    
+    // Fleet managers can read/write their own profile
+    match /fleet-managers/{managerId} {
+      allow read, write: if request.auth != null && request.auth.uid == managerId;
+    }
+
+    // Ride Requests
+    match /rideRequests/{requestId} {
+      // Passengers can create their own requests
+      allow create: if request.auth != null && request.resource.data.passengerId == request.auth.uid;
+      // Authenticated users involved in the ride (passenger or driver) can read it
+      allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
+      // Drivers can accept/update rides. Passengers can cancel their own.
+      allow update: if request.auth != null && 
+                    ((request.auth.uid == resource.data.driverId) || (request.auth.uid == request.resource.data.driverId) ||
+                     (request.auth.uid == resource.data.passengerId && request.resource.data.status == 'cancelled'));
+    }
+
+    // Chat messages can be read by participants, and created by them.
+    match /messages/{messageId} {
+      allow read, create: if request.auth != null && get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid || get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid;
+    }
+    
+    // Trips history can be read by the passenger or driver involved.
+    match /trips/{tripId} {
+       allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
+       // Writing trips is handled by server-side logic (e.g. Cloud Functions), so client-side write is disabled.
+       allow write: if false; 
+    }
+    
   }
 }
