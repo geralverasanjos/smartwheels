@@ -1,9 +1,3 @@
-jsx
-{pastTrips.length > 0 ? (
-        // ... rendering trips ...
-    ) : (
-        // ... no trips message ...
-    )}
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
