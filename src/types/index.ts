@@ -1,5 +1,5 @@
 export interface Promotion {
-    id: number;
+    id: string; // Firestore IDs are strings
     title: string;
     description: string;
     type: 'percentage' | 'fixed_discount' | 'fixed_price';

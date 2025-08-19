@@ -1,53 +1,43 @@
 // src/services/profileService.ts
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
-const mockDriverProfile: UserProfile = {
-  name: 'Carlos Silva',
-  email: 'carlos.silva@example.com',
-  phone: '+351 912 345 678',
-  nif: '234567890',
-  address: 'Rua das Flores, 123, 1200-123 Lisboa',
-  avatarUrl: 'https://placehold.co/100x100.png',
+// O ID do usuário seria obtido a partir da sessão de autenticação
+const getUserId = () => {
+    // Para prototipagem, usamos IDs fixos. Em produção, use o ID do usuário autenticado.
+    // e.g., return auth.currentUser?.uid;
+    return 'mock_user_id';
 };
 
-const mockPassengerProfile: UserProfile = {
-    name: 'Ana Sousa',
-    email: 'ana.sousa@example.com',
-    phone: '+351 987 654 321',
-    nif: '123456789',
-    address: 'Avenida da Liberdade, 456, 1250-142 Lisboa',
-    avatarUrl: 'https://placehold.co/100x100/32CD32/FFFFFF.png?text=AS',
+const getProfile = async (role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
+    const userId = getUserId();
+    const docRef = doc(db, `${role}s`, userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return docSnap.data() as UserProfile;
+    } else {
+        // Se o perfil não existir, podemos criar um com dados padrão
+        const defaultProfile: UserProfile = {
+            name: 'Novo Utilizador',
+            email: 'user@example.com',
+            phone: '',
+            nif: '',
+            address: '',
+            avatarUrl: `https://placehold.co/100x100.png?text=${role.substring(0,1).toUpperCase()}`,
+        };
+        await setDoc(docRef, defaultProfile);
+        return defaultProfile;
+    }
 };
 
-const mockFleetManagerProfile: UserProfile = {
-    name: 'Gestor de Frota',
-    email: 'gestor@smartwheels.com',
-    phone: '+351 911 222 333',
-    nif: '987654321',
-    address: 'Parque das Nações, 1990-096 Lisboa',
-    avatarUrl: 'https://placehold.co/100x100.png',
-};
+export const getDriverProfile = (): Promise<UserProfile | null> => getProfile('driver');
+export const getPassengerProfile = (): Promise<UserProfile | null> => getProfile('passenger');
+export const getFleetManagerProfile = (): Promise<UserProfile | null> => getProfile('fleet-manager');
 
-export const getDriverProfile = (): Promise<UserProfile> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockDriverProfile);
-    }, 500); 
-  });
+export const saveUserProfile = async (role: string, profileData: UserProfile): Promise<void> => {
+    const userId = getUserId();
+    const docRef = doc(db, `${role}s`, userId);
+    await setDoc(docRef, profileData, { merge: true });
 };
-
-export const getPassengerProfile = (): Promise<UserProfile> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockPassengerProfile);
-    }, 500); 
-  });
-};
-
-export const getFleetManagerProfile = (): Promise<UserProfile> => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(mockFleetManagerProfile);
-      }, 500);
-    });
-  };
