@@ -5,6 +5,7 @@ import AuthDialog from '@/components/auth/auth-dialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAppContext } from '@/contexts/app-context';
 import { User } from 'firebase/auth';
+import type { UserProfile } from '@/types';
 
 export default function AuthPage() {
     const { t } = useAppContext();
@@ -14,8 +15,9 @@ export default function AuthPage() {
     const initialRole = searchParams.get('role') || 'passenger';
     const [role, setRole] = useState(initialRole);
 
-    const handleSuccess = (loggedInUser: User & { role?: string }) => {
-        const targetRole = loggedInUser.role || role || 'passenger';
+    const handleSuccess = (loggedInUser: UserProfile) => {
+        // Use the role from the successfully logged-in user profile for redirection
+        const targetRole = loggedInUser.role || 'passenger';
         router.push(`/dashboard/${targetRole}`);
     };
     
@@ -31,7 +33,7 @@ export default function AuthPage() {
                         isOpen={true} // This prop is managed by the page state now
                         setIsOpen={() => router.push('/')} // Go to home if dialog is closed
                         role={role}
-                        onSuccess={handleSuccess as any}
+                        onSuccess={handleSuccess}
                         isPage={true} 
                     />
                 </CardContent>
