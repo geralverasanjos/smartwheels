@@ -15,6 +15,7 @@ export default function AuthPage() {
     const [role, setRole] = useState(initialRole);
 
     const handleSuccess = (loggedInUser: UserProfile) => {
+        console.log(loggedInUser);
         // Use the role from the successfully logged-in user profile for redirection
         const targetRole = loggedInUser.role || 'passenger';
         router.push(`/dashboard/${targetRole}`);

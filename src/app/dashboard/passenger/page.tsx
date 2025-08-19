@@ -13,6 +13,7 @@ import { createRideRequest } from '@/services/rideService';
 
 export default function PassengerDashboard() {
   const { t } = useAppContext();
+  const { formatCurrency } = useCurrency();
 
   const { user } = useAppContext();
   const router = useRouter();
