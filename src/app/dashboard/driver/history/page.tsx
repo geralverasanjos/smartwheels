@@ -9,13 +9,12 @@ import { getDriverTripHistory } from '@/services/historyService';
 import type { Trip } from '@/types';
 
 export default function DriverHistoryPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { formatCurrency, formatDate } = useCurrency();
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const user = useAppContext().user;
         if (!user || !user.id) {
             console.error("Driver user not found or not authenticated.");
             setLoading(false);
@@ -33,7 +32,7 @@ export default function DriverHistoryPage() {
             }
         };
         fetchHistory();
-    }, []);
+    }, [user]);
 
     return (
         <Card>
