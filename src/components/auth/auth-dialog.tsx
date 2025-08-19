@@ -92,16 +92,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     }
   };
 
-  const content = (
-    <>
-      <DialogHeader>
-        <DialogTitle className="font-headline text-primary text-2xl">
-          {t('auth_dialog_title', { role: formattedRole })}
-        </DialogTitle>
-        <DialogDescription>
-          {t('auth_dialog_description', { role: formattedRole })}
-        </DialogDescription>
-      </DialogHeader> 
+  const formContent = (
       <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => setIsLogin(value === 'signin')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signin">{t('auth_dialog_tab_signin')}</TabsTrigger>
@@ -174,17 +165,24 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
           </form>
         </TabsContent>
       </Tabs>
-    </>
   );
 
   if (isPage) {
-    return <Card><CardContent className="p-6">{content}</CardContent></Card>;
+    return formContent;
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
-        {content}
+        <DialogHeader>
+          <DialogTitle className="font-headline text-primary text-2xl">
+            {t('auth_dialog_title', { role: formattedRole })}
+          </DialogTitle>
+          <DialogDescription>
+            {t('auth_dialog_description', { role: formattedRole })}
+          </DialogDescription>
+        </DialogHeader> 
+        {formContent}
       </DialogContent>
     </Dialog>
   );
