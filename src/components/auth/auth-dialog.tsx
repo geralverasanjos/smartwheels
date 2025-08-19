@@ -10,25 +10,26 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/app-context';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { db } from '@/lib/firebase';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface AuthDialogProps {
-
   isOpen: boolean; 
   setIsOpen: (open: boolean) => void;
   role: string;
-  onSuccess: () => void;
+  onSuccess: (user: any) => void;
+  isPage?: boolean;
 }
 
-export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess }: AuthDialogProps) {
+export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage = false }: AuthDialogProps) {
   const { t } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
   const [signinEmail, setSigninEmail] = useState('');
-  const [signupRole, setSignupRole] = useState<'passenger' | 'driver'>('passenger'); // Default to passenger
+  const [signupRole, setSignupRole] = useState<'passenger' | 'driver' | 'fleet-manager'>(role as any || 'passenger');
   const [signinPassword, setSigninPassword] = useState(''); 
-  const [signupName, setSignupName] = useState(''); // State for user's name during signup
+  const [signupName, setSignupName] = useState('');
   const [signupPasswordError, setSignupPasswordError] = useState('');
   const [authError, setAuthError] = useState('');
 
@@ -41,37 +42,32 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess }: AuthD
     setSignupPasswordError('');
     setAuthError(''); 
     if (signupPassword !== signupConfirmPassword) {
-      setSignupPasswordError('Passwords do not match.'); // You can use a translation key here
+      setSignupPasswordError('Passwords do not match.');
       return;
     }
     try { 
       const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
       const user = userCredential.user;
       
-      // Create user profile in Firestore based on selected role
       const profileData = {
         id: user.uid,
         email: signupEmail,
-        name: signupName || 'Novo Utilizador', // Use the name from input, or a default
+        name: signupName || 'New User',
         role: signupRole,
-        // Add other initial fields as needed (phone, address, etc.)
+        balance: 0,
       };
 
-      // Determine the collection based on role and save the profile
-      const collectionName = `${signupRole}s`; // 'passengers' or 'drivers'
+      const collectionName = `${signupRole}s`;
       const userDocRef = doc(db, collectionName, user.uid);
       
       await setDoc(userDocRef, profileData, { merge: true });
-
-      console.log("User signed up and profile created in Firestore:", user.uid, signupRole);
       
       if (onSuccess) {
-          onSuccess();
+          onSuccess({ ...user, role: signupRole });
       }
       setIsOpen(false);
     } catch (error: any) {
       console.error("Signup error:", error);
-      // Handle specific Firebase Auth errors
       if (error.code === 'auth/email-already-in-use') {
         setAuthError('Email already in use. Please try signing in.');
       } else if (error.code === 'auth/weak-password') {
@@ -86,99 +82,109 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess }: AuthD
     e.preventDefault();
     setAuthError('');
     try { 
-      await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
+      const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
       if (onSuccess) {
-          onSuccess();
+          onSuccess(userCredential.user);
       }
       setIsOpen(false);
     } catch (error: any) {
-      setAuthError('Invalid email or password. Please try again.'); // Generic error for security
+      setAuthError('Invalid email or password. Please try again.');
     }
   };
-  
+
+  const content = (
+    <>
+      <DialogHeader>
+        <DialogTitle className="font-headline text-primary text-2xl">
+          {t('auth_dialog_title', { role: formattedRole })}
+        </DialogTitle>
+        <DialogDescription>
+          {t('auth_dialog_description', { role: formattedRole })}
+        </DialogDescription>
+      </DialogHeader> 
+      <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => setIsLogin(value === 'signin')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="signin">{t('auth_dialog_tab_signin')}</TabsTrigger>
+          <TabsTrigger value="signup">{t('auth_dialog_tab_signup')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="signin">
+          <form id="signin-form" onSubmit={handleSigninSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signin-email" className="text-right">
+                  {t('email_label')}
+                </Label>
+                <Input id="signin-email" type="email" className="col-span-3" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signin-password" className="text-right">
+                  {t('password_label')}
+                </Label>
+                <Input id="signin-password" type="password" className="col-span-3" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
+              </div>
+            </div>
+            {authError && isLogin && <p className="col-span-4 text-center text-sm text-destructive">{authError}</p>}
+             <DialogFooter>
+               <Button type="submit" className="w-full" form="signin-form">{t('login_button')}</Button>
+            </DialogFooter>
+          </form>
+        </TabsContent>
+        <TabsContent value="signup">
+          <form id="signup-form" onSubmit={handleSignupSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signup-name" className="text-right">{t('name_label')}</Label> 
+                <Input id="signup-name" type="text" className="col-span-3" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signup-email" className="text-right">{t('email_label')}</Label>
+                <Input id="signup-email" type="email" className="col-span-3" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required /> 
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signup-password" className="text-right">{t('password_label')}</Label>
+                <Input id="signup-password" type="password" className="col-span-3" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
+              </div> 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="signup-confirm-password" className="text-right">{t('confirm_password_label')}</Label>
+                <Input id="signup-confirm-password" type="password" className="col-span-3" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} required />
+              </div>
+              {signupPasswordError && <p className="col-span-4 text-center text-sm text-destructive">{signupPasswordError}</p>}
+              <div className="grid grid-cols-4 items-center gap-4 pt-2">
+                 <Label className="text-right">{t('role_label')}</Label>
+                 <RadioGroup defaultValue={role} value={signupRole} className="col-span-3 flex gap-4" onValueChange={(value: 'passenger' | 'driver' | 'fleet-manager') => setSignupRole(value)}>
+                  <div className="flex items-center space-x-2">
+                     <RadioGroupItem value="passenger" id="role-passenger" />
+                    <Label htmlFor="role-passenger">{t('role_passenger')}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="driver" id="role-driver" />
+                    <Label htmlFor="role-driver">{t('role_driver')}</Label>
+                  </div>
+                   <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fleet-manager" id="role-fleet-manager" />
+                    <Label htmlFor="role-fleet-manager">{t('role_fleet-manager')}</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+            {authError && !isLogin && <p className="col-span-4 text-center text-sm text-destructive">{authError}</p>}
+             <DialogFooter>
+               <Button type="submit" className="w-full" form="signup-form">{t('signup_button')}</Button>
+            </DialogFooter>
+          </form>
+        </TabsContent>
+      </Tabs>
+    </>
+  );
+
+  if (isPage) {
+    return <Card><CardContent className="p-6">{content}</CardContent></Card>;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="font-headline text-primary text-2xl">
-            {t('auth_dialog_title', { role: formattedRole })}
-          </DialogTitle>
-          <DialogDescription>
-            {t('auth_dialog_description', { role: formattedRole })}
-          </DialogDescription>
-        </DialogHeader> 
-        <Tabs defaultValue="signin" className="w-[400px]" onValueChange={(value) => setIsLogin(value === 'signin')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">{t('auth_dialog_tab_signin')}</TabsTrigger>
-            <TabsTrigger value="signup">{t('auth_dialog_tab_signup')}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin">
-            <form id="signin-form" onSubmit={handleSigninSubmit}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="signin-email" className="text-right">
-                    {t('email_label')}
-                  </Label>
-                  <Input id="signin-email" type="email" className="col-span-3" value={signinEmail} onChange={(e) => setSigninEmail(e.target.value)} required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="signin-password" className="text-right">
-                    {t('password_label')}
-                  </Label>
-                  <Input id="signin-password" type="password" className="col-span-3" value={signinPassword} onChange={(e) => setSigninPassword(e.target.value)} required />
-                </div>
-              </div>
-            </form>
-          </TabsContent>
-          <TabsContent value="signup">
-            <form id="signup-form" onSubmit={handleSignupSubmit}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="signup-email" className="text-right">
-                    {t('email_label')}
-                  </Label>
-                  <Input id="signup-email" type="email" className="col-span-3" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required /> 
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                   <Label htmlFor="signup-name" className="text-right">{t('name_label')}</Label> 
-                   <Input id="signup-name" type="text" className="col-span-3" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
-                 </div>
-
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="signup-password" className="text-right">
-                    {t('password_label')}
-                  </Label>
-                  <Input id="signup-password" type="password" className="col-span-3" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
-                </div> 
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="signup-confirm-password" className="text-right">
-                    {t('confirm_password_label')} 
-                  </Label>
-                  <Input id="signup-confirm-password" type="password" className="col-span-3" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                   <Label className="text-right">
-                    {t('role_label')}
-                  </Label>
-                   <RadioGroup defaultValue="passenger" className="col-span-3" onValueChange={(value: 'passenger' | 'driver') => setSignupRole(value)}>
-                    <div className="flex items-center space-x-2">
-                       <RadioGroupItem value="passenger" id="role-passenger" />
-                      <Label htmlFor="role-passenger">{t('role_passenger')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="driver" id="role-driver" />
-                      <Label htmlFor="role-driver">{t('role_driver')}</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </div>
-              {authError && <p className="col-span-4 text-center text-red-500">{authError}</p>}
-            </form>
-          </TabsContent>
-          <DialogFooter>
-             <Button type="submit" className="w-full" form={isLogin ? 'signin-form' : 'signup-form'}>{isLogin ? t('login_button') : t('signup_button')}</Button>
-          </DialogFooter>
-        </Tabs>
+        {content}
       </DialogContent>
     </Dialog>
   );

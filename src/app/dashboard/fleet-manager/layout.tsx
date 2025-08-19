@@ -9,11 +9,18 @@ export default function FleetManagerPanelLayout({ children }: { children: ReactN
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
-      router.push('/auth'); // Redirect to your login page
-    } else if (user.role && user.role !== 'passenger') {
-      router.push('/auth'); // Redirect to your login page or unauthorized page
+    if (user === undefined) return;
+
+    if (user === null) {
+      router.push('/auth?role=fleet-manager'); 
+    } else if (user.role && user.role !== 'fleet-manager') {
+      router.push('/auth'); 
     }
   }, [user, router]);
-  return <DashboardLayout role="passenger">{children}</DashboardLayout>;
+
+  if (user === undefined || (user && user.role === 'fleet-manager')) {
+    return <DashboardLayout role="fleet-manager">{children}</DashboardLayout>;
+  }
+
+  return null;
 }

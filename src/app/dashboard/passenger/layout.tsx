@@ -10,12 +10,18 @@ export default function PassengerPanelLayout({ children }: { children: ReactNode
   const router = useRouter();
 
   useEffect(() => {
+    if (user === undefined) return;
+
     if (user === null) {
-      router.push('/auth'); // Redirect to your login page
+      router.push('/auth?role=passenger');
     } else if (user.role && user.role !== 'passenger') {
-      router.push('/auth'); // Redirect to an unauthorized page or their correct dashboard
+      router.push('/auth');
     }
   }, [user, router]);
 
-  return <DashboardLayout role="passenger">{children}</DashboardLayout>;
+  if (user === undefined || (user && user.role === 'passenger')) {
+    return <DashboardLayout role="passenger">{children}</DashboardLayout>;
+  }
+
+  return null;
 }
