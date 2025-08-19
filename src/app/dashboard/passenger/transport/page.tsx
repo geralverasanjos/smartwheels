@@ -1,30 +1,3 @@
-const handleRequestRide = async () => { // Make the function async
-      if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
-          toast({ title: t('error_title'), description: t('error_select_origin_destination'), variant: "destructive" });
-          return;
-      }
-
-      // Get the authenticated user's UID
-      const user = useAppContext().user; // Assuming user is available from context
-      if (!user || !user.id) { // Check if user and user.id exist
-          toast({ title: t('error_title'), description: 'User not authenticated.', variant: "destructive" });
-          return;
-      }
-
-      try {
-          // Call createRideRequest with the correct serviceType
-          await createRideRequest(user.id, origin.text, destination.text, selectedService as any); // Use selectedService
-          console.log('Ride request created successfully!'); // Log success
-          toast({ title: t('request_sent_title'), description: t('request_sent_desc') }); // Optional success toast
-      } catch (error) {
-          console.error('Error creating ride request:', error);
-          toast({ title: t('error_title'), description: t('error_request_failed'), variant: "destructive" }); // Error toast
-          return; // Stop the function if Firestore write fails
-      }
-
-    dispatch({ type: 'REQUEST_RIDE' });
-    handleDirections(origin.coords, destination.coords);
-  };
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -49,7 +22,7 @@ import {
   Landmark,
   MapPin,
   LocateFixed,
-  Loader2,
+  Loader2, Send,
   CheckCircle,
   Phone,
   MessageSquare,
@@ -72,7 +45,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 
-import { createRideRequest } from '@/services/rideService';
+import { createRideRequest, updateRideStatus } from '@/services/rideService';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
+import { getUserProfileByAuthId, getProfileByIdAndRole } from '@/services/profileService';
+import { sendMessage } from '@/services/chatService';
+
+import type { UserProfile, Message, RideRequest } from '@/types';
 
 const paymentMethods = [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
@@ -101,6 +80,7 @@ type State = {
   selectingField: 'origin' | 'destination' | null;
   rating: number;
   tip: number | null;
+  activeRideId: string | null;
 };
 
 type Action =
@@ -115,7 +95,8 @@ type Action =
   | { type: 'SET_RATING', payload: number }
   | { type: 'SET_TIP', payload: number | null }
   | { type: 'REQUEST_RIDE' }
-  | { type: 'CONFIRM_PAYMENT' }
+  | { type: 'CONFIRM_PAYMENT'; payload: string }
+  | { type: 'DRIVER_FOUND'; payload: { driverId: string, vehicleId: string } }
   | { type: 'DRIVER_ARRIVED' }
   | { type: 'TRIP_START' }
   | { type: 'TRIP_FINISH' }
@@ -133,6 +114,7 @@ const initialState: State = {
   selectingField: null,
   rating: 0,
   tip: null,
+  activeRideId: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -148,11 +130,12 @@ function reducer(state: State, action: Action): State {
         case 'SET_RATING': return { ...state, rating: action.payload };
         case 'SET_TIP': return { ...state, tip: action.payload };
         case 'REQUEST_RIDE': return { ...state, step: 'service' };
-        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching' };
+        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching', activeRideId: action.payload };
+        case 'DRIVER_FOUND': return { ...state, step: 'driver_enroute' };
         case 'DRIVER_ARRIVED': return { ...state, step: 'driver_arrived' };
         case 'TRIP_START': return { ...state, step: 'trip_inprogress' };
         case 'TRIP_FINISH': return { ...state, step: 'rating' };
-        case 'CANCEL_RIDE': return { ...initialState, origin: state.origin };
+        case 'CANCEL_RIDE': return { ...initialState, origin: state.origin, activeRideId: null };
         case 'RESET': return { ...initialState, origin: state.origin };
         default: return state;
     }
@@ -161,14 +144,17 @@ function reducer(state: State, action: Action): State {
 
 export default function RequestTransportPage() {
   const { toast } = useToast();
-  const { language, t } = useAppContext();
+  const { language, t, user } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
   const { geocode, reverseGeocode } = useGeocoding();
   const { isLoaded } = useGoogleMaps();
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip } = state;
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
+  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
   const serviceCategories = [
     { id: 'economico', icon: Car, title: t('transport_service_economic_title'), description: t('transport_service_economic_desc'), price: 6.50, eta: t('eta_5min') },
@@ -178,22 +164,22 @@ export default function RequestTransportPage() {
     { id: 'pet', icon: Dog, title: t('transport_service_pet_title'), description: t('transport_service_pet_desc'), price: 10.00, eta: t('eta_6min') }
   ];
 
-  useEffect(() => {
-    async function getInitialOriginCoords() {
-      if (isLoaded && t && !origin.coords) {
-          const initialAddress = t('initial_address');
-          if (initialAddress !== 'initial_address') {
-            try {
-              const coords = await geocode(initialAddress);
-              dispatch({ type: 'SET_ORIGIN', payload: { text: initialAddress, coords } });
-            } catch (error) {
-              console.error("Failed to geocode initial address:", error);
+    useEffect(() => {
+        if (!activeRideId) return;
+
+        const rideDocRef = doc(db, 'rideRequests', activeRideId);
+        const unsubscribe = onSnapshot(rideDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const rideData = docSnap.data() as RideRequest;
+                if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
+                    dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
+                }
             }
-          }
-      }
-    }
-    getInitialOriginCoords();
-  }, [isLoaded, geocode, t, origin.coords]);
+        });
+
+        return () => unsubscribe();
+    }, [activeRideId, state.step]);
+
 
   const handleRequestRide = () => {
       if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
@@ -204,12 +190,22 @@ export default function RequestTransportPage() {
     handleDirections(origin.coords, destination.coords);
   };
   
-  const handleConfirm = () => {
-    dispatch({ type: 'CONFIRM_PAYMENT' });
-    toast({
-      title: t('searching_driver_title'),
-      description: t('searching_driver_desc'),
-    });
+  const handleConfirm = async () => {
+    if (!user || !user.id) {
+        toast({ title: t('error_title'), description: 'User not authenticated.', variant: "destructive" });
+        return;
+    }
+    try {
+        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
+        toast({
+            title: t('searching_driver_title'),
+            description: t('searching_driver_desc'),
+        });
+    } catch(error) {
+        console.error('Error creating ride request:', error);
+        toast({ title: t('error_title'), description: t('error_request_failed'), variant: "destructive" });
+    }
   };
 
   const handlePlaceSelect = async (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
@@ -274,15 +270,6 @@ export default function RequestTransportPage() {
   }
 
   useEffect(() => {
-    if (step === 'searching') {
-        const searchTimeout = setTimeout(() => {
-            dispatch({ type: 'SET_STEP', payload: 'driver_enroute' });
-        }, 3000);
-        return () => clearTimeout(searchTimeout);
-    }
-  }, [step]);
-  
-  useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {
         handleDirections(driverPosition, origin.coords);
     } else if (step === 'trip_inprogress' && origin.coords && destination.coords) {
@@ -290,45 +277,6 @@ export default function RequestTransportPage() {
     }
   }, [step, origin.coords, destination.coords, driverPosition, handleDirections]);
   
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    const moveVehicle = (target: google.maps.LatLngLiteral, onArrival: () => void) => {
-        return setInterval(() => {
-            dispatch({
-                type: 'SET_DRIVER_POSITION',
-                payload: {
-                    lat: driverPosition.lat + (target.lat - driverPosition.lat) * 0.1,
-                    lng: driverPosition.lng + (target.lng - driverPosition.lng) * 0.1,
-                },
-            });
-
-            const distance = Math.sqrt(Math.pow(driverPosition.lat - target.lat, 2) + Math.pow(driverPosition.lng - target.lng, 2));
-            if (distance < 0.001) {
-                onArrival();
-            }
-        }, 1000);
-    }
-
-    if (step === 'driver_enroute' && origin.coords) {
-        interval = moveVehicle(origin.coords, () => dispatch({ type: 'DRIVER_ARRIVED' }));
-    } else if (step === 'trip_inprogress' && destination.coords) {
-         interval = moveVehicle(destination.coords, () => dispatch({ type: 'TRIP_FINISH' }));
-    }
-
-    if (step === 'driver_arrived') {
-      const startTimeout = setTimeout(() => {
-        if (state.step === 'driver_arrived') {
-          dispatch({ type: 'TRIP_START' });
-        }
-      }, 4000);
-      return () => clearTimeout(startTimeout);
-    }
-
-    return () => clearInterval(interval);
-  }, [step, driverPosition, origin.coords, destination.coords, state.step]);
-
-
   const servicePrice = serviceCategories.find(s => s.id === selectedService)?.price || 0;
   
   const getVehicleIcon = () => {
@@ -543,7 +491,9 @@ export default function RequestTransportPage() {
                         <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
+                         { activeRideId && user?.id && assignedDriverProfile && (
+                             <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
+                         )}
                     </CardContent>
                 </Card>
             )

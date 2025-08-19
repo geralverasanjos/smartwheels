@@ -39,6 +39,14 @@ export interface Trip {
     duration: number; // in minutes
 }
 
+export interface Message {
+    id: string; // Document ID
+    rideId: string;
+    senderId: string;
+    text: string;
+    timestamp: any; // Use any for firebase.firestore.FieldValue or Date for now
+}
+
 export interface Vehicle {
     id: string; // Firestore document ID
     model: string;

@@ -1,13 +1,26 @@
+pode// src/services/historyService.ts
+
+// ... other imports and functions ...
+
+export const getDriverTripHistory = (userId: string): Promise<Trip[] | null> => {
+    return getUserTripHistory(userId, 'driver');
+};
+
+// ... other functions ...
 // src/services/historyService.ts
 import { collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Trip } from '@/types';
 
-const getUserId = () => {
-    // Para prototipagem, usamos IDs fixos. Em produção, use o ID do usuário autenticado.
-    // e.g., return auth.currentUser?.uid;
-    return 'mock_driver_id';
-};
+/**
+ * Fetches the trip history for a specific user (driver or passenger).
+ * @param userId The ID of the user.
+ * @param role The role of the user ('driver' or 'passenger').
+ * @returns A promise that resolves to an array of trips.
+ */
+export const getUserTripHistory = async (userId: string, role: 'driver' | 'passenger'): Promise<Trip[]> => {
+    const tripsCollection = collection(db, 'trips'); // Assuming the collection name is 'trips'
+    const fieldToFilter = role === 'driver' ? 'driverId' : 'passengerId';
 
 /**
  * Saves a completed trip to the Firestore database.
@@ -15,7 +28,7 @@ const getUserId = () => {
  */
 export const saveTripHistory = async (tripData: Omit<Trip, 'id'>): Promise<void> => {
     try {
-        const historyCollection = collection(db, 'tripHistory');
+        const historyCollection = collection(db, 'trips'); // Assuming the collection name is 'trips'
         await addDoc(historyCollection, tripData);
     } catch (error) {
         console.error("Error writing document: ", error);
@@ -23,16 +36,15 @@ export const saveTripHistory = async (tripData: Omit<Trip, 'id'>): Promise<void>
     }
 };
 
-/**
- * Fetches the trip history for the current driver.
- * @returns A promise that resolves to an array of trips.
- */
-export const getDriverTripHistory = async (): Promise<Trip[]> => {
-    const driverId = getUserId();
-    const historyCollection = collection(db, 'tripHistory');
+    const q = query(
+        tripsCollection,
+        where(fieldToFilter, '==', userId),
+        orderBy('date', 'desc') // Assuming 'date' field exists and is sortable
+    );
+
     const q = query(
         historyCollection,
-        where("driverId", "==", driverId),
+        where(fieldToFilter, "==", userId),
         orderBy("date", "desc")
     );
 

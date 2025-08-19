@@ -1,3 +1,28 @@
+// Inside case 'driver_enroute': within renderCurrentActionCard()
+// ... existing CardContent ...
+
+<div className="space-y-2 mt-4"> {/* Add some margin at the top */}
+    {/* Message Display Area */}
+    <div className="h-40 overflow-y-auto border rounded-md p-2 space-y-2"> {/* Adjust height and styling */}
+        {messages.length === 0 ? (
+            <p className="text-center text-muted-foreground">{t('chat_no_messages')}</p> {/* Add translation key */}
+        ) : (
+            messages.map(message => (
+                <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}> {/* Style based on sender */}
+                    <div className={`rounded-lg p-2 max-w-[80%] ${message.senderId === user?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}> {/* Style based on sender */}
+                        {/* You can add sender name/avatar here later */}
+                        <p className="text-sm">{message.text}</p>
+                        {/* Optional: add timestamp here */}
+                    </div>
+                </div>
+            ))
+        )}
+    </div>
+
+    {/* Chat Input Area (Textarea and Button) */}
+    <Label htmlFor="chat-message">{t('chat_message_label')}</Label>
+    {/* ... Textarea and Button code ... */}
+</div>
 'use client';
 import { useState } from 'react';
 import { useAppContext } from '@/contexts/app-context';

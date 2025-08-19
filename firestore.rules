@@ -32,68 +32,9 @@ service cloud.firestore {
     // Regras para Motoristas (Drivers)
     // Permite a leitura pública dos perfis dos motoristas, mas apenas o próprio motorista pode editar.
     match /drivers/{driverId} {
-        allow read: if request.auth != null;
+        allow read: if true;
         allow update: if request.auth != null && request.auth.uid == driverId;
-    }
-
-    // Regras para Passageiros (Passengers)
-    // Permite a leitura e atualização apenas para o próprio passageiro autenticado.
-    // Permite a criação apenas para o próprio passageiro autenticado.
-    match /passengers/{passengerId} {
-        allow read, update: if request.auth != null && request.auth.uid == passengerId;
-        allow create: if request.auth != null && request.auth.uid == passengerId;
-        allow delete: if false;
-    }
-
-    // Regras para Fleet Managers
-    // Permite a leitura e atualização apenas para o próprio fleet manager autenticado.
-    // Permite a criação apenas para o próprio fleet manager autenticado.
-    match /fleet-managers/{managerId} {
-        allow read, update: if request.auth != null && request.auth.uid == managerId;
-        allow create: if request.auth != null && request.auth.uid == managerId;
-        allow delete: if false;
-    }
-
-    // Regras para Veículos (Vehicles)
-    match /vehicles/{vehicleId} {
-        // Permitir leitura se o utilizador autenticado for o motorista ou o fleet manager associado.
-        allow read: if request.auth != null && (request.auth.uid == resource.data.driverId || request.auth.uid == resource.data.fleetManagerId);
-
-        // Permitir criação, atualização e eliminação apenas para o fleet manager associado.
-        allow write: if request.auth != null && request.auth.uid == resource.data.fleetManagerId;
-        // allow create, update, delete: if request.auth != null && request.auth.uid == resource.data.fleetManagerId; // Alternative using explicit operations
-    }
-
-    // Regras para Solicitações de Viagem/Entrega (RideRequests)
-    // Permite que passageiros criem, leiam e atualizem as suas próprias solicitações.
-    // Permite que motoristas leiam solicitações pendentes ou em busca.
-    // A lógica de proximidade para motoristas deve ser tratada na aplicação/backend (Cloud Functions).
-    match /rideRequests/{requestId} {
-        // Passageiro pode criar a sua própria solicitação.
- allow create: if request.auth != null && request.resource.data.passengerId == request.auth.uid;
-        // Passageiro pode ler e atualizar (para cancelar) a sua própria solicitação.
- allow read, update: if request.auth != null && resource.data.passengerId == request.auth.uid;
-        // Motorista pode ler solicitações que estão 'pending' ou 'searching'.
- allow read: if request.auth != null && request.auth.token.role == 'driver' && (resource.data.status == 'pending' || resource.data.status == 'searching');
- // Motorista ou Passageiro podem atualizar a solicitação em estados específicos.
- allow update: if request.auth != null && (
- // Passageiro pode atualizar para cancelar
- (resource.data.passengerId == request.auth.uid && request.resource.data.status == 'cancelled') ||
- // Motorista pode aceitar (se estiver pendente/searching) ou atualizar status (se atribuído)
- (request.auth.token.role == 'driver' && (
- resource.data.status in ['pending', 'searching'] && request.resource.data.status == 'accepted' && request.resource.data.driverId == request.auth.uid && request.resource.data.vehicleId is string || // Accept rule (already there)
- resource.data.driverId == request.auth.uid && resource.data.status == 'accepted' && request.resource.data.status == 'in_progress' || // Accepted -> In Progress
- resource.data.driverId == request.auth.uid && resource.data.status == 'in_progress' && request.resource.data.status in ['completed', 'cancelled'] // In Progress -> Completed or Cancelled
- ))
- );
- // Nega a eliminação direta.
-        allow delete: if false;
-    }
-
-    // Regras para Localizações de Motoristas (DriverLocations)
-    match /driverLocations/{driverId} {
-        // Permite que o motorista autenticado escreva (crie/atualize) apenas a sua própria localização.
-        allow create, update: if request.auth != null && request.auth.uid == driverId;
+const handleRequestRide = async () => { // Make the function async
     }
   }
 }

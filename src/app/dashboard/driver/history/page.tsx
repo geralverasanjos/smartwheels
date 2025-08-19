@@ -1,3 +1,9 @@
+jsx
+{pastTrips.length > 0 ? (
+        // ... rendering trips ...
+    ) : (
+        // ... no trips message ...
+    )}
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
@@ -15,9 +21,15 @@ export default function DriverHistoryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const user = useAppContext().user;
+        if (!user || !user.id) {
+            console.error("Driver user not found or not authenticated.");
+            setLoading(false);
+            return;
+        }
         const fetchHistory = async () => {
             try {
-                const historyData = await getDriverTripHistory();
+                const historyData = await getDriverTripHistory(user.id);
                 setTrips(historyData);
             } catch (error) {
                 console.error("Failed to fetch trip history:", error);
