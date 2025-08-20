@@ -1,3 +1,16 @@
+// Dentro de src/types/index.ts
+export interface RideRequest {
+    id: string;
+    passengerId: string;
+    origin: string;
+    destination: string;
+    serviceType: 'taxi' | 'delivery' | 'mototaxi' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk'; // Update this line
+    status: 'pending' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled';
+    timestamp: firebase.firestore.FieldValue; // Or Date
+    driverId?: string;
+    vehicleId?: string;
+    // ... outros campos ...
+}
 import { collection, query, where, orderBy, getDocs, doc, updateDoc, addDoc, serverTimestamp, DocumentReference, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { RideRequest } from '@/types';
@@ -7,7 +20,7 @@ export const createRideRequest = async (
     passengerId: string,
     origin: string,
     destination: string,
-    serviceType: 'taxi' | 'delivery' | 'mototaxi' // Or your defined types
+    serviceType: 'taxi' | 'delivery' | 'mototaxi' | 'executivo' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk'
 ): Promise<DocumentReference<DocumentData, DocumentData>> => {
     try {
         const rideRequestsCollection = collection(db, 'rideRequests');
