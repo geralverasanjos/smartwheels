@@ -2,53 +2,47 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Upload, Pencil, PlusCircle } from 'lucide-react';
+import { FileText, Upload, Pencil, PlusCircle, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { TranslationKeys } from '@/lib/i18n';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import VehicleFormDialog from '@/components/driver/vehicle-form-dialog';
+import { getVehicleById } from '@/services/vehicleService';
+import type { Vehicle } from '@/types';
 
-
-export interface Vehicle {
-    id: number;
-    imageUrl: string;
-    make: string;
-    model: string;
-    year: string;
-    color: string;
-    plate: string;
-    status: 'active' | 'pending' | 'rejected' | 'maintenance' | 'inactive';
-    documents: { id: number; nameKey: TranslationKeys; statusKey: TranslationKeys }[];
-    aiHint?: string;
-}
-
-// Dados de exemplo do veículo (virão da API)
-const initialVehicleData: Vehicle | null = {
-    id: 1,
-    imageUrl: 'https://placehold.co/600x400.png',
-    make: 'Toyota',
-    model: 'Prius',
-    year: '2022',
-    color: 'Cinzento',
-    plate: 'AA-12-BB',
-    status: 'active', // Use a key, e.g., 'active', 'pending', 'rejected'
-    aiHint: 'side view of a car',
-    documents: [
-        { id: 1, nameKey: 'doc_vehicle_registration' as TranslationKeys, statusKey: 'status_approved' as TranslationKeys },
-        { id: 2, nameKey: 'doc_mandatory_insurance' as TranslationKeys, statusKey: 'status_pending' as TranslationKeys },
-    ]
-};
 
 export default function VehiclesPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { toast } = useToast();
-    const [vehicleData, setVehicleData] = useState<Vehicle | null>(initialVehicleData);
+    const [vehicleData, setVehicleData] = useState<Vehicle | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchVehicle = async () => {
+            if (!user || !user.activeVehicleId) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const vehicle = await getVehicleById(user.activeVehicleId);
+                setVehicleData(vehicle);
+            } catch (error) {
+                console.error("Failed to fetch vehicle data:", error);
+                toast({ title: t('error_title'), description: "Falha ao carregar dados do veículo.", variant: "destructive"});
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchVehicle();
+    }, [user, t, toast]);
+
 
     const getStatusVariant = (status: string): 'default' | 'destructive' | 'secondary' => {
         switch (status) {
@@ -60,7 +54,6 @@ export default function VehiclesPage() {
                 return 'secondary';
             case 'status_rejected':
             case 'rejected':
-            case 'status_maintenance':
             case 'maintenance':
                 return 'destructive';
             default:
@@ -69,7 +62,7 @@ export default function VehiclesPage() {
     };
 
     const handleSave = (data: any) => {
-        // Here you would typically send the data to your API
+        // Here you would typically send the data to your API to update the vehicle
         console.log("Saving vehicle data:", data);
         toast({
             title: t('toast_vehicle_updated_title'),
@@ -83,6 +76,10 @@ export default function VehiclesPage() {
             title: t('toast_doc_uploaded_title'),
             description: t('toast_doc_uploaded_desc'),
         });
+    }
+    
+    if (loading) {
+        return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
     }
 
     return (
@@ -131,11 +128,11 @@ export default function VehiclesPage() {
                         <CardContent>
                             <div className="relative w-full h-64 rounded-lg overflow-hidden mb-4 bg-muted">
                                 <Image 
-                                    src={vehicleData.imageUrl} 
+                                    src={vehicleData.imageUrl || 'https://placehold.co/600x400.png'} 
                                     alt={`${vehicleData.make} ${vehicleData.model}`} 
                                     layout="fill" 
                                     objectFit="cover" 
-                                    data-ai-hint={vehicleData.aiHint}
+                                    data-ai-hint={vehicleData.aiHint || 'side view of a car'}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -146,7 +143,7 @@ export default function VehiclesPage() {
                                  <Button className="w-full mt-6">
                                     <Pencil className="mr-2 h-4 w-4" />
                                     {t('btn_edit_vehicle')}
-                                </Button>
+                                 </Button>
                             </VehicleFormDialog>
                         </CardContent>
                     </Card>
@@ -158,17 +155,7 @@ export default function VehiclesPage() {
                             <CardDescription>{t('vehicle_docs_desc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {vehicleData.documents.map(doc => (
-                                <div key={doc.id} className="flex items-center justify-between p-3 rounded-md border">
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="h-5 w-5 text-muted-foreground" />
-                                        <span className="text-sm font-medium">{t(doc.nameKey)}</span>
-                                    </div>
-                                    <Badge variant={getStatusVariant(doc.statusKey)}>
-                                        {t(doc.statusKey)}
-                                    </Badge>
-                                </div>
-                            ))}
+                           {/*  TODO: Replace with real document data */}
                              <Dialog>
                                 <DialogTrigger asChild>
                                      <Button variant="outline" className="w-full">

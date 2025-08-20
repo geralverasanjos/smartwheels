@@ -7,41 +7,42 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
+// Mock data will be replaced by real data fetching
 const conversations = [
-  { id: 1, name: 'Ana Sousa', lastMessage: 'Estou no portão principal.', time: '10:42', unread: 1, avatar: 'https://placehold.co/40x40/32CD32/FFFFFF?text=AS' },
-  { id: 2, name: 'Rui Costa', lastMessage: 'Obrigado!', time: 'Ontem', unread: 0, avatar: 'https://placehold.co/40x40/32CD32/FFFFFF?text=RC' },
-  { id: 3, name: 'Suporte SmartWheels', lastMessage: 'Seu documento foi aprovado.', time: 'Terça-feira', unread: 0, avatar: 'https://placehold.co/40x40/000000/FFFFFF?text=SW' },
+  // This will be populated dynamically
 ];
 
 const initialMessages = {
-  1: [
-    { id: 1, sender: 'Ana Sousa', text: 'Olá! Onde você está?', time: '10:40', self: false },
-    { id: 2, sender: 'Você', text: 'Estou chegando, a 2 minutos.', time: '10:41', self: true },
-    { id: 3, sender: 'Ana Sousa', text: 'Ok, estou no portão principal.', time: '10:42', self: false },
-  ],
-  2: [
-    { id: 1, sender: 'Você', text: 'Sua entrega foi concluída.', time: 'Ontem', self: true },
-    { id: 2, sender: 'Rui Costa', text: 'Obrigado!', time: 'Ontem', self: false },
-  ],
-  3: [],
+  // This will be populated dynamically
 };
 
 
 export default function DriverChatPage() {
-    const { t } = useAppContext();
-    const [selectedConversation, setSelectedConversation] = useState(conversations[0]);
-    const [messages, setMessages] = useState(initialMessages[selectedConversation.id] || []);
+    const { t, user } = useAppContext();
+    const [selectedConversation, setSelectedConversation] = useState<any>(null);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    // TODO: Implement real data fetching for conversations and messages
+    // For now, we show a loading/placeholder state as mock data is removed.
+    useState(() => {
+        // Simulate loading
+        setTimeout(() => setLoading(false), 1000);
+    });
 
     const handleSelectConversation = (conv: any) => {
         setSelectedConversation(conv);
-        setMessages(initialMessages[conv.id] || []);
+        // In a real app, you would fetch messages for this conversation
+        setMessages([]); 
     }
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
-        if (newMessage.trim() === '') return;
+        if (newMessage.trim() === '' || !selectedConversation) return;
+        // In a real app, you would send this message to your backend
         const newMsg = {
             id: messages.length + 1,
             sender: 'Você',
@@ -51,6 +52,10 @@ export default function DriverChatPage() {
         };
         setMessages([...messages, newMsg]);
         setNewMessage('');
+    }
+    
+    if(loading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
     }
 
     return (
@@ -65,29 +70,33 @@ export default function DriverChatPage() {
                 </CardHeader>
                 <CardContent className="flex-grow overflow-y-auto p-0">
                    <div className="space-y-1">
-                        {conversations.map(conv => (
-                            <div 
-                                key={conv.id} 
-                                className={cn(
-                                    "flex items-center gap-3 p-3 cursor-pointer transition-colors",
-                                    selectedConversation.id === conv.id ? 'bg-primary/10' : 'hover:bg-accent'
-                                )}
-                                onClick={() => handleSelectConversation(conv)}
-                            >
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={conv.avatar} data-ai-hint="person face" />
-                                    <AvatarFallback>{conv.name.substring(0,2)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 truncate">
-                                    <p className="font-semibold">{conv.name}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
+                        {conversations.length === 0 ? (
+                            <p className="p-4 text-center text-muted-foreground">{t('no_conversations_found')}</p>
+                        ) : (
+                            conversations.map((conv: any) => (
+                                <div 
+                                    key={conv.id} 
+                                    className={cn(
+                                        "flex items-center gap-3 p-3 cursor-pointer transition-colors",
+                                        selectedConversation?.id === conv.id ? 'bg-primary/10' : 'hover:bg-accent'
+                                    )}
+                                    onClick={() => handleSelectConversation(conv)}
+                                >
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={conv.avatar} data-ai-hint="person face" />
+                                        <AvatarFallback>{conv.name.substring(0,2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 truncate">
+                                        <p className="font-semibold">{conv.name}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground text-right">
+                                        <p>{conv.time}</p>
+                                        {conv.unread > 0 && <span className="mt-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs">{conv.unread}</span>}
+                                    </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground text-right">
-                                    <p>{conv.time}</p>
-                                    {conv.unread > 0 && <span className="mt-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs">{conv.unread}</span>}
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                    </div>
                 </CardContent>
             </Card>

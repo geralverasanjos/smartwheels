@@ -1,31 +1,89 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, ArrowDown, Banknote } from "lucide-react";
+import { DollarSign, ArrowDown, Banknote, Loader2 } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import Link from "next/link";
-import React, { useState, useEffect } from 'react';
 import PaymentsPage from "../../payments/page";
-
-
-const data = [
-  { day: 'Seg', earnings: 120 },
-  { day: 'Ter', earnings: 150 },
-  { day: 'Qua', earnings: 180 },
-  { day: 'Qui', earnings: 130 },
-  { day: 'Sex', earnings: 250 },
-  { day: 'Sáb', earnings: 300 },
-  { day: 'Dom', earnings: 220 },
-];
+import { useState, useEffect } from 'react';
+import { getDriverTripHistory } from "@/services/historyService";
+import type { Trip } from "@/types";
+import { useCurrency } from "@/lib/currency";
 
 export default function DriverEarnings() {
-    const { t } = useAppContext();
-    const [isClient, setIsClient] = useState(false);
+    const { t, user } = useAppContext();
+    const { formatCurrency } = useCurrency();
+    const [loading, setLoading] = useState(true);
+    const [earningsData, setEarningsData] = useState({
+        today: 0,
+        week: 0,
+        available: 0,
+        weeklyPerformance: [] as { day: string, earnings: number }[],
+    });
 
     useEffect(() => {
-        setIsClient(true);
-    }, []);
+        const fetchEarnings = async () => {
+            if (!user?.id) return;
+            setLoading(true);
+            try {
+                const trips = await getDriverTripHistory(user.id);
+                const today = new Date();
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+
+                let todayEarnings = 0;
+                let weekEarnings = 0;
+                const weeklyPerformanceMap = new Map<string, number>();
+
+                const dayNames = [t('day_sun'), t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat')];
+
+                dayNames.forEach(day => weeklyPerformanceMap.set(day, 0));
+
+                trips.forEach(trip => {
+                    if (trip.status === 'completed') {
+                        const tripDate = new Date(trip.date);
+                        const tripValue = trip.earnings || 0;
+
+                        // Today's earnings
+                        if (tripDate.toDateString() === today.toDateString()) {
+                            todayEarnings += tripValue;
+                        }
+
+                        // This week's earnings
+                        if (tripDate >= startOfWeek) {
+                            weekEarnings += tripValue;
+                            const dayName = dayNames[tripDate.getDay()];
+                            weeklyPerformanceMap.set(dayName, (weeklyPerformanceMap.get(dayName) || 0) + tripValue);
+                        }
+                    }
+                });
+                
+                const weeklyPerformance = Array.from(weeklyPerformanceMap.entries()).map(([day, earnings]) => ({ day, earnings }));
+                
+                setEarningsData({
+                    today: todayEarnings,
+                    week: weekEarnings,
+                    available: weekEarnings * 0.8, // Assuming 80% available for withdrawal
+                    weeklyPerformance: weeklyPerformance,
+                });
+
+            } catch (error) {
+                console.error("Failed to fetch earnings data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEarnings();
+    }, [user, t]);
+
+  if (loading) {
+    return (
+        <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-16 w-16 animate-spin" />
+        </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -41,7 +99,7 @@ export default function DriverEarnings() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€180,50</div>
+            <div className="text-2xl font-bold">{formatCurrency(earningsData.today)}</div>
             <p className="text-xs text-muted-foreground">{t('earnings_today_desc')}</p>
           </CardContent>
         </Card>
@@ -51,7 +109,7 @@ export default function DriverEarnings() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€1.130,00</div>
+            <div className="text-2xl font-bold">{formatCurrency(earningsData.week)}</div>
              <p className="text-xs text-muted-foreground">{t('earnings_week_desc')}</p>
           </CardContent>
         </Card>
@@ -61,7 +119,7 @@ export default function DriverEarnings() {
             <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€850,00</div>
+            <div className="text-2xl font-bold">{formatCurrency(earningsData.available)}</div>
             <p className="text-xs text-muted-foreground">{t('earnings_available_desc')}</p>
           </CardContent>
         </Card>
@@ -73,18 +131,16 @@ export default function DriverEarnings() {
             <CardDescription>{t('earnings_weekly_performance_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
-            {isClient && (
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="day" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t('earnings_week')} />
-                    </BarChart>
-                </ResponsiveContainer>
-            )}
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={earningsData.weeklyPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis tickFormatter={(value) => formatCurrency(Number(value))} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Legend />
+                    <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t('earnings_week')} />
+                </BarChart>
+            </ResponsiveContainer>
         </CardContent>
       </Card>
       

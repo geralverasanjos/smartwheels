@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MoreHorizontal, UserPlus, Car, Star } from 'lucide-react';
+import { MoreHorizontal, UserPlus, Car, Star, Loader2 } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,40 +33,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import type { TranslationKeys } from '@/lib/i18n';
+import type { UserProfile } from '@/types';
+import { getDriversByFleetManager } from '@/services/profileService';
 
-
-// Mock data for drivers
-const initialDrivers = [
-  {
-    id: 'd001',
-    name: 'Carlos Silva',
-    avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=CS',
-    vehicle: 'Renault Zoe (AB-12-CD)',
-    status: 'online',
-    rating: 4.9,
-    email: 'carlos.silva@example.com'
-  },
-  {
-    id: 'd002',
-    name: 'Mariana Costa',
-    avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=MC',
-    vehicle: 'Nissan Leaf (EF-34-GH)',
-    status: 'in_trip',
-    rating: 4.7,
-    email: 'mariana.costa@example.com'
-  },
-  {
-    id: 'd003',
-    name: 'Pedro Marques',
-    avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=PM',
-    vehicle: 'Tesla Model 3 (IJ-56-KL)',
-    status: 'offline',
-    rating: 4.8,
-    email: 'pedro.marques@example.com'
-  },
-];
-
-const getStatusVariant = (status: string) => {
+const getStatusVariant = (status?: string) => {
     switch (status) {
         case 'online': return 'default';
         case 'in_trip': return 'destructive';
@@ -76,15 +45,33 @@ const getStatusVariant = (status: string) => {
 }
 
 export default function FleetDriversPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { toast } = useToast();
-    const [drivers, setDrivers] = useState(initialDrivers);
+    const [drivers, setDrivers] = useState<UserProfile[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isAddDriverDialogOpen, setIsAddDriverDialogOpen] = useState(false);
-    const [editingDriver, setEditingDriver] = useState<typeof initialDrivers[0] | null>(null);
+    const [editingDriver, setEditingDriver] = useState<UserProfile | null>(null);
+
+    useEffect(() => {
+        const fetchDrivers = async () => {
+            if (!user?.id) return;
+            setLoading(true);
+            try {
+                const driversData = await getDriversByFleetManager(user.id);
+                setDrivers(driversData);
+            } catch (error) {
+                console.error("Failed to fetch drivers:", error);
+                toast({ title: t('error_title'), description: "Failed to load drivers.", variant: 'destructive' });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDrivers();
+    }, [user, toast, t]);
 
     const handleAddOrEditDriver = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Lógica para salvar os dados (simulada)
+        // TODO: Implement save/update logic with backend
         toast({
             title: t(editingDriver ? 'edit_driver_title' : 'add_driver_title'),
             description: t('driver_data_saved_success'),
@@ -97,9 +84,13 @@ export default function FleetDriversPage() {
         setEditingDriver(null);
         setIsAddDriverDialogOpen(true);
     }
-    const openEditDialog = (driver: typeof initialDrivers[0]) => {
+    const openEditDialog = (driver: UserProfile) => {
         setEditingDriver(driver);
         setIsAddDriverDialogOpen(true);
+    }
+
+    if (loading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
     }
 
     return (
@@ -132,50 +123,56 @@ export default function FleetDriversPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {drivers.map((driver) => (
-                                <TableRow key={driver.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={driver.avatarUrl} alt={driver.name} data-ai-hint="person portrait" />
-                                                <AvatarFallback>{driver.name.substring(0, 2)}</AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{driver.name}</p>
-                                                <p className="text-xs text-muted-foreground">{driver.email}</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Car className="h-4 w-4 text-muted-foreground" />
-                                            <span>{driver.vehicle}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(driver.status)}>{t(`status_${driver.status}` as TranslationKeys)}</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex items-center justify-center gap-1">
-                                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                            <span>{driver.rating.toFixed(1)}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>{t('table_header_actions')}</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => openEditDialog(driver)}>{t('action_edit')}</DropdownMenuItem>
-                                                <DropdownMenuItem>{t('action_suspend')}</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">{t('action_remove')}</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                            {drivers.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center h-24">{t('no_drivers_found')}</TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                drivers.map((driver) => (
+                                    <TableRow key={driver.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage src={driver.avatarUrl} alt={driver.name} data-ai-hint="person portrait" />
+                                                    <AvatarFallback>{driver.name.substring(0, 2)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium">{driver.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{driver.email}</p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Car className="h-4 w-4 text-muted-foreground" />
+                                                <span>{driver.activeVehicleId || 'N/A'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant((driver as any).status)}>{t(`status_${(driver as any).status}` as TranslationKeys) || (driver as any).status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                                                <span>{(driver.rating || 0).toFixed(1)}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>{t('table_header_actions')}</DropdownMenuLabel>
+                                                    <DropdownMenuItem onClick={() => openEditDialog(driver)}>{t('action_edit')}</DropdownMenuItem>
+                                                    <DropdownMenuItem>{t('action_suspend')}</DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-destructive">{t('action_remove')}</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -201,7 +198,7 @@ export default function FleetDriversPage() {
                             </div>
                              <div className="grid gap-2">
                                 <Label htmlFor="vehicle">{t('vehicle_label')}</Label>
-                                <Input id="vehicle" defaultValue={editingDriver?.vehicle} placeholder={t('driver_placeholder_vehicle')} />
+                                <Input id="vehicle" defaultValue={editingDriver?.activeVehicleId} placeholder={t('driver_placeholder_vehicle')} />
                             </div>
                         </div>
                          <DialogFooter>
