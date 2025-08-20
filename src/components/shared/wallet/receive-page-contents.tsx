@@ -4,24 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Copy, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy, Share2, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import type { UserRole } from '@/components/dashboard/dashboard-layout';
 
-const receiveData = {
-    username: '@ana.sousa',
-    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=smartwheels_user_ana.sousa'
-}
-
 export default function ReceivePageContents({ role }: { role: UserRole }) {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { toast } = useToast();
 
+    if (!user) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
+    }
+    
+    // Generate dynamic username and QR code data
+    const username = `@${user.name?.split(' ')[0].toLowerCase()}${user.id.substring(0,4)}`;
+    const qrCodeData = `smartwheels_user_transfer:${user.id}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeData)}`;
+    const shareLink = `https://smartwheels.com/pay/${username}`;
+
     const getBackLink = () => `/dashboard/${role}/wallet`;
-    const shareLink = `https://smartwheels.com/pay/${receiveData.username}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(shareLink);
@@ -34,7 +38,7 @@ export default function ReceivePageContents({ role }: { role: UserRole }) {
     const handleShare = async () => {
         const shareData = {
             title: t('receive_share_title'),
-            text: t('receive_share_text', { username: receiveData.username }),
+            text: t('receive_share_text', { username: username }),
             url: shareLink,
         };
         try {
@@ -71,7 +75,7 @@ export default function ReceivePageContents({ role }: { role: UserRole }) {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-6">
                     <div className="p-4 bg-white rounded-lg">
-                        <Image src={receiveData.qrCodeUrl} alt={t('qr_code_alt')} width={200} height={200} />
+                        <Image src={qrCodeUrl} alt={t('qr_code_alt')} width={200} height={200} />
                     </div>
                     <div className="w-full space-y-2">
                         <Label htmlFor="receive-link">{t('receive_link_label')}</Label>
