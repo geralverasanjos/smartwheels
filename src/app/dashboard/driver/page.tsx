@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useReducer, useCallback } from 'react';
@@ -347,6 +346,25 @@ export default function DriverDashboardPage() {
     };
   };
 
+  const getServiceTypeName = (serviceType: RideRequest['serviceType']) => {
+    const keyMap: Record<RideRequest['serviceType'], TranslationKeys> = {
+        'economico': 'transport_service_economic_title',
+        'smart': 'transport_service_smart_title',
+        'executivo': 'transport_service_executive_title',
+        'van': 'transport_service_van_title',
+        'pet': 'transport_service_pet_title',
+        'delivery_moto': 'delivery_service_moto_title',
+        'delivery_car': 'delivery_service_car_title',
+        'delivery_van': 'delivery_service_van_title',
+        'moto_economica': 'mototaxi_service_economic_title',
+        'moto_rapida': 'mototaxi_service_fast_title',
+        'moto_bau': 'mototaxi_service_box_title',
+        'tuk_tuk': 'mototaxi_service_tuktuk_title'
+    };
+    return t(keyMap[serviceType] || (serviceType as any));
+  }
+
+
   const renderPendingRequestsCard = () => {
     if (!isOnline || activeRide) return null;
     return (
@@ -361,7 +379,7 @@ export default function DriverDashboardPage() {
             <div className="space-y-4">
               {pendingRequests.map((request) => (
                 <Card key={request.id} className="p-4">
-                  <p className="font-semibold">{t(request.serviceType as any) || request.serviceType}</p>
+                  <p className="font-semibold">{getServiceTypeName(request.serviceType)}</p>
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium">{t('from')}:</span> {request.origin}
                   </p>
