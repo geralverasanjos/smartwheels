@@ -77,15 +77,15 @@ export default function AddFundsPageContents({ role }: { role: UserRole }) {
                         onValueChange={(value) => { if(value) setSelectedMethod(value) }}
                         className="grid grid-cols-1 sm:grid-cols-3 gap-4"
                     >
-                        <ToggleGroupItem value="card" aria-label="Credit Card" className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'card' && 'border-primary ring-2 ring-primary')}>
+                        <ToggleGroupItem value="card" aria-label={t('payment_method_credit_card')} className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'card' && 'border-primary ring-2 ring-primary')}>
                             <CreditCard className="h-8 w-8" />
                             <span>{t('payment_method_credit_card')}</span>
                         </ToggleGroupItem>
-                         <ToggleGroupItem value="paypal" aria-label="PayPal" className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'paypal' && 'border-primary ring-2 ring-primary')}>
+                         <ToggleGroupItem value="paypal" aria-label={t('payment_method_paypal')} className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'paypal' && 'border-primary ring-2 ring-primary')}>
                             <Banknote className="h-8 w-8" />
                             <span>{t('payment_method_paypal')}</span>
                         </ToggleGroupItem>
-                         <ToggleGroupItem value="bank" aria-label="Bank Transfer" className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'bank' && 'border-primary ring-2 ring-primary')}>
+                         <ToggleGroupItem value="bank" aria-label={t('payment_method_bank_transfer')} className={cn("h-auto flex-col p-4 gap-2", selectedMethod === 'bank' && 'border-primary ring-2 ring-primary')}>
                             <Landmark className="h-8 w-8" />
                             <span>{t('payment_method_bank_transfer')}</span>
                         </ToggleGroupItem>
