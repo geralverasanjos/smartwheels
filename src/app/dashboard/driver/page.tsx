@@ -230,8 +230,10 @@ export default function DriverDashboardPage() {
     setServices(prev => ({ ...prev, [service]: !prev[service] }));
   };
 
-  const getVehicleIcon = (isSelf: boolean = false) => {
-    if (typeof window === 'undefined' || !window.google) return null;
+  const getVehicleIcon = useCallback((isSelf: boolean = false) => {
+    if (!isLoaded || typeof window === 'undefined' || !window.google?.maps?.Point) {
+        return null;
+    }
     return {
         path: 'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11C5.84 5 5.28 5.42 5.08 6.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z',
         fillColor: isSelf ? 'hsl(var(--primary))' : 'hsl(var(--secondary-foreground))',
@@ -241,7 +243,8 @@ export default function DriverDashboardPage() {
         scale: isSelf ? 1.5 : 1.2,
         anchor: new window.google.maps.Point(12, 12)
     };
-  };
+  }, [isLoaded]);
+
 
   const renderCurrentActionCard = () => {
     switch (simulationStep) {
@@ -298,11 +301,11 @@ export default function DriverDashboardPage() {
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
             <Map>
               {isLoaded && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
-              {isOnline && nearbyDriversData.map((driver, index) => (
-                <MarkerF key={`driver-${index}`} position={driver} icon={getVehicleIcon(false) as google.maps.Icon | null} />
+              {isLoaded && isOnline && nearbyDriversData.map((driver, index) => (
+                <MarkerF key={`driver-${index}`} position={driver} icon={getVehicleIcon(false)} />
               ))}
 
-              <MarkerF position={vehiclePosition} icon={getVehicleIcon(true) as google.maps.Icon | null} />
+              {isLoaded && <MarkerF position={vehiclePosition} icon={getVehicleIcon(true)} />}
               
               {isSimulating && (
                 <>
@@ -343,7 +346,7 @@ export default function DriverDashboardPage() {
                             <Checkbox 
                                 id="passengers" 
                                 checked={services.passengers} 
-                                onCheckedChange={(checked) => handleServiceChange('passengers')} 
+                                onCheckedChange={() => handleServiceChange('passengers')} 
                             />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
                             <Car className="h-4 w-4" /> Passageiros (Táxi)
@@ -353,7 +356,7 @@ export default function DriverDashboardPage() {
                             <Checkbox 
                                 id="deliveries" 
                                 checked={services.deliveries} 
-                                onCheckedChange={(checked) => handleServiceChange('deliveries')} 
+                                onCheckedChange={() => handleServiceChange('deliveries')} 
                             />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
                             <Package className="h-4 w-4" /> Entregas Pequenas
@@ -432,3 +435,4 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
+
