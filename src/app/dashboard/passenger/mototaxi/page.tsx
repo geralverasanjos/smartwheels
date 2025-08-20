@@ -26,6 +26,7 @@ import {
   Star,
   PlayCircle,
   ThumbsUp,
+  Car, // Using Car as a replacement for Motorcycle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
@@ -49,9 +50,6 @@ import { getVehicleById } from '@/services/vehicleService';
 import { sendMessage } from '@/services/chatService';
 
 import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
-
-// Assuming a specific icon for mototaxi services might be needed
-import { Moped } from 'lucide-react'; 
 
 const paymentMethods = [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
@@ -156,10 +154,10 @@ export default function RequestMotoTaxiPage() {
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
   const serviceCategories = [
-    { id: 'moto_economica', icon: Moped, title: t('mototaxi_service_economic_title'), description: t('mototaxi_service_economic_desc'), price: 3.50, eta: t('eta_5min') },
-    { id: 'moto_rapida', icon: Moped, title: t('mototaxi_service_fast_title'), description: t('mototaxi_service_fast_desc'), price: 5.00, eta: t('eta_4min') },
-    { id: 'moto_bau', icon: Moped, title: t('mototaxi_service_box_title'), description: t('mototaxi_service_box_desc'), price: 6.00, eta: t('eta_6min') },
-    { id: 'tuk_tuk', icon: Moped, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') },
+    { id: 'moto_economica', icon: Car, title: t('mototaxi_service_economic_title'), description: t('mototaxi_service_economic_desc'), price: 3.50, eta: t('eta_5min') },
+    { id: 'moto_rapida', icon: Car, title: t('mototaxi_service_fast_title'), description: t('mototaxi_service_fast_desc'), price: 5.00, eta: t('eta_4min') },
+    { id: 'moto_bau', icon: Car, title: t('mototaxi_service_box_title'), description: t('mototaxi_service_box_desc'), price: 6.00, eta: t('eta_6min') },
+    { id: 'tuk_tuk', icon: Car, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') },
   ];
 
     useEffect(() => {
@@ -447,7 +445,7 @@ export default function RequestMotoTaxiPage() {
                  <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            {step === 'driver_enroute' ? <CheckCircle className="h-10 w-10 text-primary" /> : <Moped className="h-10 w-10 text-primary" />}
+                            {step === 'driver_enroute' ? <CheckCircle className="h-10 w-10 text-primary" /> : <Car className="h-10 w-10 text-primary" />}
                         </div>
                         <CardTitle className="font-headline">{step === 'driver_enroute' ? t('driver_enroute_title') : t('trip_inprogress_title')}</CardTitle>
                         <CardDescription>{step === 'driver_enroute' ? t('driver_enroute_desc', { name: assignedDriverProfile?.name || '...', time: 5 }) : t('trip_inprogress_desc')}</CardDescription>
