@@ -9,8 +9,8 @@ import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useCurrency } from '@/lib/currency';
 
-// Mock data to be replaced with real data
 interface ReferralData {
   referralCode: string;
   friendsInvited: number;
@@ -21,14 +21,18 @@ interface ReferralData {
 export default function ReferralPage() {
     const { t, user } = useAppContext();
     const { toast } = useToast();
+    const { formatCurrency } = useCurrency();
     const [referralData, setReferralData] = useState<ReferralData | null>(null);
 
     useEffect(() => {
         // Fetch real referral data based on user.id
-        // For now, we'll simulate it but based on the user
+        // For now, we'll generate the code from user data and keep numbers at 0.
         if (user) {
+            // A more robust implementation would fetch this from the backend.
+            // e.g., const data = await getReferralData(user.id);
+            // setReferralData(data);
             setReferralData({
-                referralCode: `${user.name.split(' ')[0].toUpperCase()}-${user.id.substring(0,4)}`,
+                referralCode: `${user.name?.split(' ')[0].toUpperCase()}-${user.id.substring(0,4)}`,
                 friendsInvited: 0, // This would be a real query
                 totalEarnings: 0, // This would be a real query
             });
@@ -120,7 +124,7 @@ export default function ReferralPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <StatCard icon={UserPlus} title={referralData.friendsInvited.toString()} subtitle={t('refer_invited_drivers')} description={t('refer_invited_drivers_desc')} />
-                 <StatCard icon={Wallet} title={`€${referralData.totalEarnings.toFixed(2)}`} subtitle={t('refer_total_earnings')} description={t('refer_total_earnings_desc')} />
+                 <StatCard icon={Wallet} title={formatCurrency(referralData.totalEarnings)} subtitle={t('refer_total_earnings')} description={t('refer_total_earnings_desc')} />
             </div>
         </div>
     );

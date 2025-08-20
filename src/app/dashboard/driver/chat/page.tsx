@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,15 +9,14 @@ import { Send, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
-// Mock data will be replaced by real data fetching
-const conversations = [
-  // This will be populated dynamically
+// Mock data has been removed. This component now requires real data fetching logic.
+const conversations: any[] = [
+  // This will be populated dynamically from a real data source.
 ];
 
-const initialMessages = {
-  // This will be populated dynamically
+const initialMessages: Record<number, any[]> = {
+  // This will be populated dynamically based on the selected conversation.
 };
-
 
 export default function DriverChatPage() {
     const { t, user } = useAppContext();
@@ -26,23 +25,32 @@ export default function DriverChatPage() {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
 
-    // TODO: Implement real data fetching for conversations and messages
-    // For now, we show a loading/placeholder state as mock data is removed.
-    useState(() => {
-        // Simulate loading
-        setTimeout(() => setLoading(false), 1000);
-    });
+    useEffect(() => {
+        // TODO: Implement real data fetching for conversations.
+        // For now, we simulate loading and show an empty state.
+        setLoading(true);
+        // fetchDriverConversations(user.id).then(data => {
+        //     setConversations(data);
+        //     if (data.length > 0) {
+        //         handleSelectConversation(data[0]);
+        //     }
+        //     setLoading(false);
+        // });
+        const timer = setTimeout(() => setLoading(false), 1000); // Simulate loading
+        return () => clearTimeout(timer);
+    }, [user]);
 
     const handleSelectConversation = (conv: any) => {
         setSelectedConversation(conv);
-        // In a real app, you would fetch messages for this conversation
-        setMessages([]); 
+        setMessages([]); // Clear previous messages
+        // TODO: Fetch messages for the selected conversation
+        // fetchMessagesForConversation(conv.id).then(setMessages);
     }
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
         if (newMessage.trim() === '' || !selectedConversation) return;
-        // In a real app, you would send this message to your backend
+        // TODO: Implement real message sending logic
         const newMsg = {
             id: messages.length + 1,
             sender: 'Você',

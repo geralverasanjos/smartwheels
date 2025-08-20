@@ -1,14 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bell, Car, FileCheck, Tag } from 'lucide-react';
+import { Bell, Car, FileCheck, Tag, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 import type { TranslationKeys } from '@/lib/i18n';
 
 interface Notification {
-  id: number;
+  id: string; // Changed to string for Firestore IDs
   icon: LucideIcon;
   titleKey: TranslationKeys;
   descriptionKey: TranslationKeys;
@@ -16,50 +16,42 @@ interface Notification {
   isRead: boolean;
 }
 
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    icon: Car,
-    titleKey: 'notification_new_ride_request_title',
-    descriptionKey: 'notification_new_ride_request_desc',
-    timestamp: 'Há 5 minutos',
-    isRead: false,
-  },
-  {
-    id: 2,
-    icon: FileCheck,
-    titleKey: 'notification_document_approved_title',
-    descriptionKey: 'notification_document_approved_desc',
-    timestamp: 'Há 1 hora',
-    isRead: false,
-  },
-  {
-    id: 3,
-    icon: Tag,
-    titleKey: 'notification_new_promo_available_title',
-    descriptionKey: 'notification_new_promo_available_desc',
-    timestamp: 'Ontem',
-    isRead: true,
-  },
-    {
-    id: 4,
-    icon: Bell,
-    titleKey: 'notification_welcome_driver_title',
-    descriptionKey: 'notification_welcome_driver_desc',
-    timestamp: '1 semana atrás',
-    isRead: true,
-  },
-];
+// Removed initialNotifications mock data
+// const initialNotifications: Notification[] = [ ... ];
 
 export default function DriverNotificationsPage() {
-    const { t } = useAppContext();
-    const [notifications, setNotifications] = useState(initialNotifications);
+    const { t, user } = useAppContext();
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleNotificationClick = (id: number) => {
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            if (!user?.id) {
+                setLoading(false);
+                return;
+            }
+            // TODO: Implement a service to fetch notifications from Firestore
+            // e.g., const userNotifications = await getNotifications(user.id);
+            // setNotifications(userNotifications);
+            
+            // For now, we simulate an empty state after loading
+            setNotifications([]);
+            setLoading(false);
+        };
+        
+        fetchNotifications();
+    }, [user]);
+
+    const handleNotificationClick = (id: string) => {
+        // TODO: Implement logic to mark notification as read in the backend
         setNotifications(
             notifications.map(n => n.id === id ? { ...n, isRead: true } : n)
         );
     };
+
+    if (loading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
+    }
 
     return (
         <Card>
@@ -94,7 +86,7 @@ export default function DriverNotificationsPage() {
                 ) : (
                      <div className="text-center text-muted-foreground py-16">
                         <Bell className="mx-auto h-12 w-12" />
-                        <h2 className="text-2xl font-semibold">{t('notifications_no_notifications')}</h2>
+                        <h2 className="text-2xl font-semibold mt-4">{t('notifications_no_notifications')}</h2>
                         <p>{t('notifications_no_notifications_desc')}</p>
                     </div>
                 )}

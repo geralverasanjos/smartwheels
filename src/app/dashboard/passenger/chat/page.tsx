@@ -1,45 +1,55 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Search } from 'lucide-react';
+import { Send, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const conversations = [
-  { id: 1, name: 'Carlos Silva', lastMessage: 'Olá! Estou a caminho.', time: '10:42', unread: 0, avatar: 'https://placehold.co/40x40/32CD32/FFFFFF?text=CS' },
-  { id: 2, name: 'Mariana Costa', lastMessage: 'Obrigada pelo excelente serviço!', time: 'Ontem', unread: 1, avatar: 'https://placehold.co/40x40/32CD32/FFFFFF?text=MC' },
-  { id: 3, name: 'Suporte SmartWheels', lastMessage: 'Sua solicitação #123 foi atualizada.', time: 'Terça-feira', unread: 0, avatar: 'https://placehold.co/40x40/000000/FFFFFF?text=SW' },
+// Mock data has been removed. This component now requires real data fetching logic.
+const conversations: any[] = [
+  // This will be populated dynamically from a real data source.
 ];
 
-const initialMessages: Record<number, { id: number; sender: string; text: string; time: string; self: boolean }[]> = {
-  1: [
-    { id: 1, sender: 'Carlos Silva', text: 'Olá! Estou a caminho.', time: '10:42', self: false },
-  ],
-  2: [
-    { id: 1, sender: 'Mariana Costa', text: 'Obrigada pelo excelente serviço!', time: 'Ontem', self: false },
-     { id: 2, sender: 'Você', text: 'De nada! Fico feliz em ajudar.', time: 'Ontem', self: true },
-  ],
-  3: [],
+const initialMessages: Record<number, any[]> = {
+  // This will be populated dynamically based on the selected conversation.
 };
 
 
 export default function PassengerChatPage() {
-    const { t } = useAppContext();
-    const [selectedConversation, setSelectedConversation] = useState(conversations[0]);
-    const [messages, setMessages] = useState(initialMessages[selectedConversation.id] || []);
+    const { t, user } = useAppContext();
+    const [selectedConversation, setSelectedConversation] = useState<any>(null);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // TODO: Implement real data fetching for conversations.
+        setLoading(true);
+        // fetchPassengerConversations(user.id).then(data => {
+        //     setConversations(data);
+        //     if (data.length > 0) {
+        //         handleSelectConversation(data[0]);
+        //     }
+        //     setLoading(false);
+        // });
+        const timer = setTimeout(() => setLoading(false), 1000); // Simulate loading
+        return () => clearTimeout(timer);
+    }, [user]);
 
     const handleSelectConversation = (conv: any) => {
         setSelectedConversation(conv);
-        setMessages(initialMessages[conv.id] || []);
+        setMessages([]); // Clear previous messages
+        // TODO: Fetch messages for the selected conversation
+        // fetchMessagesForConversation(conv.id).then(setMessages);
     }
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
-        if (newMessage.trim() === '') return;
+        if (newMessage.trim() === '' || !selectedConversation) return;
+        // TODO: Implement real message sending logic
         const newMsg = {
             id: messages.length + 1,
             sender: 'Você',
@@ -50,6 +60,11 @@ export default function PassengerChatPage() {
         setMessages([...messages, newMsg]);
         setNewMessage('');
     }
+
+    if(loading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
+    }
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:h-[calc(100vh-10rem)]">
@@ -63,29 +78,33 @@ export default function PassengerChatPage() {
                 </CardHeader>
                 <CardContent className="flex-grow overflow-y-auto p-0">
                    <div className="space-y-1">
-                        {conversations.map(conv => (
-                            <div 
-                                key={conv.id} 
-                                className={cn(
-                                    "flex items-center gap-3 p-3 cursor-pointer transition-colors",
-                                    selectedConversation.id === conv.id ? 'bg-primary/10' : 'hover:bg-accent'
-                                )}
-                                onClick={() => handleSelectConversation(conv)}
-                            >
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={conv.avatar} data-ai-hint="person face" />
-                                    <AvatarFallback>{conv.name.substring(0,2)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 truncate">
-                                    <p className="font-semibold">{conv.name}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
+                        {conversations.length === 0 ? (
+                            <p className="p-4 text-center text-muted-foreground">{t('no_conversations_found')}</p>
+                        ) : (
+                            conversations.map(conv => (
+                                <div 
+                                    key={conv.id} 
+                                    className={cn(
+                                        "flex items-center gap-3 p-3 cursor-pointer transition-colors",
+                                        selectedConversation?.id === conv.id ? 'bg-primary/10' : 'hover:bg-accent'
+                                    )}
+                                    onClick={() => handleSelectConversation(conv)}
+                                >
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={conv.avatar} data-ai-hint="person face" />
+                                        <AvatarFallback>{conv.name.substring(0,2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 truncate">
+                                        <p className="font-semibold">{conv.name}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground text-right">
+                                        <p>{conv.time}</p>
+                                        {conv.unread > 0 && <span className="mt-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs">{conv.unread}</span>}
+                                    </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground text-right">
-                                    <p>{conv.time}</p>
-                                    {conv.unread > 0 && <span className="mt-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs">{conv.unread}</span>}
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                    </div>
                 </CardContent>
             </Card>

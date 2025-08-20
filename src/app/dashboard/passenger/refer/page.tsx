@@ -1,26 +1,47 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Gift, Copy, Share2, UserPlus, Wallet, QrCode } from 'lucide-react';
+import { Gift, Copy, Share2, UserPlus, Wallet, QrCode, Loader2 } from 'lucide-react';
 import StatCard from '@/components/ui/stat-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { useCurrency } from '@/lib/currency';
 
-const referralData = {
-  referralCode: 'ANA-SOU-SA-123',
-  friendsInvited: 5,
-  totalEarnings: 25.00,
-};
-const referralLink = `https://smartwheels.com/join?ref=${referralData.referralCode}`;
-const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(referralLink)}`;
+interface ReferralData {
+  referralCode: string;
+  friendsInvited: number;
+  totalEarnings: number;
+}
 
 export default function ReferralPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { toast } = useToast();
+    const { formatCurrency } = useCurrency();
+    const [referralData, setReferralData] = useState<ReferralData | null>(null);
+
+    useEffect(() => {
+        // Fetch real referral data based on user.id
+        if (user) {
+            // const data = await getReferralData(user.id);
+            // setReferralData(data);
+            setReferralData({
+                referralCode: `${user.name?.split(' ')[0].toUpperCase()}-${user.id.substring(0,4)}`,
+                friendsInvited: 0,
+                totalEarnings: 0,
+            });
+        }
+    }, [user]);
+
+    if (!referralData) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
+    }
+
+    const referralLink = `https://smartwheels.com/join?ref=${referralData.referralCode}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(referralLink)}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(referralLink);
@@ -100,7 +121,7 @@ export default function ReferralPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <StatCard icon={UserPlus} title={referralData.friendsInvited.toString()} subtitle={t('refer_invited_friends')} description={t('refer_invited_friends_desc')} />
-                 <StatCard icon={Wallet} title={`€${referralData.totalEarnings.toFixed(2)}`} subtitle={t('refer_total_earnings')} description={t('refer_total_earnings_desc')} />
+                 <StatCard icon={Wallet} title={formatCurrency(referralData.totalEarnings)} subtitle={t('refer_total_earnings')} description={t('refer_total_earnings_desc')} />
             </div>
         </div>
     );
