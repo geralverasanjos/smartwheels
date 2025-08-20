@@ -4,45 +4,25 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import ActionCard from '@/components/action-card';
-import { Car, Truck, History, Wallet } from 'lucide-react';
+import { Car, Truck, History, Wallet, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { getUserProfileByAuthId } from '@/services/profileService';
 import { useCurrency } from '@/lib/currency';
-import { createRideRequest } from '@/services/rideService';
 
 export default function PassengerDashboard() {
-  const { t } = useAppContext();
+  const { t, user } = useAppContext();
   const { formatCurrency } = useCurrency();
-
-  const { user } = useAppContext();
   const router = useRouter();
-  const [passengerBalance, setPassengerBalance] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchPassengerData = async () => {
-      if (user && user.id) { // user.id is the auth UID
-        try {
-          // Assuming getUserProfileByAuthId now returns the full profile including balance
-          const profile = await getUserProfileByAuthId(user.id);
-          if (profile) {
-            setPassengerBalance(profile.balance);
-          }
-        } catch (error) {
-          console.error("Failed to fetch passenger profile:", error);
-          // Handle error fetching profile, e.g., set balance to 0 or display an error message
-          setPassengerBalance(0);
-        }
-      }
-    };
-    fetchPassengerData();
-  }, [user]); // Re-run effect when user object changes
+  
+  // The user object from context already contains the balance.
+  // We can use it directly.
 
   return (
     <div className="flex flex-col gap-8">
       <div className="panel-header">
-        <h1 className="font-headline title-glow">Olá, {user?.name || t('passenger_panel_welcome_title')}!</h1>
-        <p>{t('passenger_panel_welcome_subtitle', { name: user?.name || ''})}</p>
+        <h1 className="font-headline title-glow">{t('passenger_panel_welcome_title', { name: user?.name || '...' })}</h1>
+        <p>{t('passenger_panel_welcome_subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -74,14 +54,14 @@ export default function PassengerDashboard() {
           <div className="flex items-center gap-4">
             <Wallet className="h-8 w-8 text-primary" />
             <div>
-                <CardTitle>{t('menu_wallet_swg')}</CardTitle>
+                <CardTitle>{t('menu_wallet')}</CardTitle>
                 <CardDescription>{t('quick_access_wallet_desc')}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
            <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold">{passengerBalance !== null ? formatCurrency(passengerBalance) : '...'}</p>
+            <p className="text-2xl font-bold">{user ? formatCurrency(user.balance) : <Loader2 className="h-6 w-6 animate-spin" />}</p>
              <Button asChild variant="link" className="px-0">
                 <Link href="/dashboard/passenger/wallet">
                     {t('btn_view_details')}
