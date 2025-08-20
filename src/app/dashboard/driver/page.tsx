@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { Button } from '@/components/ui/button'; 
 import { useCurrency } from '@/lib/currency';
-import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer, HeatmapLayer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { TranslationKeys } from '@/lib/i18n';
 import { saveTripHistory } from '@/services/historyService';
@@ -46,6 +46,23 @@ const mockStands = [
     { id: 'stand_2', name: 'Estação do Oriente', location: { lat: 38.767, lng: -9.099 } },
     { id: 'stand_3', name: 'Praça do Comércio', location: { lat: 38.707, lng: -9.136 } },
 ];
+
+const nearbyDrivers = [
+  { id: 'driver_nearby_1', position: { lat: 38.722, lng: -9.155 } },
+  { id: 'driver_nearby_2', position: { lat: 38.718, lng: -9.145 } },
+  { id: 'driver_nearby_3', position: { lat: 38.725, lng: -9.158 } },
+];
+
+const heatmapData = [
+  new google.maps.LatLng(38.71, -9.14),
+  new google.maps.LatLng(38.712, -9.142),
+  new google.maps.LatLng(38.715, -9.138),
+  new google.maps.LatLng(38.711, -9.141),
+  new google.maps.LatLng(38.708, -9.139),
+  new google.maps.LatLng(38.73, -9.16),
+  new google.maps.LatLng(38.733, -9.158),
+];
+
 
 type State = {
   isOnline: boolean;
@@ -390,6 +407,19 @@ export default function DriverDashboardPage() {
         anchor: new window.google.maps.Point(12, 12)
     };
   };
+  
+    const getNearbyVehicleIcon = () => {
+    if (typeof window === 'undefined' || !window.google) return null;
+    return {
+      path: 'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11C5.84 5 5.28 5.42 5.08 6.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z',
+      fillColor: 'hsl(var(--secondary-foreground))',
+      fillOpacity: 0.7,
+      strokeWeight: 1,
+      strokeColor: 'hsl(var(--background))',
+      scale: 1.2,
+      anchor: new window.google.maps.Point(12, 12)
+    };
+  };
 
   const getServiceTypeName = (serviceType: RideRequest['serviceType']) => {
     const keyMap: Record<RideRequest['serviceType'], TranslationKeys> = {
@@ -524,9 +554,13 @@ export default function DriverDashboardPage() {
             <Map>
               {isOnline && (
                 <>
+                    <HeatmapLayer data={heatmapData} />
                     <MarkerF position={vehiclePosition} icon={getVehicleIcon() as google.maps.Icon | null} />
                     {activeRide?.origin && <MarkerF position={{lat: 38.74, lng: -9.15}} label="P" />}
                     {activeRide?.destination && (simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') && <MarkerF position={TRIP_DESTINATION} label="D" />}
+                    {nearbyDrivers.map(nearby => (
+                        <MarkerF key={nearby.id} position={nearby.position} icon={getNearbyVehicleIcon() as google.maps.Icon | null} />
+                    ))}
                 </>
               )}
               {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
@@ -653,3 +687,5 @@ const StatCard = ({ icon: Icon, title, subtitle, children }: { icon: React.Eleme
         </CardContent>
     </Card>
 );
+
+    

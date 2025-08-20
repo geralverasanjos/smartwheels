@@ -1,7 +1,7 @@
 'use client';
 import { useJsApiLoader } from '@react-google-maps/api';
 
-const libraries: ('places' | 'drawing' | 'geometry' | 'localContext' | 'visualization')[] = ['places'];
+const libraries: ('places' | 'drawing' | 'geometry' | 'localContext' | 'visualization')[] = ['places', 'visualization'];
 
 export const useGoogleMaps = () => {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -11,3 +11,5 @@ export const useGoogleMaps = () => {
 
   return { isLoaded, loadError };
 };
+
+    
