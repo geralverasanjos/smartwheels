@@ -39,6 +39,9 @@ export interface Trip {
     passengerId: string; // ID of the passenger who took the trip
     vehicleId: string; // ID of the vehicle used for the trip
     duration: number; // in minutes
+    // Enriched data, not stored in DB
+    driver?: UserProfile;
+    passenger?: UserProfile;
 }
 
 export interface Message {
