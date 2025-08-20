@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -14,9 +15,13 @@ import { Map } from '@/components/map';
 import {
   ArrowRight,
   Car,
+  Box,
+  Users,
+  CreditCard,
+  Wallet,
+  Landmark,
   MapPin,
-  LocateFixed,
-  Loader2,
+  Loader2, Send,
   CheckCircle,
   Phone,
   MessageSquare,
@@ -24,15 +29,11 @@ import {
   Star,
   PlayCircle,
   ThumbsUp,
-  Package,
-  Send,
-  Wallet,
-  CreditCard,
-  Landmark,
-  Bike,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
+import ServiceCategoryCard from '@/components/service-category-card';
 import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
@@ -41,31 +42,44 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAppContext } from '@/contexts/app-context';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
-import { createRideRequest } from '@/services/rideService';
+import { createRideRequest, updateRideStatus } from '@/services/rideService';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { getProfileByIdAndRole } from '@/services/profileService';
+import { getVehicleById } from '@/services/vehicleService';
+import { sendMessage } from '@/services/chatService';
+
+import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
+
+const paymentMethods = [
+    {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
+    {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
+    {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
+    {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
+    {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
+];
+
 type Address = {
     text: string;
     coords: google.maps.LatLngLiteral | null;
 };
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
-const DELIVERY_PRICE = 5.50;
-
 
 type State = {
-  step: 'address' | 'payment' | 'searching' | 'driver_enroute' | 'driver_arrived' | 'trip_inprogress' | 'rating';
+  step: 'address' | 'service' | 'payment' | 'searching' | 'driver_enroute' | 'driver_arrived' | 'trip_inprogress' | 'rating' | 'cancelled';
   origin: Address;
   destination: Address;
   driverPosition: { lat: number; lng: number };
   directions: google.maps.DirectionsResult | null;
+  selectedService: string;
+  selectedPayment: string;
   selectingField: 'origin' | 'destination' | null;
   rating: number;
   tip: number | null;
-  selectedPayment: string;
-  vehicleType: 'motorcycle' | 'car';
+  activeRideId: string | null;
 };
 
 type Action =
@@ -74,18 +88,19 @@ type Action =
   | { type: 'SET_DESTINATION'; payload: Address }
   | { type: 'SET_DRIVER_POSITION'; payload: { lat: number; lng: number } }
   | { type: 'SET_DIRECTIONS'; payload: google.maps.DirectionsResult | null }
+  | { type: 'SELECT_SERVICE'; payload: string }
+  | { type: 'SELECT_PAYMENT'; payload: string }
   | { type: 'SET_SELECTING_FIELD'; payload: State['selectingField'] }
   | { type: 'SET_RATING', payload: number }
   | { type: 'SET_TIP', payload: number | null }
-  | { type: 'REQUEST_DELIVERY' }
+  | { type: 'REQUEST_RIDE' }
+  | { type: 'CONFIRM_PAYMENT'; payload: string }
+  | { type: 'DRIVER_FOUND'; payload: { driverId: string, vehicleId: string } }
   | { type: 'DRIVER_ARRIVED' }
   | { type: 'TRIP_START' }
   | { type: 'TRIP_FINISH' }
-  | { type: 'CANCEL_DELIVERY' }
-  | { type: 'RESET' }
-  | { type: 'SELECT_PAYMENT', payload: string }
-  | { type: 'CONFIRM_PAYMENT' }
-  | { type: 'SET_VEHICLE_TYPE', payload: State['vehicleType'] };
+  | { type: 'CANCEL_RIDE' }
+  | { type: 'RESET' };
 
 const initialState: State = {
   step: 'address',
@@ -93,11 +108,12 @@ const initialState: State = {
   destination: { text: '', coords: null },
   driverPosition: DRIVER_INITIAL_POSITION,
   directions: null,
+  selectedService: 'delivery_moto',
+  selectedPayment: 'wallet',
   selectingField: null,
   rating: 0,
   tip: null,
-  selectedPayment: 'wallet',
-  vehicleType: 'motorcycle',
+  activeRideId: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -107,56 +123,107 @@ function reducer(state: State, action: Action): State {
         case 'SET_DESTINATION': return { ...state, destination: action.payload };
         case 'SET_DRIVER_POSITION': return { ...state, driverPosition: action.payload };
         case 'SET_DIRECTIONS': return { ...state, directions: action.payload };
+        case 'SELECT_SERVICE': return { ...state, selectedService: action.payload };
+        case 'SELECT_PAYMENT': return { ...state, selectedPayment: action.payload };
         case 'SET_SELECTING_FIELD': return { ...state, selectingField: action.payload };
         case 'SET_RATING': return { ...state, rating: action.payload };
         case 'SET_TIP': return { ...state, tip: action.payload };
-        case 'REQUEST_DELIVERY': return { ...state, step: 'payment' };
+        case 'REQUEST_RIDE': return { ...state, step: 'service' };
+        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching', activeRideId: action.payload };
+        case 'DRIVER_FOUND': return { ...state, step: 'driver_enroute' };
         case 'DRIVER_ARRIVED': return { ...state, step: 'driver_arrived' };
         case 'TRIP_START': return { ...state, step: 'trip_inprogress' };
         case 'TRIP_FINISH': return { ...state, step: 'rating' };
-        case 'CANCEL_DELIVERY': return { ...initialState, origin: state.origin };
+        case 'CANCEL_RIDE': return { ...initialState, origin: state.origin, activeRideId: null };
         case 'RESET': return { ...initialState, origin: state.origin };
-        case 'SELECT_PAYMENT': return { ...state, selectedPayment: action.payload };
-        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching' };
-        case 'SET_VEHICLE_TYPE': return { ...state, vehicleType: action.payload };
         default: return state;
     }
 }
 
-export default function PassengerDeliveryPage() {
-  const { t, language } = useAppContext();
-  const { toast } = useToast();
-  const { reverseGeocode } = useGeocoding();
-  const { formatCurrency } = useCurrency(language.value);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
 
+export default function RequestDeliveryPage() {
+  const { toast } = useToast();
+  const { language, t, user } = useAppContext();
+  const { formatCurrency } = useCurrency(language.value);
+  const { reverseGeocode } = useGeocoding();
+  const { isLoaded } = useGoogleMaps();
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { step, origin, destination, driverPosition, directions, selectingField, rating, selectedPayment, vehicleType, tip } = state;
-  
-  const paymentMethods = [
-      {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
-      {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
-      {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
-      {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
-      {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
+  const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
+  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
+
+  const serviceCategories = [
+    { id: 'delivery_moto', icon: Box, title: t('delivery_service_moto_title'), description: t('delivery_service_moto_desc'), price: 5.00, eta: t('eta_10min') },
+    { id: 'delivery_car', icon: Car, title: t('delivery_service_car_title'), description: t('delivery_service_car_desc'), price: 8.00, eta: t('eta_15min') },
+    { id: 'delivery_van', icon: Users, title: t('delivery_service_van_title'), description: t('delivery_service_van_desc'), price: 15.00, eta: t('eta_20min') },
   ];
 
-  const handleRequestDelivery = () => {
+    useEffect(() => {
+        if (!activeRideId) return;
+
+        const rideDocRef = doc(db, 'rideRequests', activeRideId);
+        const unsubscribeRide = onSnapshot(rideDocRef, async (docSnap) => {
+            if (docSnap.exists()) {
+                const rideData = docSnap.data() as RideRequest;
+                if (rideData.driverId && !assignedDriverProfile) {
+                    const profile = await getProfileByIdAndRole(rideData.driverId, 'driver');
+                    setAssignedDriverProfile(profile);
+                }
+                if (rideData.vehicleId && !assignedVehicle) {
+                    const vehicleData = await getVehicleById(rideData.vehicleId);
+                    setAssignedVehicle(vehicleData);
+                }
+
+                if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
+                    dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
+                }
+                
+                if (rideData.status === 'at_pickup') dispatch({ type: 'DRIVER_ARRIVED' });
+                else if (rideData.status === 'in_progress') dispatch({ type: 'TRIP_START' });
+                else if (rideData.status === 'completed') dispatch({ type: 'TRIP_FINISH' });
+                else if (rideData.status === 'cancelled') dispatch({ type: 'CANCEL_RIDE' });
+            }
+        });
+        
+        const messagesQuery = query(collection(db, 'messages'), where('rideId', '==', activeRideId), orderBy('timestamp', 'asc'));
+        const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+            const newMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+            setMessages(newMessages);
+        });
+
+        return () => {
+            unsubscribeRide();
+            unsubscribeMessages();
+        };
+    }, [activeRideId, state.step, assignedDriverProfile, assignedVehicle]);
+
+
+  const handleRequestRide = () => {
       if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
           toast({ title: t('error_title'), description: t('error_select_origin_destination'), variant: "destructive" });
           return;
       }
-    dispatch({ type: 'REQUEST_DELIVERY' });
+    dispatch({ type: 'REQUEST_RIDE' });
     handleDirections(origin.coords, destination.coords);
   };
   
-    const handleConfirmPayment = () => {
-        dispatch({ type: 'CONFIRM_PAYMENT' });
-        toast({
-            title: t('delivery_searching_title'),
-            description: t('delivery_searching_desc'),
-        });
-    };
+  const handleConfirm = async () => {
+    if (!user || !user.id) {
+        toast({ title: t('error_title'), description: 'User not authenticated.', variant: "destructive" });
+        return;
+    }
+    try {
+        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
+        toast({ title: t('searching_driver_title'), description: t('searching_driver_desc') });
+    } catch(error) {
+        console.error('Error creating ride request:', error);
+        toast({ title: t('error_title'), description: t('error_request_failed'), variant: "destructive" });
+    }
+  };
 
   const handlePlaceSelect = async (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
       if(place.geometry?.location){
@@ -179,23 +246,9 @@ export default function PassengerDeliveryPage() {
     }
   }, [selectingField, reverseGeocode]);
 
-  const handleUseCurrentLocation = useCallback(() => {
-      if(navigator.geolocation){
-          navigator.geolocation.getCurrentPosition(async (position) => {
-              const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-              const address = await reverseGeocode(coords);
-              dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-              if(map) map.panTo(coords);
-          })
-      }
-  }, [reverseGeocode, map]);
-
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
-    toast({
-        title: t('select_on_map_title'),
-        description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }),
-    })
+    toast({ title: t('select_on_map_title'), description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }) });
   }
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
@@ -213,21 +266,38 @@ export default function PassengerDeliveryPage() {
         }
     });
   }, []);
-  
-  const handleRating = () => {
+
+  const handleRating = async () => {
+    if (!activeRideId) return;
+    // Here you would also call a service to save the rating and tip
     toast({ title: t('rating_sent_title'), description: t('rating_sent_desc') });
     dispatch({ type: 'RESET' });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
   }
 
-  useEffect(() => {
-    if (step === 'searching') {
-        const searchTimeout = setTimeout(() => {
-            dispatch({ type: 'SET_STEP', payload: 'driver_enroute' });
-        }, 3000);
-        return () => clearTimeout(searchTimeout);
+  const handleCancelRide = async () => {
+    if (!activeRideId) return;
+    await updateRideStatus(activeRideId, 'cancelled');
+    // The useEffect listener will handle the state change
+    toast({ title: t('ride_cancelled_title'), description: t('ride_cancelled_desc') });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
+  };
+
+  const handleSendMessage = async () => {
+    if (!currentMessage.trim() || !activeRideId || !user?.id) return;
+    try {
+        await sendMessage(activeRideId, user.id, currentMessage);
+        setCurrentMessage('');
+    } catch (error) {
+        console.error('Error sending message:', error);
+        toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
     }
-  }, [step]);
-  
+  };
+
   useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {
         handleDirections(driverPosition, origin.coords);
@@ -236,44 +306,8 @@ export default function PassengerDeliveryPage() {
     }
   }, [step, origin.coords, destination.coords, driverPosition, handleDirections]);
   
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    const moveVehicle = (target: google.maps.LatLngLiteral, onArrival: () => void) => {
-        return setInterval(() => {
-            dispatch({
-                type: 'SET_DRIVER_POSITION',
-                payload: {
-                    lat: driverPosition.lat + (target.lat - driverPosition.lat) * 0.1,
-                    lng: driverPosition.lng + (target.lng - driverPosition.lng) * 0.1,
-                },
-            });
-
-            const distance = Math.sqrt(Math.pow(driverPosition.lat - target.lat, 2) + Math.pow(driverPosition.lng - target.lng, 2));
-            if (distance < 0.001) {
-                onArrival();
-            }
-        }, 1000);
-    }
-
-    if (step === 'driver_enroute' && origin.coords) {
-        interval = moveVehicle(origin.coords, () => dispatch({ type: 'DRIVER_ARRIVED' }));
-    } else if (step === 'trip_inprogress' && destination.coords) {
-         interval = moveVehicle(destination.coords, () => dispatch({ type: 'TRIP_FINISH' }));
-    }
-
-    if (step === 'driver_arrived') {
-      const startTimeout = setTimeout(() => {
-        if (state.step === 'driver_arrived') {
-          dispatch({ type: 'TRIP_START' });
-        }
-      }, 4000);
-      return () => clearTimeout(startTimeout);
-    }
-
-    return () => clearInterval(interval);
-  }, [step, driverPosition, origin.coords, destination.coords, state.step]);
-
+  const servicePrice = serviceCategories.find(s => s.id === selectedService)?.price || 0;
+  
   const getVehicleIcon = () => {
     if (typeof window === 'undefined' || !window.google) return null;
     return {
@@ -293,24 +327,24 @@ export default function PassengerDeliveryPage() {
             return (
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle className="font-headline text-2xl">{t('delivery_title')}</CardTitle>
-                  <CardDescription>
-                    {t('delivery_subtitle')}
-                  </CardDescription>
+                  <CardTitle className="font-headline text-2xl">{t('where_to_title')}</CardTitle>
+                  <CardDescription>{t('where_to_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-4">
                     <div className="space-y-2">
-                        <Label>{t('origin_label')}</Label>
+                        <Label htmlFor="origin">{t('origin_label')}</Label>
                         <div className="flex gap-2">
-                             <Button variant="outline" className="w-full justify-start" onClick={handleUseCurrentLocation}>
-                                <LocateFixed className="mr-2 h-4 w-4" />
-                                {origin.text || t('current_location')}
-                            </Button>
+                             <AutocompleteInput 
+                                onPlaceSelect={(place) => handlePlaceSelect(place, 'origin')}
+                                value={origin.text}
+                                placeholder={t('origin_placeholder')}
+                                onClear={() => dispatch({ type: 'SET_ORIGIN', payload: { text: '', coords: null } })}
+                            />
                             <Button variant="outline" size="icon" onClick={() => handleSelectOnMap('origin')}><MapPin className="h-4 w-4"/></Button>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>{t('destination_label')}</Label>
+                        <Label htmlFor="destination">{t('destination_label')}</Label>
                         <div className="flex gap-2">
                             <AutocompleteInput 
                                 onPlaceSelect={(place) => handlePlaceSelect(place, 'destination')}
@@ -321,57 +355,37 @@ export default function PassengerDeliveryPage() {
                             <Button variant="outline" size="icon" onClick={() => handleSelectOnMap('destination')}><MapPin className="h-4 w-4"/></Button>
                         </div>
                     </div>
-                     <Separator />
-                      <div className="space-y-2">
-                          <Label>{t('delivery_vehicle_type_label')}</Label>
-                          <ToggleGroup 
-                              type="single"
-                              defaultValue={vehicleType}
-                              onValueChange={(value) => {
-                                  if (value) dispatch({type: 'SET_VEHICLE_TYPE', payload: value as State['vehicleType']})
-                                }} 
-                              variant="outline"
-                              className="w-full"
-                          >
-                              <ToggleGroupItem value="motorcycle" className="flex-1"><Bike className="mr-2"/>{t('delivery_vehicle_type_motorcycle')}</ToggleGroupItem>
-                              <ToggleGroupItem value="car" className="flex-1"><Car className="mr-2"/>{t('delivery_vehicle_type_car')}</ToggleGroupItem>
-                          </ToggleGroup>
-                      </div>
-                      <div className="space-y-2">
-                          <Label>{t('delivery_size_label')}</Label>
-                          <ToggleGroup type="single" defaultValue="medium" variant="outline" className="w-full">
-                              <ToggleGroupItem value="small" className="flex-1">{t('delivery_size_small')}</ToggleGroupItem>
-                              <ToggleGroupItem value="medium" className="flex-1">{t('delivery_size_medium')}</ToggleGroupItem>
-                              <ToggleGroupItem value="large" className="flex-1">{t('delivery_size_large')}</ToggleGroupItem>
-                          </ToggleGroup>
-                      </div>
-                      <div className="space-y-2">
-                          <Label>{t('delivery_characteristics_label')}</Label>
-                           <RadioGroup defaultValue="fragile" className="flex gap-4">
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="fragile" id="fragile" />
-                                <Label htmlFor="fragile">{t('delivery_char_fragile')}</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="documents" id="documents" />
-                                <Label htmlFor="documents">{t('delivery_char_documents')}</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="box" id="box" />
-                                <Label htmlFor="box">{t('delivery_char_box')}</Label>
-                              </div>
-                          </RadioGroup>
-                      </div>
                 </CardContent>
                 <CardFooter>
-                  <Button
-                    size="lg"
-                    className="w-full text-lg"
-                    onClick={handleRequestDelivery}
-                    disabled={!origin.coords || !destination.coords}
-                  >
-                    {t('delivery_request_button')}
-                    <Send className="ml-2 h-5 w-5" />
+                  <Button size="lg" className="w-full text-lg" onClick={handleRequestRide} disabled={!origin.coords || !destination.coords}>
+                    {t('request_ride_button')}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          case 'service':
+            return (
+              <Card className="h-full flex flex-col">
+                <CardHeader>
+                  <CardTitle className="font-headline text-2xl">{t('select_service_title')}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow space-y-3">
+                  {serviceCategories.map((service) => (
+                    <ServiceCategoryCard
+                        key={service.id}
+                        service={service}
+                        isSelected={selectedService === service.id}
+                        onSelect={() => dispatch({ type: 'SELECT_SERVICE', payload: service.id })}
+                    />
+                  ))}
+                </CardContent>
+                <CardFooter className="flex-col gap-2">
+                   <Button size="lg" className="w-full text-lg" onClick={() => dispatch({ type: 'SET_STEP', payload: 'payment' })}>
+                    {t('continue_button')}
+                  </Button>
+                  <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'address' })}>
+                    {t('back_button')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -398,7 +412,7 @@ export default function PassengerDeliveryPage() {
                                     <div className="flex-1">
                                         <p className="font-bold">{t(method.label as any)}</p>
                                     </div>
-                                    <p className="text-sm text-muted-foreground">{t(method.value as any)}</p>
+                                    <p className="text-sm text-muted-foreground">{method.id === 'card' ? t(method.value as any) : method.value}</p>
                                 </div>
                             )
                         })}
@@ -407,12 +421,12 @@ export default function PassengerDeliveryPage() {
                         <Separator className="mb-4" />
                         <div className="w-full flex justify-between text-lg font-bold">
                             <span>{t('total_label')}:</span>
-                            <span>{formatCurrency(DELIVERY_PRICE)}</span>
+                            <span>{formatCurrency(servicePrice)}</span>
                         </div>
-                        <Button size="lg" className="w-full text-lg mt-4" onClick={handleConfirmPayment}>
-                            {t('delivery_confirm_button')}
+                        <Button size="lg" className="w-full text-lg mt-4" onClick={handleConfirm}>
+                            {t('confirm_ride_button')}
                         </Button>
-                        <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'address' })}>
+                        <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'service' })}>
                             {t('back_button')}
                         </Button>
                     </CardFooter>
@@ -423,48 +437,82 @@ export default function PassengerDeliveryPage() {
                 <Card className="flex flex-col items-center justify-center h-full text-center">
                     <CardContent className="p-8">
                         <Loader2 className="mx-auto h-16 w-16 animate-spin text-primary mb-6" />
-                        <h2 className="text-2xl font-semibold font-headline">{t('delivery_searching_title')}</h2>
-                        <p className="text-muted-foreground mt-2">{t('delivery_searching_desc')}</p>
+                        <h2 className="text-2xl font-semibold font-headline">{t('searching_driver_title')}</h2>
+                        <p className="text-muted-foreground mt-2">{t('searching_driver_desc')}</p>
                     </CardContent>
                 </Card>
             );
          case 'driver_enroute':
+         case 'trip_inprogress':
             return (
                  <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <CheckCircle className="h-10 w-10 text-primary" />
+                            {step === 'driver_enroute' ? <CheckCircle className="h-10 w-10 text-primary" /> : <Box className="h-10 w-10 text-primary" />}
                         </div>
-                        <CardTitle className="font-headline">{t('delivery_enroute_title')}</CardTitle>
-                        <CardDescription>{t('delivery_enroute_desc', { name: 'Marco', time: 5 })}</CardDescription>
+                        <CardTitle className="font-headline">{step === 'driver_enroute' ? t('driver_enroute_title') : t('trip_inprogress_title')}</CardTitle>
+                        <CardDescription>{step === 'driver_enroute' ? t('driver_enroute_desc', { name: assignedDriverProfile?.name || '...', time: 5 }) : t('trip_inprogress_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Separator />
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-14 w-14">
-                                <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person face" />
-                                <AvatarFallback>MS</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <p className="font-bold text-lg">Marco Silva</p>
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                    <span className="font-semibold">4.8</span>
+                         {assignedDriverProfile && assignedVehicle ? (
+                            <>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-14 w-14">
+                                        <AvatarImage src={assignedDriverProfile.avatarUrl} data-ai-hint="person face" />
+                                        <AvatarFallback>{assignedDriverProfile.name?.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-lg">{assignedDriverProfile.name}</p>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                            <span className="font-semibold">{assignedDriverProfile.rating?.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                         {assignedDriverProfile.phone && <Button size="icon" variant="outline"><Phone /></Button>}
+                                    </div>
                                 </div>
-                            </div>
+                                <div className="p-3 rounded-lg bg-accent text-center">
+                                    <p className="font-bold text-lg">{assignedVehicle.make} {assignedVehicle.model}</p>
+                                    <p className="font-mono text-muted-foreground text-sm">{assignedVehicle.plate}</p>
+                                </div>
+                            </>
+                        ) : <div className="flex justify-center items-center p-4"><Loader2 className="h-6 w-6 animate-spin"/></div>}
+
+                        <div className="h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                            {messages.length === 0 ? (
+                                <p className="text-center text-muted-foreground text-sm py-4">{t('chat_no_messages')}</p>
+                            ) : (
+                                messages.map((msg) => {
+                                    const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
+                                    const isCurrentUser = msg.senderId === user?.id;
+                                    return (
+                                        <div key={msg.id} className={`flex items-start gap-2 ${isCurrentUser ? 'flex-row-reverse' : ''}`}>
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={senderProfile?.avatarUrl} />
+                                                <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className={`rounded-lg p-2 max-w-[80%] ${isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                                                <p className="text-sm">{msg.text}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                        <div className="mt-2 space-y-2">
+                            <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
                             <div className="flex gap-2">
-                                 <Button size="icon" variant="outline"><Phone /></Button>
-                                 <Button size="icon" variant="outline"><MessageSquare /></Button>
+                                <Textarea id="chat-input" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
+                                <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}><Send /></Button>
                             </div>
                         </div>
-                         <div className="p-3 rounded-lg bg-accent text-center">
-                            <p className="font-bold text-lg">Yamaha NMAX</p>
-                            <p className="font-mono text-muted-foreground text-sm">XYZ-5678</p>
-                        </div>
+
                     </CardContent>
                     <CardFooter>
-                         <Button variant="destructive" className="w-full" onClick={() => dispatch({ type: 'CANCEL_DELIVERY' })}>
-                           <X className="mr-2 h-4 w-4" /> {t('delivery_cancel_button')}
+                         <Button variant="destructive" className="w-full" onClick={handleCancelRide}>
+                           <X className="mr-2 h-4 w-4" /> {t('cancel_ride_button')}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -476,37 +524,22 @@ export default function PassengerDeliveryPage() {
                   <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
                     <CheckCircle className="h-10 w-10 text-primary" />
                   </div>
-                  <CardTitle className="font-headline">{t('delivery_arrived_title')}</CardTitle>
-                  <CardDescription>{t('delivery_arrived_desc')}</CardDescription>
+                  <CardTitle className="font-headline">{t('driver_arrived_title')}</CardTitle>
+                  <CardDescription>{t('driver_arrived_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" disabled>
-                    <PlayCircle className="mr-2" /> {t('delivery_awaiting_start')}
+                    <PlayCircle className="mr-2" /> {t('awaiting_trip_start_button')}
                   </Button>
                 </CardContent>
               </Card>
             );
-         case 'trip_inprogress':
-            return (
-                <Card>
-                    <CardHeader className="text-center">
-                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <Package className="h-10 w-10 text-primary" />
-                        </div>
-                        <CardTitle>{t('delivery_inprogress_title')}</CardTitle>
-                        <CardDescription>{t('delivery_inprogress_desc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
-                    </CardContent>
-                </Card>
-            )
         case 'rating':
             return (
                  <Card>
                     <CardHeader className="text-center">
                         <ThumbsUp className="mx-auto h-10 w-10 text-primary mb-4" />
-                        <CardTitle>{t('delivery_rating_title')}</CardTitle>
+                        <CardTitle>{t('rating_title')}</CardTitle>
                         <CardDescription>{t('rating_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -552,21 +585,31 @@ export default function PassengerDeliveryPage() {
 
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
-      <div className="md:col-span-2 rounded-lg bg-muted min-h-[400px] md:min-h-0 relative overflow-hidden">
-        <Map onMapLoad={setMap} onMapClick={handleMapClick}>
-            {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} label="O"/>}
-            {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} label="D"/>}
-            {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                 <MarkerF position={driverPosition} icon={getVehicleIcon() as google.maps.Icon | null} />
-            )}
-             {step === 'driver_arrived' && origin.coords && (
-                 <MarkerF position={origin.coords} icon={getVehicleIcon() as google.maps.Icon | null} />
-            )}
-            {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
-        </Map>
+      <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+        {isLoaded ? (
+            <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+                {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} label="O"/>}
+                {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} label="D"/>}
+                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                     <MarkerF position={driverPosition} icon={getVehicleIcon() as google.maps.Icon | null} />
+                )}
+                 {step === 'driver_arrived' && origin.coords && (
+                     <MarkerF position={origin.coords} icon={getVehicleIcon() as google.maps.Icon | null} />
+                )}
+                {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
+            </Map>
+        ) : (
+            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+        )}
       </div>
       <div className="md:col-span-1 md:overflow-y-auto">
-        {renderContent()}
+        {isLoaded ? renderContent() : (
+            <Card className="h-full flex flex-col items-center justify-center">
+                <CardContent>
+                    <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );

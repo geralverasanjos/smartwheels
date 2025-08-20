@@ -18,8 +18,7 @@ import {
   Wallet,
   Landmark,
   MapPin,
-  LocateFixed,
-  Loader2,
+  Loader2, Send,
   CheckCircle,
   Phone,
   MessageSquare,
@@ -27,9 +26,6 @@ import {
   Star,
   PlayCircle,
   ThumbsUp,
-  type LucideProps,
-  Bike,
-  Box,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
@@ -43,71 +39,19 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
-const ScooterIcon = (props: LucideProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M5.5 17.5a2.5 2.5 0 0 1-5 0" />
-    <path d="M16 17.5a2.5 2.5 0 0 0 5 0" />
-    <path d="M.5 17.5H3l2-7 6-1.5-4-5.5 4 1h3l2 3" />
-    <path d="m14 6 2-3" />
-  </svg>
-);
+import { createRideRequest, updateRideStatus } from '@/services/rideService';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { getProfileByIdAndRole } from '@/services/profileService';
+import { getVehicleById } from '@/services/vehicleService';
+import { sendMessage } from '@/services/chatService';
 
-const FastMotorcycleIcon = (props: LucideProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <circle cx="6" cy="18" r="3" />
-    <circle cx="19" cy="18" r="3" />
-    <path d="M12 18h-2" />
-    <path d="M19 15h-4l-2.5-4" />
-    <path d="m14 4-2 3h3l2-3" />
-    <path d="m12 8 2-3" />
-  </svg>
-);
+import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
 
-const TukTukIcon = (props: LucideProps) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        {...props}
-    >
-        <path d="M11 18V8" />
-        <path d="M21 18h-4.83a.5.5 0 0 0-.49.58l.64 2.87c.05.21.26.35.48.35h3.7a.5.5 0 0 0 .5-.5V18Z"/>
-        <path d="M9 18H3.5A1.5 1.5 0 0 1 2 16.5v-7.25c0-.44.2-.86.53-1.12l3-2.5a1.49 1.49 0 0 1 1.44-.13L11 7" />
-        <path d="M11 7h10v1.5a1.5 1.5 0 0 1-1.5 1.5H11" />
-        <circle cx="6" cy="18" r="2" />
-        <circle cx="18" cy="18" r="2" />
-    </svg>
-);
-
+// Assuming a specific icon for mototaxi services might be needed
+import { Moped } from 'lucide-react'; 
 
 const paymentMethods = [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
@@ -135,6 +79,7 @@ type State = {
   selectingField: 'origin' | 'destination' | null;
   rating: number;
   tip: number | null;
+  activeRideId: string | null;
 };
 
 type Action =
@@ -149,7 +94,8 @@ type Action =
   | { type: 'SET_RATING', payload: number }
   | { type: 'SET_TIP', payload: number | null }
   | { type: 'REQUEST_RIDE' }
-  | { type: 'CONFIRM_PAYMENT' }
+  | { type: 'CONFIRM_PAYMENT'; payload: string }
+  | { type: 'DRIVER_FOUND'; payload: { driverId: string, vehicleId: string } }
   | { type: 'DRIVER_ARRIVED' }
   | { type: 'TRIP_START' }
   | { type: 'TRIP_FINISH' }
@@ -167,6 +113,7 @@ const initialState: State = {
   selectingField: null,
   rating: 0,
   tip: null,
+  activeRideId: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -182,58 +129,78 @@ function reducer(state: State, action: Action): State {
         case 'SET_RATING': return { ...state, rating: action.payload };
         case 'SET_TIP': return { ...state, tip: action.payload };
         case 'REQUEST_RIDE': return { ...state, step: 'service' };
-        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching' };
+        case 'CONFIRM_PAYMENT': return { ...state, step: 'searching', activeRideId: action.payload };
+        case 'DRIVER_FOUND': return { ...state, step: 'driver_enroute' };
         case 'DRIVER_ARRIVED': return { ...state, step: 'driver_arrived' };
         case 'TRIP_START': return { ...state, step: 'trip_inprogress' };
         case 'TRIP_FINISH': return { ...state, step: 'rating' };
-        case 'CANCEL_RIDE': return { ...initialState, origin: state.origin };
+        case 'CANCEL_RIDE': return { ...initialState, origin: state.origin, activeRideId: null };
         case 'RESET': return { ...initialState, origin: state.origin };
         default: return state;
     }
 }
 
 
-export default function PassengerMotoTaxiPage() {
+export default function RequestMotoTaxiPage() {
   const { toast } = useToast();
-  const { language, t } = useAppContext();
+  const { language, t, user } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
-  const { reverseGeocode, isLoaded } = useGeocoding();
+  const { reverseGeocode } = useGeocoding();
+  const { isLoaded } = useGoogleMaps();
   const [map, setMap] = useState<google.maps.Map | null>(null);
-
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip } = state;
-  
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
+  const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
+  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
+
   const serviceCategories = [
-    { id: 'moto_economica', icon: ScooterIcon, title: t('mototaxi_service_economic_title'), description: t('mototaxi_service_economic_desc'), price: 4.50, eta: t('eta_5min') },
-    { id: 'moto_rapida', icon: FastMotorcycleIcon, title: t('mototaxi_service_fast_title'), description: t('mototaxi_service_fast_desc'), price: 6.00, eta: t('eta_4min') },
-    { id: 'moto_bau', icon: Box, title: t('mototaxi_service_box_title'), description: t('mototaxi_service_box_desc'), price: 7.00, eta: t('eta_6min') },
-    { id: 'tuk_tuk', icon: TukTukIcon, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') }
+    { id: 'moto_economica', icon: Moped, title: t('mototaxi_service_economic_title'), description: t('mototaxi_service_economic_desc'), price: 3.50, eta: t('eta_5min') },
+    { id: 'moto_rapida', icon: Moped, title: t('mototaxi_service_fast_title'), description: t('mototaxi_service_fast_desc'), price: 5.00, eta: t('eta_4min') },
+    { id: 'moto_bau', icon: Moped, title: t('mototaxi_service_box_title'), description: t('mototaxi_service_box_desc'), price: 6.00, eta: t('eta_6min') },
+    { id: 'tuk_tuk', icon: Moped, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') },
   ];
 
-  const handleUseCurrentLocation = useCallback(() => {
-    if(!isLoaded) return;
-    if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-            const address = await reverseGeocode(coords);
-            dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-            if(map) map.panTo(coords);
-        }, (error) => {
-            console.error("Geolocation error:", error);
-            toast({ title: t('location_error_title'), description: t('location_error_desc'), variant: "destructive" });
-        })
-    }
-  }, [isLoaded, reverseGeocode, map, toast, t]);
+    useEffect(() => {
+        if (!activeRideId) return;
 
-  useEffect(() => {
-    handleUseCurrentLocation();
-  }, [handleUseCurrentLocation]);
+        const rideDocRef = doc(db, 'rideRequests', activeRideId);
+        const unsubscribeRide = onSnapshot(rideDocRef, async (docSnap) => {
+            if (docSnap.exists()) {
+                const rideData = docSnap.data() as RideRequest;
+                 if (rideData.driverId && !assignedDriverProfile) {
+                    const profile = await getProfileByIdAndRole(rideData.driverId, 'driver');
+                    setAssignedDriverProfile(profile);
+                }
+                if (rideData.vehicleId && !assignedVehicle) {
+                    const vehicleData = await getVehicleById(rideData.vehicleId);
+                    setAssignedVehicle(vehicleData);
+                }
 
-  useEffect(() => {
-    if (initialState.origin.text === '') {
-        initialState.origin.text = t('current_location');
-    }
-  }, [t]);
+                if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
+                    dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
+                }
+                
+                if (rideData.status === 'at_pickup') dispatch({ type: 'DRIVER_ARRIVED' });
+                else if (rideData.status === 'in_progress') dispatch({ type: 'TRIP_START' });
+                else if (rideData.status === 'completed') dispatch({ type: 'TRIP_FINISH' });
+                else if (rideData.status === 'cancelled') dispatch({ type: 'CANCEL_RIDE' });
+            }
+        });
+
+        const messagesQuery = query(collection(db, 'messages'), where('rideId', '==', activeRideId), orderBy('timestamp', 'asc'));
+        const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+            const newMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+            setMessages(newMessages);
+        });
+
+        return () => {
+            unsubscribeRide();
+            unsubscribeMessages();
+        };
+    }, [activeRideId, state.step, assignedDriverProfile, assignedVehicle]);
+
 
   const handleRequestRide = () => {
       if(!origin.text || !destination.text || !origin.coords || !destination.coords) {
@@ -244,12 +211,19 @@ export default function PassengerMotoTaxiPage() {
     handleDirections(origin.coords, destination.coords);
   };
   
-  const handleConfirm = () => {
-    dispatch({ type: 'CONFIRM_PAYMENT' });
-    toast({
-      title: t('searching_driver_title'),
-      description: t('searching_driver_desc'),
-    });
+  const handleConfirm = async () => {
+    if (!user || !user.id) {
+        toast({ title: t('error_title'), description: 'User not authenticated.', variant: "destructive" });
+        return;
+    }
+    try {
+        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
+        toast({ title: t('searching_driver_title'), description: t('searching_driver_desc') });
+    } catch(error) {
+        console.error('Error creating ride request:', error);
+        toast({ title: t('error_title'), description: t('error_request_failed'), variant: "destructive" });
+    }
   };
 
   const handlePlaceSelect = async (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
@@ -273,14 +247,9 @@ export default function PassengerMotoTaxiPage() {
     }
   }, [selectingField, reverseGeocode]);
 
-  
-
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
-    toast({
-        title: t('select_on_map_title'),
-        description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }),
-    })
+    toast({ title: t('select_on_map_title'), description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }) });
   }
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
@@ -299,20 +268,35 @@ export default function PassengerMotoTaxiPage() {
     });
   }, []);
   
-  const handleRating = () => {
+  const handleRating = async () => {
+    if (!activeRideId) return;
     toast({ title: t('rating_sent_title'), description: t('rating_sent_desc') });
     dispatch({ type: 'RESET' });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
   }
 
-  useEffect(() => {
-    if (step === 'searching') {
-        const searchTimeout = setTimeout(() => {
-            dispatch({ type: 'SET_STEP', payload: 'driver_enroute' });
-        }, 3000);
-        return () => clearTimeout(searchTimeout);
+  const handleCancelRide = async () => {
+    if (!activeRideId) return;
+    await updateRideStatus(activeRideId, 'cancelled');
+    toast({ title: t('ride_cancelled_title'), description: t('ride_cancelled_desc') });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
+  };
+
+  const handleSendMessage = async () => {
+    if (!currentMessage.trim() || !activeRideId || !user?.id) return;
+    try {
+        await sendMessage(activeRideId, user.id, currentMessage);
+        setCurrentMessage('');
+    } catch (error) {
+        console.error('Error sending message:', error);
+        toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
     }
-  }, [step]);
-  
+  };
+
   useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {
         handleDirections(driverPosition, origin.coords);
@@ -321,45 +305,6 @@ export default function PassengerMotoTaxiPage() {
     }
   }, [step, origin.coords, destination.coords, driverPosition, handleDirections]);
   
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    const moveVehicle = (target: google.maps.LatLngLiteral, onArrival: () => void) => {
-        return setInterval(() => {
-            dispatch({
-                type: 'SET_DRIVER_POSITION',
-                payload: {
-                    lat: driverPosition.lat + (target.lat - driverPosition.lat) * 0.1,
-                    lng: driverPosition.lng + (target.lng - driverPosition.lng) * 0.1,
-                },
-            });
-
-            const distance = Math.sqrt(Math.pow(driverPosition.lat - target.lat, 2) + Math.pow(driverPosition.lng - target.lng, 2));
-            if (distance < 0.001) {
-                onArrival();
-            }
-        }, 1000);
-    }
-
-    if (step === 'driver_enroute' && origin.coords) {
-        interval = moveVehicle(origin.coords, () => dispatch({ type: 'DRIVER_ARRIVED' }));
-    } else if (step === 'trip_inprogress' && destination.coords) {
-         interval = moveVehicle(destination.coords, () => dispatch({ type: 'TRIP_FINISH' }));
-    }
-
-    if (step === 'driver_arrived') {
-      const startTimeout = setTimeout(() => {
-        if (state.step === 'driver_arrived') {
-          dispatch({ type: 'TRIP_START' });
-        }
-      }, 4000);
-      return () => clearTimeout(startTimeout);
-    }
-
-    return () => clearInterval(interval);
-  }, [step, driverPosition, origin.coords, destination.coords, state.step]);
-
-
   const servicePrice = serviceCategories.find(s => s.id === selectedService)?.price || 0;
   
   const getVehicleIcon = () => {
@@ -382,18 +327,18 @@ export default function PassengerMotoTaxiPage() {
               <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="font-headline text-2xl">{t('where_to_title')}</CardTitle>
-                  <CardDescription>
-                    {t('where_to_desc')}
-                  </CardDescription>
+                  <CardDescription>{t('where_to_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="origin">{t('origin_label')}</Label>
                         <div className="flex gap-2">
-                            <Button variant="outline" className="w-full justify-start" onClick={handleUseCurrentLocation}>
-                                <LocateFixed className="mr-2 h-4 w-4" />
-                                {origin.text || t('current_location')}
-                            </Button>
+                             <AutocompleteInput 
+                                onPlaceSelect={(place) => handlePlaceSelect(place, 'origin')}
+                                value={origin.text}
+                                placeholder={t('origin_placeholder')}
+                                onClear={() => dispatch({ type: 'SET_ORIGIN', payload: { text: '', coords: null } })}
+                            />
                             <Button variant="outline" size="icon" onClick={() => handleSelectOnMap('origin')}><MapPin className="h-4 w-4"/></Button>
                         </div>
                     </div>
@@ -411,12 +356,7 @@ export default function PassengerMotoTaxiPage() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                  <Button
-                    size="lg"
-                    className="w-full text-lg"
-                    onClick={handleRequestRide}
-                    disabled={!origin.coords || !destination.coords}
-                  >
+                  <Button size="lg" className="w-full text-lg" onClick={handleRequestRide} disabled={!origin.coords || !destination.coords}>
                     {t('request_ride_button')}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -427,9 +367,7 @@ export default function PassengerMotoTaxiPage() {
             return (
               <Card className="h-full flex flex-col">
                 <CardHeader>
-                  <CardTitle className="font-headline text-2xl">
-                    {t('select_service_title')}
-                  </CardTitle>
+                  <CardTitle className="font-headline text-2xl">{t('select_service_title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-3">
                   {serviceCategories.map((service) => (
@@ -442,8 +380,8 @@ export default function PassengerMotoTaxiPage() {
                   ))}
                 </CardContent>
                 <CardFooter className="flex-col gap-2">
-                  <Button size="lg" className="w-full text-lg" onClick={() => dispatch({ type: 'SET_STEP', payload: 'payment' })}>
-                    {t('request_service_button', { service: serviceCategories.find(s => s.id === selectedService)?.title || '', price: formatCurrency(servicePrice) })}
+                   <Button size="lg" className="w-full text-lg" onClick={() => dispatch({ type: 'SET_STEP', payload: 'payment' })}>
+                    {t('continue_button')}
                   </Button>
                   <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'address' })}>
                     {t('back_button')}
@@ -504,41 +442,75 @@ export default function PassengerMotoTaxiPage() {
                 </Card>
             );
          case 'driver_enroute':
+         case 'trip_inprogress':
             return (
                  <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <CheckCircle className="h-10 w-10 text-primary" />
+                            {step === 'driver_enroute' ? <CheckCircle className="h-10 w-10 text-primary" /> : <Moped className="h-10 w-10 text-primary" />}
                         </div>
-                        <CardTitle className="font-headline">{t('driver_enroute_title')}</CardTitle>
-                        <CardDescription>{t('driver_enroute_desc', { name: 'Carlos', time: 5 })}</CardDescription>
+                        <CardTitle className="font-headline">{step === 'driver_enroute' ? t('driver_enroute_title') : t('trip_inprogress_title')}</CardTitle>
+                        <CardDescription>{step === 'driver_enroute' ? t('driver_enroute_desc', { name: assignedDriverProfile?.name || '...', time: 5 }) : t('trip_inprogress_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Separator />
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-14 w-14">
-                                <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person face" />
-                                <AvatarFallback>CS</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <p className="font-bold text-lg">Carlos Silva</p>
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                    <span className="font-semibold">4.9</span>
+                         {assignedDriverProfile && assignedVehicle ? (
+                            <>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-14 w-14">
+                                        <AvatarImage src={assignedDriverProfile.avatarUrl} data-ai-hint="person face" />
+                                        <AvatarFallback>{assignedDriverProfile.name?.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-lg">{assignedDriverProfile.name}</p>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                            <span className="font-semibold">{assignedDriverProfile.rating?.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                         {assignedDriverProfile.phone && <Button size="icon" variant="outline"><Phone /></Button>}
+                                    </div>
                                 </div>
-                            </div>
+                                <div className="p-3 rounded-lg bg-accent text-center">
+                                    <p className="font-bold text-lg">{assignedVehicle.make} {assignedVehicle.model}</p>
+                                    <p className="font-mono text-muted-foreground text-sm">{assignedVehicle.plate}</p>
+                                </div>
+                            </>
+                        ) : <div className="flex justify-center items-center p-4"><Loader2 className="h-6 w-6 animate-spin"/></div>}
+                        
+                        <div className="h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                            {messages.length === 0 ? (
+                                <p className="text-center text-muted-foreground text-sm py-4">{t('chat_no_messages')}</p>
+                            ) : (
+                                messages.map((msg) => {
+                                    const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
+                                    const isCurrentUser = msg.senderId === user?.id;
+                                    return (
+                                        <div key={msg.id} className={`flex items-start gap-2 ${isCurrentUser ? 'flex-row-reverse' : ''}`}>
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={senderProfile?.avatarUrl} />
+                                                <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className={`rounded-lg p-2 max-w-[80%] ${isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                                                <p className="text-sm">{msg.text}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                        <div className="mt-2 space-y-2">
+                            <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
                             <div className="flex gap-2">
-                                 <Button size="icon" variant="outline"><Phone /></Button>
-                                 <Button size="icon" variant="outline"><MessageSquare /></Button>
+                                <Textarea id="chat-input" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
+                                <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}><Send /></Button>
                             </div>
                         </div>
-                        <div className="p-3 rounded-lg bg-accent text-center">
-                            <p className="font-bold text-lg">Honda PCX</p>
-                            <p className="font-mono text-muted-foreground text-sm">ABC-1234</p>
-                        </div>
+
                     </CardContent>
                     <CardFooter>
-                         <Button variant="destructive" className="w-full" onClick={() => dispatch({ type: 'CANCEL_RIDE' })}>
+                         <Button variant="destructive" className="w-full" onClick={handleCancelRide}>
                            <X className="mr-2 h-4 w-4" /> {t('cancel_ride_button')}
                         </Button>
                     </CardFooter>
@@ -561,21 +533,6 @@ export default function PassengerMotoTaxiPage() {
                 </CardContent>
               </Card>
             );
-         case 'trip_inprogress':
-            return (
-                <Card>
-                    <CardHeader className="text-center">
-                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <Bike className="h-10 w-10 text-primary" />
-                        </div>
-                        <CardTitle>{t('trip_inprogress_title')}</CardTitle>
-                        <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
-                    </CardContent>
-                </Card>
-            )
         case 'rating':
             return (
                  <Card>
@@ -627,21 +584,31 @@ export default function PassengerMotoTaxiPage() {
 
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
-      <div className="md:col-span-2 rounded-lg bg-muted min-h-[400px] md:min-h-0 relative overflow-hidden">
-        <Map onMapLoad={setMap} onMapClick={handleMapClick}>
-            {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} label="O"/>}
-            {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} label="D"/>}
-            {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                 <MarkerF position={driverPosition} icon={getVehicleIcon() as google.maps.Icon | null} />
-            )}
-             {step === 'driver_arrived' && origin.coords && (
-                 <MarkerF position={origin.coords} icon={getVehicleIcon() as google.maps.Icon | null} />
-            )}
-            {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
-        </Map>
+      <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+        {isLoaded ? (
+            <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+                {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} label="O"/>}
+                {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} label="D"/>}
+                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                     <MarkerF position={driverPosition} icon={getVehicleIcon() as google.maps.Icon | null} />
+                )}
+                 {step === 'driver_arrived' && origin.coords && (
+                     <MarkerF position={origin.coords} icon={getVehicleIcon() as google.maps.Icon | null} />
+                )}
+                {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
+            </Map>
+        ) : (
+            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+        )}
       </div>
       <div className="md:col-span-1 md:overflow-y-auto">
-        {renderContent()}
+        {isLoaded ? renderContent() : (
+            <Card className="h-full flex flex-col items-center justify-center">
+                <CardContent>
+                    <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;
@@ -52,11 +53,11 @@ export interface Message {
 export interface RideRequest {
  id: string;
  passengerId: string;
- origin: string; // Using string for simplicity based on tripData in driver page
- destination: string; // Using string for simplicity
- serviceType: 'taxi' | 'delivery' | 'mototaxi';
- status: 'pending' | 'searching' | 'accepted' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled';
- timestamp: any; // Use any for firebase.firestore.FieldValue for now
+ origin: string; 
+ destination: string;
+ serviceType: 'economico' | 'smart' | 'executivo' | 'van' | 'pet' | 'delivery_moto' | 'delivery_car' | 'delivery_van' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk';
+ status: 'pending' | 'searching' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled';
+ timestamp: any; 
  driverId?: string;
  vehicleId?: string;
 }
