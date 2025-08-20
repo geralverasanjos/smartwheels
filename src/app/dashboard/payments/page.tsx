@@ -52,7 +52,7 @@ const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const MBWayIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" {...props}>
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#D12027"/>
-        <path d="M11.5 14.5h1v-5h-1v5zm3.75-2.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75zm-6-2c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zm1.5 4c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75.75zm3-2.5c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75z" fill="#D12027"/>
+        <path d="M11.5 14.5h1v-5h-1v5zm3.75-2.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75zm-6-2c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zm1.5 4c-.41 0-.75-.34-.75-.75s.34-.75.75-.75.75.34.75.75-.34.75-.75-.75zm3-2.5c0 .41-.34.75-.75.75s-.75-.34-.75-.75.34-.75.75-.75.75.34.75.75z" fill="#D12027"/>
     </svg>
 )
 
@@ -77,6 +77,7 @@ export default function PaymentsPage() {
     console.log(values);
     toast({ title: t('payment_method_add_success_title'), description: t('payment_method_add_success_desc') });
     setIsDialogOpen(false);
+    setEditingMethod(null);
   };
 
   const handleDeleteMethod = (id: string) => {
@@ -86,6 +87,16 @@ export default function PaymentsPage() {
   
   const handleSetDefault = (id: string) => {
       setPaymentMethods(prev => prev.map(method => ({...method, isDefault: method.id === id})));
+  }
+
+  const openAddDialog = () => {
+      setEditingMethod(null);
+      setIsDialogOpen(true);
+  }
+
+  const openEditDialog = (method: any) => {
+      setEditingMethod(method);
+      setIsDialogOpen(true);
   }
 
   return (
@@ -113,7 +124,7 @@ export default function PaymentsPage() {
                     </RadioGroup>
                     <Label htmlFor={method.id} className="text-sm text-muted-foreground cursor-pointer">{t('payment_method_default')}</Label>
                  </div>
-                <Button variant="ghost" size="icon" onClick={() => { setEditingMethod(method); setIsDialogOpen(true); }}>
+                <Button variant="ghost" size="icon" onClick={() => openEditDialog(method)}>
                   <Edit className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteMethod(method.id)}>
@@ -124,7 +135,7 @@ export default function PaymentsPage() {
           ))}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={openAddDialog}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {t('btn_add_payment_method')}
                 </Button>
@@ -133,6 +144,7 @@ export default function PaymentsPage() {
                 <AddEditPaymentMethodForm 
                     onSubmit={handleAddNewMethod} 
                     editingMethod={editingMethod}
+                    onClose={() => setIsDialogOpen(false)}
                 />
             </DialogContent>
           </Dialog>
@@ -142,15 +154,16 @@ export default function PaymentsPage() {
   );
 }
 
-const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (values: any) => void; editingMethod: any | null }) => {
+export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: any) => void; editingMethod: any | null, onClose: () => void; }) => {
     const { t } = useAppContext();
-    const [methodType, setMethodType] = useState(editingMethod?.type || 'Cartão de Crédito');
+    const [methodType, setMethodType] = useState(editingMethod?.typeKey?.split('_').pop() || 'card');
     
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const values = Object.fromEntries(formData.entries());
         onSubmit(values);
+        onClose();
     };
 
     return (
@@ -168,16 +181,16 @@ const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (valu
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="Cartão de Crédito">{t('payment_method_credit_card')}</SelectItem>
-                            <SelectItem value="PIX">PIX</SelectItem>
-                            <SelectItem value="MB WAY">MB WAY</SelectItem>
-                            <SelectItem value="PayPal">PayPal</SelectItem>
-                            <SelectItem value="Conta Bancária">{t('payment_method_bank_account')}</SelectItem>
+                            <SelectItem value="card">{t('payment_method_credit_card')}</SelectItem>
+                            <SelectItem value="pix">PIX</SelectItem>
+                            <SelectItem value="mbway">MB WAY</SelectItem>
+                            <SelectItem value="paypal">PayPal</SelectItem>
+                            <SelectItem value="bank">{t('payment_method_bank_account')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
-                {methodType === 'PIX' && (
+                {methodType === 'pix' && (
                     <>
                         <div className="space-y-2">
                             <Label htmlFor="pix-name">{t('name_label')}</Label>
@@ -204,7 +217,7 @@ const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (valu
                     </>
                 )}
 
-                {methodType === 'MB WAY' && (
+                {methodType === 'mbway' && (
                      <>
                         <div className="space-y-2">
                             <Label htmlFor="mbway-name">{t('name_label')}</Label>
@@ -216,14 +229,14 @@ const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (valu
                         </div>
                     </>
                 )}
-                 {methodType === 'PayPal' && (
+                 {methodType === 'paypal' && (
                      <div className="space-y-2">
                         <Label htmlFor="paypal-email">{t('email_label')}</Label>
                         <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.email} />
                     </div>
                  )}
 
-                {(methodType === 'Cartão de Crédito' || methodType === 'Conta Bancária') && (
+                {(methodType === 'card' || methodType === 'bank') && (
                      <>
                         <div className="space-y-2">
                             <Label htmlFor="card-name">{t('payment_method_card_name')}</Label>
@@ -249,7 +262,7 @@ const AddEditPaymentMethodForm = ({ onSubmit, editingMethod }: { onSubmit: (valu
 
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button type="button" variant="ghost">{t('cancel_button')}</Button>
+                    <Button type="button" variant="ghost" onClick={onClose}>{t('cancel_button')}</Button>
                 </DialogClose>
                 <Button type="submit">{editingMethod ? t('save_button') : t('add_button')}</Button>
             </DialogFooter>

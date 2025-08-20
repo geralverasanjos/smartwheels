@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, CreditCard, Banknote, Landmark } from 'lucide-react';
+import { ArrowLeft, CreditCard, Banknote, Landmark, PlusCircle } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/components/dashboard/dashboard-layout';
 import { useCurrency } from '@/lib/currency';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { AddEditPaymentMethodForm } from '@/app/dashboard/payments/page'; // Import the form
 
 const savedAccounts = [
     { id: 'bank1', type: 'bank', name: 'Conta Principal', details: '**** 1234' },
@@ -24,6 +26,7 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
     const router = useRouter();
     const [amount, setAmount] = useState('');
     const [selectedAccount, setSelectedAccount] = useState('bank1');
+    const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
 
     const handleWithdraw = () => {
         // Lógica de retirada
@@ -38,6 +41,12 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
             case 'paypal': return <Banknote className="h-6 w-6" />;
             default: return <CreditCard className="h-6 w-6" />;
         }
+    }
+
+    const handleAddAccount = (values: any) => {
+        // Logic to add the new account
+        console.log("New account to add:", values);
+        setIsAddAccountOpen(false);
     }
 
     return (
@@ -89,7 +98,21 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
                                 </ToggleGroupItem>
                             ))}
                         </ToggleGroup>
-                        <Button variant="outline" className="w-full">{t('btn_add_new_account')}</Button>
+                         <Dialog open={isAddAccountOpen} onOpenChange={setIsAddAccountOpen}>
+                            <DialogTrigger asChild>
+                                 <Button variant="outline" className="w-full">
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    {t('btn_add_new_account')}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <AddEditPaymentMethodForm 
+                                    onSubmit={handleAddAccount} 
+                                    editingMethod={null}
+                                    onClose={() => setIsAddAccountOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </CardContent>
                 <CardFooter>
