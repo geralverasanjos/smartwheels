@@ -50,8 +50,9 @@ import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
 import { getUserProfileByAuthId, getProfileByIdAndRole } from '@/services/profileService';
 import { sendMessage } from '@/services/chatService';
+import { getVehicleById } from '@/services/vehicleService';
 
-import type { UserProfile, Message, RideRequest } from '@/types';
+import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
 
 const paymentMethods = [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
@@ -154,6 +155,7 @@ export default function RequestTransportPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
+  const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
   const serviceCategories = [
@@ -164,31 +166,44 @@ export default function RequestTransportPage() {
     { id: 'pet', icon: Dog, title: t('transport_service_pet_title'), description: t('transport_service_pet_desc'), price: 10.00, eta: t('eta_6min') }
   ];
 
-    useEffect(() => {
-        if (!activeRideId) return;
+  useEffect(() => {
+    if (!activeRideId) return;
 
-        const rideDocRef = doc(db, 'rideRequests', activeRideId);
-        const unsubscribe = onSnapshot(rideDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const rideData = docSnap.data() as RideRequest;
-                if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
-                    dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
-                }
-                // Added checks for other status changes
-                if (rideData.status === 'at_pickup') {
-                    dispatch({ type: 'DRIVER_ARRIVED' });
-                } else if (rideData.status === 'in_progress') {
-                    dispatch({ type: 'TRIP_START' });
-                } else if (rideData.status === 'completed') {
-                    dispatch({ type: 'TRIP_FINISH' });
-                } else if (rideData.status === 'cancelled') {
-                    dispatch({ type: 'CANCEL_RIDE' });
-                }
+    const rideDocRef = doc(db, 'rideRequests', activeRideId);
+    const unsubscribeRide = onSnapshot(rideDocRef, async (docSnap) => {
+        if (docSnap.exists()) {
+            const rideData = docSnap.data() as RideRequest;
+            if (rideData.driverId && !assignedDriverProfile) {
+                const profile = await getProfileByIdAndRole(rideData.driverId, 'driver');
+                setAssignedDriverProfile(profile);
             }
-        });
+            if (rideData.vehicleId && !assignedVehicle) {
+                const vehicleData = await getVehicleById(rideData.vehicleId);
+                setAssignedVehicle(vehicleData);
+            }
 
-        return () => unsubscribe();
-    }, [activeRideId, state.step]);
+            if (rideData.driverId && rideData.vehicleId && state.step === 'searching') {
+                dispatch({ type: 'DRIVER_FOUND', payload: { driverId: rideData.driverId, vehicleId: rideData.vehicleId } });
+            }
+            
+            if (rideData.status === 'at_pickup') dispatch({ type: 'DRIVER_ARRIVED' });
+            else if (rideData.status === 'in_progress') dispatch({ type: 'TRIP_START' });
+            else if (rideData.status === 'completed') dispatch({ type: 'TRIP_FINISH' });
+            else if (rideData.status === 'cancelled') dispatch({ type: 'CANCEL_RIDE' });
+        }
+    });
+
+    const messagesQuery = query(collection(db, 'messages'), where('rideId', '==', activeRideId), orderBy('timestamp', 'asc'));
+    const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+        const newMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+        setMessages(newMessages);
+    });
+
+    return () => {
+        unsubscribeRide();
+        unsubscribeMessages();
+    };
+}, [activeRideId, state.step, assignedDriverProfile, assignedVehicle]);
 
 
   const handleRequestRide = () => {
@@ -250,6 +265,13 @@ export default function RequestTransportPage() {
     }
 }, [reverseGeocode, map]);
 
+  useEffect(() => {
+    if (isLoaded && !origin.text) {
+        handleUseCurrentLocation();
+    }
+  }, [isLoaded, origin.text, handleUseCurrentLocation]);
+
+
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
     toast({
@@ -274,10 +296,35 @@ export default function RequestTransportPage() {
     });
   }, []);
   
-  const handleRating = () => {
+  const handleRating = async () => {
+    if (!activeRideId) return;
     toast({ title: t('rating_sent_title'), description: t('rating_sent_desc') });
     dispatch({ type: 'RESET' });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
   }
+  
+  const handleCancelRide = async () => {
+    if (!activeRideId) return;
+    await updateRideStatus(activeRideId, 'cancelled');
+    toast({ title: t('ride_cancelled_title'), description: t('ride_cancelled_desc') });
+    setAssignedDriverProfile(null);
+    setAssignedVehicle(null);
+    setMessages([]);
+  };
+
+  const handleSendMessage = async () => {
+    if (!currentMessage.trim() || !activeRideId || !user?.id) return;
+    try {
+        await sendMessage(activeRideId, user.id, currentMessage);
+        setCurrentMessage('');
+    } catch (error) {
+        console.error('Error sending message:', error);
+        toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
+    }
+  };
+
 
   useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {
@@ -433,41 +480,75 @@ export default function RequestTransportPage() {
                 </Card>
             );
          case 'driver_enroute':
+         case 'trip_inprogress':
             return (
                  <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <CheckCircle className="h-10 w-10 text-primary" />
+                            {step === 'driver_enroute' ? <CheckCircle className="h-10 w-10 text-primary" /> : <Car className="h-10 w-10 text-primary" />}
                         </div>
-                        <CardTitle className="font-headline">{t('driver_enroute_title')}</CardTitle>
-                        <CardDescription>{t('driver_enroute_desc', { name: 'Carlos', time: 5 })}</CardDescription>
+                        <CardTitle className="font-headline">{step === 'driver_enroute' ? t('driver_enroute_title') : t('trip_inprogress_title')}</CardTitle>
+                        <CardDescription>{step === 'driver_enroute' ? t('driver_enroute_desc', { name: assignedDriverProfile?.name || '...', time: 5 }) : t('trip_inprogress_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Separator />
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-14 w-14">
-                                <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="person face" />
-                                <AvatarFallback>CS</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <p className="font-bold text-lg">Carlos Silva</p>
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                    <span className="font-semibold">4.9</span>
+                         {assignedDriverProfile && assignedVehicle ? (
+                            <>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-14 w-14">
+                                        <AvatarImage src={assignedDriverProfile.avatarUrl} data-ai-hint="person face" />
+                                        <AvatarFallback>{assignedDriverProfile.name?.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-lg">{assignedDriverProfile.name}</p>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                            <span className="font-semibold">{assignedDriverProfile.rating?.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                         {assignedDriverProfile.phone && <Button size="icon" variant="outline"><Phone /></Button>}
+                                    </div>
                                 </div>
-                            </div>
+                                <div className="p-3 rounded-lg bg-accent text-center">
+                                    <p className="font-bold text-lg">{assignedVehicle.make} {assignedVehicle.model}</p>
+                                    <p className="font-mono text-muted-foreground text-sm">{assignedVehicle.plate}</p>
+                                </div>
+                            </>
+                        ) : <div className="flex justify-center items-center p-4"><Loader2 className="h-6 w-6 animate-spin"/></div>}
+                        
+                        <div className="h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                            {messages.length === 0 ? (
+                                <p className="text-center text-muted-foreground text-sm py-4">{t('chat_no_messages')}</p>
+                            ) : (
+                                messages.map((msg) => {
+                                    const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
+                                    const isCurrentUser = msg.senderId === user?.id;
+                                    return (
+                                        <div key={msg.id} className={`flex items-start gap-2 ${isCurrentUser ? 'flex-row-reverse' : ''}`}>
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={senderProfile?.avatarUrl} />
+                                                <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className={`rounded-lg p-2 max-w-[80%] ${isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                                                <p className="text-sm">{msg.text}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                        <div className="mt-2 space-y-2">
+                            <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
                             <div className="flex gap-2">
-                                 <Button size="icon" variant="outline"><Phone /></Button>
-                                 <Button size="icon" variant="outline"><MessageSquare /></Button>
+                                <Textarea id="chat-input" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
+                                <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}><Send /></Button>
                             </div>
                         </div>
-                        <div className="p-3 rounded-lg bg-accent text-center">
-                            <p className="font-bold text-lg">Mercedes-Benz E-Class</p>
-                            <p className="font-mono text-muted-foreground text-sm">ABC-1234</p>
-                        </div>
+
                     </CardContent>
                     <CardFooter>
-                         <Button variant="destructive" className="w-full" onClick={() => dispatch({ type: 'CANCEL_RIDE' })}>
+                         <Button variant="destructive" className="w-full" onClick={handleCancelRide}>
                            <X className="mr-2 h-4 w-4" /> {t('cancel_ride_button')}
                         </Button>
                     </CardFooter>
@@ -490,23 +571,6 @@ export default function RequestTransportPage() {
                 </CardContent>
               </Card>
             );
-         case 'trip_inprogress':
-            return (
-                <Card>
-                    <CardHeader className="text-center">
-                         <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4">
-                            <Car className="h-10 w-10 text-primary" />
-                        </div>
-                        <CardTitle>{t('trip_inprogress_title')}</CardTitle>
-                        <CardDescription>{t('trip_inprogress_desc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                         { activeRideId && user?.id && assignedDriverProfile && (
-                             <p className="text-center text-sm text-muted-foreground">{t('destination_label')}: {destination.text}</p>
-                         )}
-                    </CardContent>
-                </Card>
-            )
         case 'rating':
             return (
                  <Card>

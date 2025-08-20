@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -249,6 +248,24 @@ export default function RequestMotoTaxiPage() {
     dispatch({ type: 'SET_SELECTING_FIELD', payload: field });
     toast({ title: t('select_on_map_title'), description: t('select_on_map_desc', { field: field === 'origin' ? t('origin_label') : t('destination_label') }) });
   }
+
+  const handleUseCurrentLocation = useCallback(() => {
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+            const address = await reverseGeocode(coords);
+            dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
+            if(map) map.panTo(coords);
+        })
+    }
+}, [reverseGeocode, map]);
+
+  useEffect(() => {
+    if (isLoaded && !origin.text) {
+        handleUseCurrentLocation();
+    }
+  }, [isLoaded, origin.text, handleUseCurrentLocation]);
+
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
     if (typeof window.google === 'undefined' || !origin || !destination) return;
