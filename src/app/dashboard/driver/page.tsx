@@ -41,6 +41,12 @@ const tripData: Partial<Trip> = {
     duration: 15, // minutes
 };
 
+const mockStands = [
+    { id: 'stand_1', name: 'Aeroporto - Chegadas', location: { lat: 38.768, lng: -9.128 } },
+    { id: 'stand_2', name: 'Estação do Oriente', location: { lat: 38.767, lng: -9.099 } },
+    { id: 'stand_3', name: 'Praça do Comércio', location: { lat: 38.707, lng: -9.136 } },
+];
+
 type State = {
   isOnline: boolean;
   isSimulating: boolean;
@@ -131,10 +137,49 @@ export default function DriverDashboardPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingRequests, setPendingRequests] = useState<RideRequest[]>([]);
   const [assignedPassengerProfile, setAssignedPassengerProfile] = useState<UserProfile | null>(null);
+  const [notifiedStand, setNotifiedStand] = useState<string | null>(null);
 
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('stand');
   const { formatCurrency } = useCurrency();
+
+  // Proximity check for taxi stands
+  useEffect(() => {
+    if (!isOnline || queueMode === 'global') return;
+
+    const checkProximity = () => {
+        const R = 6371; // Radius of the Earth in km
+        mockStands.forEach(stand => {
+            const dLat = (stand.location.lat - vehiclePosition.lat) * Math.PI / 180;
+            const dLon = (stand.location.lng - vehiclePosition.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(vehiclePosition.lat * Math.PI / 180) * Math.cos(stand.location.lat * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c; // Distance in km
+
+            if (distance < 0.5 && notifiedStand !== stand.id) { // 500 meters threshold
+                setNotifiedStand(stand.id);
+                toast({
+                    title: t('toast_stand_nearby_title'),
+                    description: t('toast_stand_nearby_desc', {standName: stand.name}),
+                    duration: 5000,
+                    action: (
+                        <div className="flex flex-col gap-2">
+                            <Button size="sm" onClick={() => console.log('Accepted queue for', stand.name)}>{t('accept_button')}</Button>
+                            <Button size="sm" variant="outline" onClick={() => console.log('Ignored queue for', stand.name)}>{t('ignore_button')}</Button>
+                        </div>
+                    )
+                });
+            }
+        });
+    }
+    
+    // Simulate position check every 10 seconds
+    const intervalId = setInterval(checkProximity, 10000);
+    return () => clearInterval(intervalId);
+  }, [isOnline, vehiclePosition, t, toast, notifiedStand, queueMode]);
+
 
   // Fetch driver and vehicle data
   useEffect(() => {
