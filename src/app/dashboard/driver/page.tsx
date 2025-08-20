@@ -609,13 +609,13 @@ export default function DriverDashboardPage() {
                         <Label className="font-semibold">{t('driver_service_types_label')}:</Label>
                         <div className="space-y-3 mt-3">
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="passengers" checked={services.passengers} onCheckedChange={(checked) => handleServiceChange('passengers')} disabled={!vehicle?.allowedServices.includes('passengers')} />
+                            <Checkbox id="passengers" checked={services.passengers} onCheckedChange={() => handleServiceChange('passengers')} disabled={!vehicle?.allowedServices.includes('passengers')} />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
                             <Car className="h-4 w-4" /> {t('driver_service_taxi')}
                             </Label>
                         </div>
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={(checked) => handleServiceChange('deliveries')} disabled={!vehicle?.allowedServices.includes('deliveries')} />
+                            <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={() => handleServiceChange('deliveries')} disabled={!vehicle?.allowedServices.includes('deliveries')} />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
                             <Package className="h-4 w-4" /> {t('driver_service_delivery')}
                             </Label>
@@ -696,5 +696,7 @@ const StatCard = ({ icon: Icon, title, subtitle, children }: { icon: React.Eleme
         </CardContent>
     </Card>
 );
+
+    
 
     
