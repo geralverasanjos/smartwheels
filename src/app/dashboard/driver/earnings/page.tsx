@@ -23,20 +23,23 @@ export default function DriverEarnings() {
 
     useEffect(() => {
         const fetchEarnings = async () => {
-            if (!user?.id) return;
+            if (!user?.id) {
+                setLoading(false);
+                return;
+            };
             setLoading(true);
             try {
                 const trips = await getDriverTripHistory(user.id);
                 const today = new Date();
                 const startOfWeek = new Date(today);
                 startOfWeek.setDate(today.getDate() - today.getDay());
+                startOfWeek.setHours(0, 0, 0, 0);
 
                 let todayEarnings = 0;
                 let weekEarnings = 0;
-                const weeklyPerformanceMap = new Map<string, number>();
-
+                
                 const dayNames = [t('day_sun'), t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat')];
-
+                const weeklyPerformanceMap = new Map<string, number>();
                 dayNames.forEach(day => weeklyPerformanceMap.set(day, 0));
 
                 trips.forEach(trip => {
@@ -44,12 +47,10 @@ export default function DriverEarnings() {
                         const tripDate = new Date(trip.date);
                         const tripValue = trip.earnings || 0;
 
-                        // Today's earnings
                         if (tripDate.toDateString() === today.toDateString()) {
                             todayEarnings += tripValue;
                         }
 
-                        // This week's earnings
                         if (tripDate >= startOfWeek) {
                             weekEarnings += tripValue;
                             const dayName = dayNames[tripDate.getDay()];
@@ -64,7 +65,7 @@ export default function DriverEarnings() {
                     today: todayEarnings,
                     week: weekEarnings,
                     available: weekEarnings * 0.8, // Assuming 80% available for withdrawal
-                    weeklyPerformance: weeklyPerformance,
+                    weeklyPerformance,
                 });
 
             } catch (error) {
