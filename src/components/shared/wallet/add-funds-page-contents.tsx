@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -12,11 +11,13 @@ import { useRouter } from 'next/navigation';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/components/dashboard/dashboard-layout';
+import { useCurrency } from '@/lib/currency';
 
 const quickAmounts = [10, 20, 50, 100];
 
 export default function AddFundsPageContents({ role }: { role: UserRole }) {
     const { t } = useAppContext();
+    const { formatCurrency } = useCurrency();
     const router = useRouter();
     const [amount, setAmount] = useState('');
     const [selectedMethod, setSelectedMethod] = useState('card');
@@ -52,7 +53,7 @@ export default function AddFundsPageContents({ role }: { role: UserRole }) {
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {quickAmounts.map(val => (
-                            <Button key={val} variant="outline" onClick={() => setAmount(val.toString())}>€{val.toFixed(2)}</Button>
+                            <Button key={val} variant="outline" onClick={() => setAmount(val.toString())}>{formatCurrency(val)}</Button>
                         ))}
                     </div>
                     <div className="space-y-2">
@@ -97,4 +98,3 @@ export default function AddFundsPageContents({ role }: { role: UserRole }) {
         </div>
     );
 }
-
