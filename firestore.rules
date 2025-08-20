@@ -2,7 +2,6 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
     // Helper function to check if a user is authenticated
     function isAuthenticated() {
       return request.auth != null;
@@ -14,71 +13,30 @@ service cloud.firestore {
     }
 
     // Helper function to get user role from their profile
+    // Note: Reading user roles within rules can impact performance and cost.
+    // Consider using custom claims for roles for better performance if roles are frequently checked in rules.
     function getRole(userId, role) {
       return get(/databases/$(database)/documents/$(role)s/$(userId)).data.role == role;
     }
-    
+
     // Rules for Passenger profiles
     match /passengers/{passengerId} {
       allow read, update: if isOwner(passengerId);
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated(); // Passengers can create their own profile on signup
     }
 
     // Rules for Driver profiles
     match /drivers/{driverId} {
-      allow read: if isAuthenticated(); // Passengers need to read some driver data
-      allow update: if isOwner(driverId);
-      allow create: if isAuthenticated();
+      // Allow read for authenticated users (passengers, other drivers, fleet managers may need some driver data)
+      allow read: if isAuthenticated();
+      allow update: if isOwner(driverId); // Drivers can update their own profile
+      allow create: if isAuthenticated(); // Drivers can create their own profile on signup
     }
-    
+
     // Rules for Fleet Manager profiles
     match /fleet-managers/{managerId} {
-      allow read, update: if isOwner(managerId);
-      allow create: if isAuthenticated();
-    }
-
-    // Rules for Vehicles
-    match /vehicles/{vehicleId} {
-        // Allow any authenticated user to read vehicle data (e.g., passenger checking car details)
-        allow read: if isAuthenticated(); 
-        // Only the driver associated with the vehicle can update it
-        allow update: if isAuthenticated() && request.auth.uid == resource.data.driverId;
-        // Allow any authenticated user to create a vehicle record initially
-        allow create: if isAuthenticated();
-    }
-
-    // Rules for Ride Requests
-    match /rideRequests/{requestId} {
-        // Allow read for the involved passenger or driver
-        allow read: if isAuthenticated() && 
-                      (isOwner(resource.data.passengerId) || (resource.data.driverId != null && isOwner(resource.data.driverId)));
-                      
-        // Allow any authenticated user to create a ride request
-        allow create: if isAuthenticated();
-
-        // Allow passenger to cancel, or driver to accept/update
-        allow update: if isAuthenticated() &&
-                        (isOwner(resource.data.passengerId) || (isOwner(request.resource.data.driverId)));
-    }
-
-    // Rules for Messages
-    match /messages/{messageId} {
-        // Messages can only be read by the passenger or driver involved in the ride
-        allow read: if isAuthenticated() &&
-                      get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid ||
-                      get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid;
-                      
-        // Messages can only be created by the passenger or driver involved in the ride
-        allow create: if isAuthenticated() &&
-                       (request.resource.data.senderId == request.auth.uid);
-    }
-    
-    // Rules for Promotions
-    match /{role}_promotions/{promoId} {
-        // Let's assume for now that all authenticated users can read promotions
-        allow read: if isAuthenticated();
-        // Only allow write access for specific roles if needed (e.g. drivers/fleet managers)
-        allow write: if isAuthenticated() && (getRole(request.auth.uid, 'driver') || getRole(request.auth.uid, 'fleet-manager'));
+      allow read, update: if isOwner(managerId); // Fleet managers can read/update their own profile
+      allow create: if isAuthenticated(); // Fleet managers can create their own profile on signup
     }
   }
 }
