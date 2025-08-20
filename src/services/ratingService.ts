@@ -1,18 +1,5 @@
-export interface UserProfile {
-      id: string;
-      name: string;
-      email: string;
-      phone: string;
-      nif: string; // Assuming NIF is Number Identification Fiscal
-      address: string;
-      avatarUrl: string;
-      rating: number;
-      activeVehicleId?: string; // Optional, only for drivers
-      balance: number; // Add this field
-    }
-import { collection, addDoc, FieldValue } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import firebase from 'firebase/compat/app'; // Import firebase for FieldValue
 
 export const submitRating = async (
     rideId: string,
@@ -29,7 +16,7 @@ export const submitRating = async (
             ratedUserId,
             rating,
             comment,
-            timestamp: FieldValue.serverTimestamp(),
+            timestamp: serverTimestamp(),
         };
         await addDoc(ratingsCollection, newRating);
         console.log("Rating submitted successfully!");

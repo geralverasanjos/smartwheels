@@ -28,6 +28,8 @@ export default function DriverWalletPage() {
                     console.error("Failed to fetch transactions:", error);
                     setLoading(false);
                 });
+        } else if (user === null) {
+            setLoading(false);
         }
     }, [user]);
 

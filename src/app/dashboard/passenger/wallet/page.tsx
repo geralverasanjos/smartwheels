@@ -29,6 +29,8 @@ export default function PassengerWalletPage() {
                     console.error("Failed to fetch transactions:", error);
                     setLoading(false);
                 });
+        } else if (user === null) { // User is logged out
+             setLoading(false);
         }
     }, [user]);
 

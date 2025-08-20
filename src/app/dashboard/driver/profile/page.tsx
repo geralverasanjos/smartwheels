@@ -16,7 +16,12 @@ export default function DriverProfilePage() {
             getDriverProfile(user.id).then(profile => {
                 setUserData(profile);
                 setLoading(false);
+            }).catch(err => {
+                console.error(err);
+                setLoading(false);
             });
+        } else if (user === null) {
+            setLoading(false);
         }
     }, [user]);
 
