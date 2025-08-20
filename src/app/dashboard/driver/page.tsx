@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useReducer, useCallback } from 'react';
@@ -12,12 +13,26 @@ import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/lib/currency';
-import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer, HeatmapLayer } from '@react-google-maps/api';
+import { useToast } from '@/hooks/use-toast';
+import { useAppContext } from '@/contexts/app-context';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 const PASSENGER_PICKUP = { lat: 38.74, lng: -9.15 };
 const TRIP_DESTINATION = { lat: 38.725, lng: -9.13 };
+
+// Mock data for new features
+const nearbyDriversData = [
+  { lat: 38.722, lng: -9.155 },
+  { lat: 38.718, lng: -9.145 },
+  { lat: 38.725, lng: -9.152 },
+];
+const taxiStands = [
+    { name: 'Oriente', location: { lat: 38.767, lng: -9.099 } },
+    { name: 'Comercio', location: { lat: 38.707, lng: -9.136 } },
+];
 
 type State = {
   isOnline: boolean;
@@ -85,12 +100,62 @@ function simulationReducer(state: State, action: Action): State {
 
 
 export default function DriverDashboardPage() {
+  const { t } = useAppContext();
+  const { toast } = useToast();
+  const { isLoaded } = useGoogleMaps();
   const [state, dispatch] = useReducer(simulationReducer, initialState);
   const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessage } = state;
-
+  
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('stand');
+  const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
   const { formatCurrency } = useCurrency();
+
+  // Initialize heatmap data once Google Maps is loaded
+  useEffect(() => {
+    if (isLoaded && typeof window.google !== 'undefined') {
+        setHeatmapData([
+            new google.maps.LatLng(38.71, -9.14),
+            new google.maps.LatLng(38.712, -9.142),
+            new google.maps.LatLng(38.715, -9.138),
+            new google.maps.LatLng(38.711, -9.141),
+            new google.maps.LatLng(38.708, -9.135),
+            new google.maps.LatLng(38.714, -9.145),
+        ]);
+    }
+  }, [isLoaded]);
+
+  // Simulate proximity check for taxi stands
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const proximityCheckInterval = setInterval(() => {
+        const nearbyStand = taxiStands.find(stand => {
+             const distance = Math.sqrt(
+                Math.pow(vehiclePosition.lat - stand.location.lat, 2) +
+                Math.pow(vehiclePosition.lng - stand.location.lng, 2)
+            );
+            return distance < 0.05; // Adjust threshold as needed
+        });
+
+        if (nearbyStand) {
+            toast({
+                title: t('toast_stand_nearby_title'),
+                description: t('toast_stand_nearby_desc', { standName: nearbyStand.name }),
+                duration: 5000,
+                action: (
+                    <>
+                        <Button onClick={() => console.log('Joining queue for', nearbyStand.name)}>Aceitar</Button>
+                        <Button variant="ghost" onClick={() => console.log('Ignored queue for', nearbyStand.name)}>{t('ignore_button')}</Button>
+                    </>
+                ),
+            });
+        }
+    }, 15000); // Check every 15 seconds
+
+    return () => clearInterval(proximityCheckInterval);
+  }, [isOnline, vehiclePosition, t, toast]);
+
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
     if (typeof window.google === 'undefined') return;
@@ -165,15 +230,15 @@ export default function DriverDashboardPage() {
     setServices(prev => ({ ...prev, [service]: !prev[service] }));
   };
 
-  const getVehicleIcon = () => {
+  const getVehicleIcon = (isSelf: boolean = false) => {
     if (typeof window === 'undefined' || !window.google) return null;
     return {
         path: 'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11C5.84 5 5.28 5.42 5.08 6.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z',
-        fillColor: 'hsl(var(--primary))',
-        fillOpacity: 1,
-        strokeWeight: 2,
+        fillColor: isSelf ? 'hsl(var(--primary))' : 'hsl(var(--secondary-foreground))',
+        fillOpacity: isSelf ? 1 : 0.7,
+        strokeWeight: 1,
         strokeColor: 'hsl(var(--background))',
-        scale: 1.5,
+        scale: isSelf ? 1.5 : 1.2,
         anchor: new window.google.maps.Point(12, 12)
     };
   };
@@ -232,9 +297,15 @@ export default function DriverDashboardPage() {
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
             <Map>
+              {isLoaded && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
+              {isOnline && nearbyDriversData.map((driver, index) => (
+                <MarkerF key={`driver-${index}`} position={driver} icon={getVehicleIcon(false) as google.maps.Icon | null} />
+              ))}
+
+              <MarkerF position={vehiclePosition} icon={getVehicleIcon(true) as google.maps.Icon | null} />
+              
               {isSimulating && (
                 <>
-                    <MarkerF position={vehiclePosition} icon={getVehicleIcon() as google.maps.Icon | null} />
                     <MarkerF position={PASSENGER_PICKUP} label="P" />
                     {simulationStep === 'enroute_to_destination' && <MarkerF position={TRIP_DESTINATION} label="D" />}
                 </>
@@ -269,13 +340,21 @@ export default function DriverDashboardPage() {
                         <Label className="font-semibold">Tipos de Serviço Ativos:</Label>
                         <div className="space-y-3 mt-3">
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="passengers" checked={services.passengers} onCheckedChange={() => handleServiceChange('passengers')} />
+                            <Checkbox 
+                                id="passengers" 
+                                checked={services.passengers} 
+                                onCheckedChange={(checked) => handleServiceChange('passengers')} 
+                            />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
                             <Car className="h-4 w-4" /> Passageiros (Táxi)
                             </Label>
                         </div>
                         <div className="flex items-center space-x-3">
-                            <Checkbox id="deliveries" checked={services.deliveries} onCheckedChange={() => handleServiceChange('deliveries')} />
+                            <Checkbox 
+                                id="deliveries" 
+                                checked={services.deliveries} 
+                                onCheckedChange={(checked) => handleServiceChange('deliveries')} 
+                            />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
                             <Package className="h-4 w-4" /> Entregas Pequenas
                             </Label>
