@@ -5,33 +5,121 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Car, Users, Wallet, Star } from 'lucide-react';
+import { Car, Users, Wallet, Star, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-const fleetSummary = {
-    activeDrivers: 15,
-    totalVehicles: 18,
-    totalEarningsMonth: 12530.50,
-    avgRating: 4.8,
-};
-
-const recentTrips = [
-    { id: 't-001', driver: { name: 'Carlos Silva', avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=CS' }, typeKey: 'trip_type_trip', statusKey: 'status_completed', earnings: 12.50 },
-    { id: 'd-002', driver: { name: 'Mariana Costa', avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=MC' }, typeKey: 'trip_type_delivery', statusKey: 'status_completed', earnings: 6.80 },
-    { id: 't-003', driver: { name: 'Carlos Silva', avatarUrl: 'https://placehold.co/40x40/32CD32/FFFFFF?text=CS' }, typeKey: 'trip_type_trip', statusKey: 'status_cancelled', earnings: 0.00 },
-];
+import { getDriversByFleetManager } from '@/services/profileService';
+import { getFleetTripHistory } from '@/services/historyService';
+import type { UserProfile, Trip } from '@/types';
+import { useCurrency } from '@/lib/currency';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FleetManagerDashboard() {
-    const { t, language } = useAppContext();
+    const { t, user } = useAppContext();
+    const { formatCurrency } = useCurrency();
+    const [drivers, setDrivers] = useState<UserProfile[]>([]);
+    const [recentTrips, setRecentTrips] = useState<Trip[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const driverStatusData = [
-        { name: t('status_online'), value: 10, fill: 'hsl(var(--primary))' },
-        { name: t('status_in_trip'), value: 5, fill: 'hsl(var(--accent))' },
-        { name: t('status_offline'), value: 3, fill: 'hsl(var(--secondary))' },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!user?.id) return;
+            setLoading(true);
+            try {
+                const [driversData, tripsData] = await Promise.all([
+                    getDriversByFleetManager(user.id),
+                    getFleetTripHistory(user.id)
+                ]);
+                setDrivers(driversData);
+                setRecentTrips(tripsData.slice(0, 5)); // Get last 5 trips
+            } catch (error) {
+                console.error("Failed to fetch fleet data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [user]);
+
+    const calculateStats = () => {
+        const totalEarningsMonth = recentTrips.reduce((acc, trip) => acc + (trip.earnings || trip.value || 0), 0);
+        const totalRatings = drivers.reduce((acc, driver) => acc + (driver.rating || 0), 0);
+        const avgRating = drivers.length > 0 ? totalRatings / drivers.length : 0;
+        
+        // Simulating status for chart
+        const onlineCount = drivers.filter(d => (d as any).status === 'online').length || Math.floor(drivers.length / 2);
+        const inTripCount = drivers.filter(d => (d as any).status === 'in_trip').length || Math.floor(drivers.length / 4);
+        const offlineCount = drivers.length - onlineCount - inTripCount;
+        
+        return {
+            activeDrivers: drivers.length,
+            totalVehicles: drivers.length, // Assuming 1 vehicle per driver for now
+            totalEarningsMonth,
+            avgRating,
+            driverStatusData: [
+                { name: t('status_online'), value: onlineCount, fill: 'hsl(var(--primary))' },
+                { name: t('status_in_trip'), value: inTripCount, fill: 'hsl(var(--accent))' },
+                { name: t('status_offline'), value: offlineCount, fill: 'hsl(var(--secondary))' },
+            ]
+        };
+    };
+
+    const stats = calculateStats();
+
+    const renderStatCards = () => {
+        if (loading) {
+            return (
+                <>
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                </>
+            );
+        }
+        return (
+            <>
+                <StatCard icon={Users} title={stats.activeDrivers.toString()} subtitle={t('fleet_stat_active_drivers')} />
+                <StatCard icon={Car} title={stats.totalVehicles.toString()} subtitle={t('fleet_stat_total_vehicles')} />
+                <StatCard icon={Wallet} title={formatCurrency(stats.totalEarningsMonth)} subtitle={t('fleet_stat_monthly_earnings')} />
+                <StatCard icon={Star} title={stats.avgRating.toFixed(1)} subtitle={t('fleet_stat_avg_rating')} />
+            </>
+        )
+    }
+
+    const renderRecentTrips = () => {
+        if (loading) {
+            return Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                    <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                </TableRow>
+            ));
+        }
+
+        if (recentTrips.length === 0) {
+            return <TableRow><TableCell colSpan={4} className="text-center">{t('history_no_trips')}</TableCell></TableRow>;
+        }
+
+        return recentTrips.map((trip) => (
+            <TableRow key={trip.id}>
+                <TableCell>
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8"><AvatarImage src={trip.driver?.avatarUrl} /><AvatarFallback>{trip.driver?.name?.substring(0,2)}</AvatarFallback></Avatar>
+                        <span className="font-medium">{trip.driver?.name || 'N/A'}</span>
+                    </div>
+                </TableCell>
+                <TableCell>{t(trip.type === 'trip' ? 'trip_type_trip' : 'trip_type_delivery')}</TableCell>
+                <TableCell><Badge variant={trip.status === 'completed' ? 'default' : 'destructive'}>{t(trip.status === 'completed' ? 'status_completed' : 'status_cancelled')}</Badge></TableCell>
+                <TableCell className="text-right font-semibold text-primary">{formatCurrency(trip.earnings || 0)}</TableCell>
+            </TableRow>
+        ));
+    };
 
     return (
         <div className="flex flex-col gap-8">
@@ -47,10 +135,7 @@ export default function FleetManagerDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard icon={Users} title={fleetSummary.activeDrivers.toString()} subtitle={t('fleet_stat_active_drivers')} />
-                <StatCard icon={Car} title={fleetSummary.totalVehicles.toString()} subtitle={t('fleet_stat_total_vehicles')} />
-                <StatCard icon={Wallet} title={`${language.currency.symbol}${fleetSummary.totalEarningsMonth.toFixed(2)}`} subtitle={t('fleet_stat_monthly_earnings')} />
-                <StatCard icon={Star} title={fleetSummary.avgRating.toFixed(1)} subtitle={t('fleet_stat_avg_rating')} />
+                {renderStatCards()}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -70,19 +155,7 @@ export default function FleetManagerDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentTrips.map((trip) => (
-                                    <TableRow key={trip.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-8 w-8"><AvatarImage src={trip.driver.avatarUrl} /><AvatarFallback>{trip.driver.name.substring(0,2)}</AvatarFallback></Avatar>
-                                                <span className="font-medium">{trip.driver.name}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{t(trip.typeKey as any)}</TableCell>
-                                        <TableCell><Badge variant={trip.statusKey === 'status_completed' ? 'default' : 'destructive'}>{t(trip.statusKey as any)}</Badge></TableCell>
-                                        <TableCell className="text-right font-semibold text-primary">{language.currency.symbol}{trip.earnings.toFixed(2)}</TableCell>
-                                    </TableRow>
-                                ))}
+                                {renderRecentTrips()}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -94,18 +167,20 @@ export default function FleetManagerDashboard() {
                         <CardDescription>{t('fleet_dashboard_driver_status_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[250px] flex items-center justify-center">
-                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={driverStatusData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                                <XAxis type="number" hide />
-                                <YAxis type="category" dataKey="name" width={80} tickLine={false} axisLine={false} />
-                                <Tooltip cursor={{ fill: 'hsla(var(--accent), 0.1)' }} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
-                                <Bar dataKey="value" barSize={20} radius={[0, 4, 4, 0]}>
-                                     {driverStatusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                         {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats.driverStatusData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                                    <XAxis type="number" hide />
+                                    <YAxis type="category" dataKey="name" width={80} tickLine={false} axisLine={false} />
+                                    <Tooltip cursor={{ fill: 'hsla(var(--accent), 0.1)' }} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}/>
+                                    <Bar dataKey="value" barSize={20} radius={[0, 4, 4, 0]}>
+                                        {stats.driverStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                         )}
                     </CardContent>
                 </Card>
             </div>

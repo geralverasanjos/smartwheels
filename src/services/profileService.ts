@@ -1,5 +1,5 @@
 // src/services/profileService.ts
-import { doc, getDoc, setDoc, DocumentData } from 'firebase/firestore';
+import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
@@ -27,6 +27,8 @@ const getProfile = async (role: 'passenger' | 'driver' | 'fleet-manager'): Promi
             nif: '',
             address: '',
             avatarUrl: `https://placehold.co/100x100.png?text=${role.substring(0,1).toUpperCase()}`,
+            balance: 0,
+            role: role,
             rating: 4.8, // Default rating
             activeVehicleId: 'mock_vehicle_id', // Default vehicle
         };
@@ -45,7 +47,7 @@ export const saveUserProfile = async (role: string, profileData: UserProfile): P
     await setDoc(docRef, profileData, { merge: true });
 };
 
-export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfile & { role: 'driver' | 'passenger' | 'fleet-manager' }) | null> => {
+export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfile) | null> => {
     const roles: ('driver' | 'passenger' | 'fleet-manager')[] = ['driver', 'passenger', 'fleet-manager'];
 
     for (const role of roles) {
@@ -54,7 +56,7 @@ export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfi
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                return { id: docSnap.id, ...docSnap.data() as UserProfile, role };
+                return { id: docSnap.id, role, ...docSnap.data() } as UserProfile;
             }
         } catch (error) {
             console.error(`Error fetching profile for role ${role}:`, error);
@@ -64,6 +66,7 @@ export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfi
 };
 
 export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
+    if (!userId || !role) return null;
     const docRef = doc(db, `${role}s`, userId);
     const docSnap = await getDoc(docRef);
 
@@ -75,5 +78,29 @@ export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 
     }
 };
 
-
+/**
+ * Fetches all drivers associated with a specific fleet manager.
+ * This assumes drivers have a 'fleetManagerId' field.
+ * @param fleetManagerId The ID of the fleet manager.
+ * @returns A promise that resolves to an array of driver profiles.
+ */
+export const getDriversByFleetManager = async (fleetManagerId: string): Promise<UserProfile[]> => {
+    if (!fleetManagerId) return [];
     
+    const driversCollection = collection(db, 'drivers');
+    // NOTE: This assumes drivers have a `fleetManagerId` field.
+    // If your data model is different, this query needs to be adjusted.
+    const q = query(driversCollection, where("fleetManagerId", "==", fleetManagerId));
+
+    try {
+        const querySnapshot = await getDocs(q);
+        const drivers: UserProfile[] = [];
+        querySnapshot.forEach((doc) => {
+            drivers.push({ id: doc.id, ...doc.data() } as UserProfile);
+        });
+        return drivers;
+    } catch (error) {
+        console.error("Error fetching drivers for fleet manager:", error);
+        return [];
+    }
+};
