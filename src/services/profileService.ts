@@ -1,18 +1,26 @@
+'use client';
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
+/**
+ * Fetches a user's profile from a specific collection.
+ * @param userId The ID of the user (should match the Firestore document ID).
+ * @param role The collection to search in ('passenger', 'driver', 'fleet-manager').
+ * @returns A promise that resolves to the user's profile or null if not found.
+ */
 const getProfile = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
     if (!userId) return null;
     
-    const docRef = doc(db, `${role}s`, userId);
+    const collectionName = `${role}s`;
+    const docRef = doc(db, collectionName, userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as UserProfile;
+        return { id: docSnap.id, role, ...docSnap.data() } as UserProfile;
     } else {
-        console.warn(`Profile for user ${userId} with role ${role} not found.`);
+        console.warn(`Profile for user ${userId} with role ${role} not found in ${collectionName}.`);
         return null;
     }
 };
@@ -21,46 +29,51 @@ export const getDriverProfile = (userId: string): Promise<UserProfile | null> =>
 export const getPassengerProfile = (userId: string): Promise<UserProfile | null> => getProfile(userId, 'passenger');
 export const getFleetManagerProfile = (userId: string): Promise<UserProfile | null> => getProfile(userId, 'fleet-manager');
 
-export const saveUserProfile = async (role: string, profileData: UserProfile): Promise<void> => {
-    if (!profileData.id) {
-        throw new Error("User ID is required to save profile.");
+
+/**
+ * Saves a user's profile to the appropriate Firestore collection based on their role.
+ * @param profileData The complete user profile data, including role and ID.
+ */
+export const saveUserProfile = async (profileData: UserProfile): Promise<void> => {
+    if (!profileData.id || !profileData.role) {
+        throw new Error("User ID and role are required to save profile.");
     }
-    const docRef = doc(db, `${role}s`, profileData.id);
+    const collectionName = `${profileData.role}s`;
+    const docRef = doc(db, collectionName, profileData.id);
     await setDoc(docRef, profileData, { merge: true });
 };
 
-export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfile) | null> => {
-    const roles: ('driver' | 'passenger' | 'fleet-manager')[] = ['drivers', 'passengers', 'fleet-managers'];
+
+/**
+ * Finds a user's profile across all possible role collections using their Firebase Auth ID.
+ * @param authId The Firebase Authentication user ID.
+ * @returns A promise that resolves to the complete UserProfile object (including the role) or null if not found.
+ */
+export const getUserProfileByAuthId = async (authId: string): Promise<UserProfile | null> => {
+    if (!authId) return null;
+    
+    const roles: ('passenger' | 'driver' | 'fleet-manager')[] = ['passenger', 'driver', 'fleet-manager'];
 
     for (const role of roles) {
-        try {
-            const docRef = doc(db, role, authId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const roleName = role.slice(0, -1) as UserProfile['role'];
-                return { id: docSnap.id, role: roleName, ...docSnap.data() } as UserProfile;
-            }
-        } catch (error) {
-            console.error(`Error fetching profile for role ${role}:`, error);
+        const profile = await getProfile(authId, role);
+        if (profile) {
+            return profile; // Return the first profile found
         }
     }
+    
     console.warn(`Profile for authId ${authId} not found in any collection.`);
-    return null; // User ID not found in any profile collection
+    return null; // User profile not found in any collection
 };
 
-export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
-    if (!userId || !role) return null;
-    const collectionName = `${role}s`;
-    const docRef = doc(db, collectionName, userId);
-    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as UserProfile;
-    } else {
-        console.warn(`Profile with ID ${userId} and role ${role} not found.`);
-        return null;
-    }
+/**
+ * Fetches a user's profile by their ID and role. This is more direct than searching all collections.
+ * @param userId The ID of the user.
+ * @param role The specific role collection to look in.
+ * @returns A promise that resolves to the user's profile or null if not found.
+ */
+export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
+    return getProfile(userId, role);
 };
 
 /**
@@ -73,15 +86,13 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
     if (!fleetManagerId) return [];
     
     const driversCollection = collection(db, 'drivers');
-    // NOTE: This assumes drivers have a `fleetManagerId` field.
-    // If your data model is different, this query needs to be adjusted.
     const q = query(driversCollection, where("fleetManagerId", "==", fleetManagerId));
 
     try {
         const querySnapshot = await getDocs(q);
         const drivers: UserProfile[] = [];
         querySnapshot.forEach((doc) => {
-            drivers.push({ id: doc.id, ...doc.data() } as UserProfile);
+            drivers.push({ id: doc.id, role: 'driver', ...doc.data() } as UserProfile);
         });
         return drivers;
     } catch (error) {

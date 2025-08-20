@@ -1,5 +1,3 @@
-
-
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;
@@ -12,17 +10,18 @@ export interface Promotion {
 }
 
 export interface UserProfile {
-    id: string;
+    id: string; // This should be the Firebase Auth UID
     name: string;
     email: string;
-    phone: string;
-    nif: string; 
-    address: string;
+    phone?: string;
+    nif?: string; 
+    address?: string;
     avatarUrl?: string;
-    balance: number; 
+    balance?: number; 
     role: 'passenger' | 'driver' | 'fleet-manager';
     rating?: number;
     activeVehicleId?: string; // Optional, only for drivers
+    fleetManagerId?: string; // Optional, only for drivers in a fleet
 }
 
 export interface Trip {

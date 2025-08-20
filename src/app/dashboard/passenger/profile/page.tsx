@@ -12,12 +12,20 @@ export default function PassengerProfilePage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user?.id) {
-            getPassengerProfile(user.id).then(profile => {
-                setUserData(profile);
-                setLoading(false);
-            });
+        if (user === undefined) {
+            setLoading(true);
+            return;
         }
+        if (user === null) {
+            setLoading(false);
+            // Optionally redirect to login
+            return;
+        }
+
+        // We already have the user profile from the context,
+        // but if we needed to fetch more detailed data, we could do it here.
+        setUserData(user);
+        setLoading(false);
     }, [user]);
 
     if (loading) {
@@ -25,7 +33,7 @@ export default function PassengerProfilePage() {
     }
     
     if (!userData) {
-        // Handle case where profile couldn't be loaded after trying
+        // This case would be hit if the user is not logged in or profile failed to load.
         return <div>{t('error_loading_profile')}</div>
     }
 

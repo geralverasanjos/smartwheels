@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 import { auth } from '@/lib/firebase';
@@ -24,7 +24,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<UserProfile | null | undefined>(undefined); // Start as undefined (loading)
 
- useEffect(() => {
+  useEffect(() => {
     setIsClient(true);
   }, []);
 
@@ -46,12 +46,21 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, [language, isClient]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        const profileData = await getUserProfileByAuthId(firebaseUser.uid);
-        setUser(profileData);
+        // User is signed in, fetch their profile from Firestore.
+        try {
+          const profileData = await getUserProfileByAuthId(firebaseUser.uid);
+          setUser(profileData); // This can be the UserProfile or null if not found
+          if (!profileData) {
+            console.error(`No profile found for authenticated user ${firebaseUser.uid}.`);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          setUser(null); // Set to null on error to avoid infinite loading
+        }
       } else {
-        // User logged out
+        // User is signed out.
         setUser(null);
       }
     });

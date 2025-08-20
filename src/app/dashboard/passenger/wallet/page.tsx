@@ -18,19 +18,31 @@ export default function PassengerWalletPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user?.id) {
-            getTransactionsByUserId(user.id)
-                .then(data => {
-                    setTransactions(data);
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error("Failed to fetch transactions:", error);
-                    setLoading(false);
-                });
-        } else if (user === null) { // User is logged out
-             setLoading(false);
+        // user === undefined means auth state is still loading.
+        if (user === undefined) {
+            setLoading(true);
+            return;
         }
+        // user === null means user is not logged in.
+        if (user === null) {
+            setLoading(false);
+            // Optionally redirect to login or show a message
+            return;
+        }
+
+        // Fetch transactions when user ID is available
+        getTransactionsByUserId(user.id)
+            .then(data => {
+                setTransactions(data);
+            })
+            .catch(error => {
+                console.error("Failed to fetch transactions:", error);
+                // Optionally show a toast notification for the error
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+            
     }, [user]);
 
     const getTransactionIcon = (type: string) => {
@@ -41,15 +53,26 @@ export default function PassengerWalletPage() {
             case 'trip':
             case 'transfer-out':
             case 'withdraw':
+            case 'fee':
                 return <ArrowDownLeft className="h-5 w-5 text-destructive" />;
             default:
                 return null;
         }
     };
-     const getTransactionAmountClass = (type: string, amount: number) => {
-        if (amount > 0) return 'text-green-500';
-        if (amount < 0) return 'text-destructive';
-        return '';
+
+     const getTransactionAmountClass = (type: string) => {
+        switch (type) {
+            case 'top-up':
+            case 'transfer-in':
+                return 'text-green-500';
+            case 'trip':
+            case 'transfer-out':
+            case 'withdraw':
+            case 'fee':
+                return 'text-destructive';
+            default:
+                return '';
+        }
     };
 
 
@@ -63,7 +86,9 @@ export default function PassengerWalletPage() {
             <Card className="text-center">
                 <CardHeader>
                     <p className="text-sm text-muted-foreground">{t('wallet_current_balance')}</p>
-                    <CardTitle className="text-5xl font-bold">{user ? formatCurrency(user.balance || 0) : <Loader2 className="h-10 w-10 animate-spin mx-auto" />}</CardTitle>
+                    <CardTitle className="text-5xl font-bold">
+                        {user === undefined ? <Loader2 className="h-10 w-10 animate-spin mx-auto" /> : formatCurrency(user?.balance || 0)}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
                     <Button asChild><Link href="/dashboard/passenger/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
@@ -94,17 +119,17 @@ export default function PassengerWalletPage() {
                                             </div>
                                             <div>
                                                 <p className="font-semibold">{transaction.description}</p>
-                                                <p className="text-sm text-muted-foreground">{new Date(transaction.timestamp.seconds * 1000).toLocaleString()}</p>
+                                                <p className="text-sm text-muted-foreground">{new Date(transaction.timestamp?.seconds * 1000).toLocaleString()}</p>
                                             </div>
                                         </div>
-                                        <p className={`font-bold text-lg ${getTransactionAmountClass(transaction.type, transaction.amount)}`}>
+                                        <p className={`font-bold text-lg ${getTransactionAmountClass(transaction.type)}`}>
                                             {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
                                         </p>
                                     </div>
                                     {index < transactions.length - 1 && <Separator />}
                                 </React.Fragment>
                             )) : (
-                                <p className="text-sm text-muted-foreground text-center">{t('wallet_no_transactions')}</p>
+                                <p className="text-sm text-muted-foreground text-center py-8">{t('wallet_no_transactions')}</p>
                             )}
                         </div>
                     )}

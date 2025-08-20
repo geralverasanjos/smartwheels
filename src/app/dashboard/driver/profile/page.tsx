@@ -12,17 +12,21 @@ export default function DriverProfilePage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user?.id) {
-            getDriverProfile(user.id).then(profile => {
-                setUserData(profile);
-                setLoading(false);
-            }).catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-        } else if (user === null) {
-            setLoading(false);
+        if (user === undefined) {
+            setLoading(true);
+            return;
         }
+        if (user === null) {
+            setLoading(false);
+             // Optionally redirect to login
+            return;
+        }
+        
+        // We can use the user object from context directly
+        // or fetch more detailed data if needed.
+        setUserData(user);
+        setLoading(false);
+
     }, [user]);
 
     if (loading) {

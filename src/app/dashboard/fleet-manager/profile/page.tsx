@@ -12,12 +12,19 @@ export default function FleetManagerProfilePage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user?.id) {
-            getFleetManagerProfile(user.id).then(profile => {
-                setUserData(profile);
-                setLoading(false);
-            });
+         if (user === undefined) {
+            setLoading(true);
+            return;
         }
+        if (user === null) {
+            setLoading(false);
+             // Optionally redirect to login
+            return;
+        }
+        
+        // We can use the user object from context directly
+        setUserData(user);
+        setLoading(false);
     }, [user]);
 
     if (loading) {
