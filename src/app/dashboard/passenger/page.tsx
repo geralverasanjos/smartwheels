@@ -56,7 +56,7 @@ export default function PassengerDashboard() {
         </CardHeader>
         <CardContent>
            <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold">{user ? formatCurrency(user.balance || 0) : <Loader2 className="h-6 w-6 animate-spin" />}</p>
+            <p className="text-2xl font-bold">{user === undefined ? <Loader2 className="h-6 w-6 animate-spin" /> : formatCurrency(user?.balance || 0)}</p>
              <Button asChild variant="link" className="px-0">
                 <Link href="/dashboard/passenger/wallet">
                     {t('btn_view_details')}

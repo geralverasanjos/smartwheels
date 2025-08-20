@@ -20,7 +20,8 @@ const getProfile = async (userId: string, role: 'passenger' | 'driver' | 'fleet-
     if (docSnap.exists()) {
         return { id: docSnap.id, role, ...docSnap.data() } as UserProfile;
     } else {
-        console.warn(`Profile for user ${userId} with role ${role} not found in ${collectionName}.`);
+        // This is not an error, just means the user is not in this collection.
+        // console.warn(`Profile for user ${userId} not found in ${collectionName}.`);
         return null;
     }
 };
@@ -55,9 +56,13 @@ export const getUserProfileByAuthId = async (authId: string): Promise<UserProfil
     const roles: ('passenger' | 'driver' | 'fleet-manager')[] = ['passenger', 'driver', 'fleet-manager'];
 
     for (const role of roles) {
-        const profile = await getProfile(authId, role);
-        if (profile) {
-            return profile; // Return the first profile found
+        try {
+            const profile = await getProfile(authId, role);
+            if (profile) {
+                return profile; // Return the first profile found
+            }
+        } catch (error) {
+            console.error(`Error fetching profile for role ${role}:`, error);
         }
     }
     

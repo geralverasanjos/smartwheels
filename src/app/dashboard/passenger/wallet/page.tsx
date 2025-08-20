@@ -18,26 +18,20 @@ export default function PassengerWalletPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // user === undefined means auth state is still loading.
         if (user === undefined) {
             setLoading(true);
             return;
         }
-        // user === null means user is not logged in.
         if (user === null) {
             setLoading(false);
-            // Optionally redirect to login or show a message
             return;
         }
-
-        // Fetch transactions when user ID is available
         getTransactionsByUserId(user.id)
             .then(data => {
                 setTransactions(data);
             })
             .catch(error => {
                 console.error("Failed to fetch transactions:", error);
-                // Optionally show a toast notification for the error
             })
             .finally(() => {
                 setLoading(false);
