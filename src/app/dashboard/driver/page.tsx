@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useReducer, useCallback } from 'react';
@@ -53,14 +54,14 @@ const nearbyDrivers = [
   { id: 'driver_nearby_3', position: { lat: 38.725, lng: -9.158 } },
 ];
 
-const heatmapData = [
-  new google.maps.LatLng(38.71, -9.14),
-  new google.maps.LatLng(38.712, -9.142),
-  new google.maps.LatLng(38.715, -9.138),
-  new google.maps.LatLng(38.711, -9.141),
-  new google.maps.LatLng(38.708, -9.139),
-  new google.maps.LatLng(38.73, -9.16),
-  new google.maps.LatLng(38.733, -9.158),
+const heatmapRawData = [
+  { lat: 38.71, lng: -9.14 },
+  { lat: 38.712, lng: -9.142 },
+  { lat: 38.715, lng: -9.138 },
+  { lat: 38.711, lng: -9.141 },
+  { lat: 38.708, lng: -9.139 },
+  { lat: 38.73, lng: -9.16 },
+  { lat: 38.733, lng: -9.158 },
 ];
 
 
@@ -155,10 +156,18 @@ export default function DriverDashboardPage() {
   const [pendingRequests, setPendingRequests] = useState<RideRequest[]>([]);
   const [assignedPassengerProfile, setAssignedPassengerProfile] = useState<UserProfile | null>(null);
   const [notifiedStand, setNotifiedStand] = useState<string | null>(null);
+  const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
 
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('stand');
   const { formatCurrency } = useCurrency();
+
+  // Create heatmap data only on the client-side when google object is available
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.google) {
+        setHeatmapData(heatmapRawData.map(point => new google.maps.LatLng(point.lat, point.lng)));
+    }
+  }, []);
 
   // Proximity check for taxi stands
   useEffect(() => {
@@ -554,7 +563,7 @@ export default function DriverDashboardPage() {
             <Map>
               {isOnline && (
                 <>
-                    <HeatmapLayer data={heatmapData} />
+                    {heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
                     <MarkerF position={vehiclePosition} icon={getVehicleIcon() as google.maps.Icon | null} />
                     {activeRide?.origin && <MarkerF position={{lat: 38.74, lng: -9.15}} label="P" />}
                     {activeRide?.destination && (simulationStep === 'enroute_to_destination' || simulationStep === 'trip_inprogress') && <MarkerF position={TRIP_DESTINATION} label="D" />}
