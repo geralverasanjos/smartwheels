@@ -17,6 +17,7 @@ import { MarkerF, DirectionsRenderer, HeatmapLayer } from '@react-google-maps/ap
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
+import { ToastAction } from '@/components/ui/toast';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
@@ -144,10 +145,7 @@ export default function DriverDashboardPage() {
                 description: t('toast_stand_nearby_desc', { standName: nearbyStand.name }),
                 duration: 5000,
                 action: (
-                    <>
-                        <Button onClick={() => console.log('Joining queue for', nearbyStand.name)}>Aceitar</Button>
-                        <Button variant="ghost" onClick={() => console.log('Ignored queue for', nearbyStand.name)}>{t('ignore_button')}</Button>
-                    </>
+                    <ToastAction altText="Aceitar" onClick={() => console.log('Joining queue for', nearbyStand.name)}>Aceitar</ToastAction>
                 ),
             });
         }
@@ -226,8 +224,8 @@ export default function DriverDashboardPage() {
         }
     }, [vehiclePosition, simulationStep]);
   
-  const handleServiceChange = (service: keyof typeof services) => {
-    setServices(prev => ({ ...prev, [service]: !prev[service] }));
+  const handleServiceChange = (service: keyof typeof services, checked: boolean) => {
+    setServices(prev => ({ ...prev, [service]: checked }));
   };
 
   const getVehicleIcon = useCallback((isSelf: boolean = false) => {
@@ -346,7 +344,7 @@ export default function DriverDashboardPage() {
                             <Checkbox 
                                 id="passengers" 
                                 checked={services.passengers} 
-                                onCheckedChange={() => handleServiceChange('passengers')} 
+                                onCheckedChange={(checked) => handleServiceChange('passengers', !!checked)}
                             />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
                             <Car className="h-4 w-4" /> Passageiros (Táxi)
@@ -356,7 +354,7 @@ export default function DriverDashboardPage() {
                             <Checkbox 
                                 id="deliveries" 
                                 checked={services.deliveries} 
-                                onCheckedChange={() => handleServiceChange('deliveries')} 
+                                onCheckedChange={(checked) => handleServiceChange('deliveries', !!checked)} 
                             />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
                             <Package className="h-4 w-4" /> Entregas Pequenas
@@ -435,4 +433,6 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
+
+
 
