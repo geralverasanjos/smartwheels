@@ -30,26 +30,29 @@ export const saveUserProfile = async (role: string, profileData: UserProfile): P
 };
 
 export const getUserProfileByAuthId = async (authId: string): Promise<(UserProfile) | null> => {
-    const roles: ('driver' | 'passenger' | 'fleet-manager')[] = ['driver', 'passenger', 'fleet-manager'];
+    const roles: ('driver' | 'passenger' | 'fleet-manager')[] = ['drivers', 'passengers', 'fleet-managers'];
 
     for (const role of roles) {
         try {
-            const docRef = doc(db, `${role}s`, authId);
+            const docRef = doc(db, role, authId);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                return { id: docSnap.id, role, ...docSnap.data() } as UserProfile;
+                const roleName = role.slice(0, -1) as UserProfile['role'];
+                return { id: docSnap.id, role: roleName, ...docSnap.data() } as UserProfile;
             }
         } catch (error) {
             console.error(`Error fetching profile for role ${role}:`, error);
         }
     }
+    console.warn(`Profile for authId ${authId} not found in any collection.`);
     return null; // User ID not found in any profile collection
 };
 
 export const getProfileByIdAndRole = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
     if (!userId || !role) return null;
-    const docRef = doc(db, `${role}s`, userId);
+    const collectionName = `${role}s`;
+    const docRef = doc(db, collectionName, userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
