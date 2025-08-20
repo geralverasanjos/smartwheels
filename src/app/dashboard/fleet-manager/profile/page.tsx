@@ -7,15 +7,26 @@ import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 
 export default function FleetManagerProfilePage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const [userData, setUserData] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getFleetManagerProfile().then(setUserData);
-    }, []);
+        if (user?.id) {
+            getFleetManagerProfile(user.id).then(profile => {
+                setUserData(profile);
+                setLoading(false);
+            });
+        }
+    }, [user]);
 
-    if (!userData) {
+    if (loading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
+    }
+    
+    if (!userData) {
+        // Handle case where profile couldn't be loaded after trying
+        return <div>{t('error_loading_profile')}</div>
     }
 
     return (

@@ -3,47 +3,29 @@ import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } 
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
-// O ID do usuário seria obtido a partir da sessão de autenticação
-const getUserId = () => {
-    // Para prototipagem, usamos IDs fixos. Em produção, use o ID do usuário autenticado.
-    // e.g., return auth.currentUser?.uid;
-    return 'mock_user_id';
-};
-
-const getProfile = async (role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
-    const userId = getUserId();
+const getProfile = async (userId: string, role: 'passenger' | 'driver' | 'fleet-manager'): Promise<UserProfile | null> => {
+    if (!userId) return null;
+    
     const docRef = doc(db, `${role}s`, userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() } as UserProfile;
     } else {
-        // Se o perfil não existir, podemos criar um com dados padrão
-        const defaultProfile: UserProfile = {
-            id: userId,
-            name: 'Novo Utilizador',
-            email: 'user@example.com',
-            phone: '',
-            nif: '',
-            address: '',
-            avatarUrl: `https://placehold.co/100x100.png?text=${role.substring(0,1).toUpperCase()}`,
-            balance: 0,
-            role: role,
-            rating: 4.8, // Default rating
-            activeVehicleId: 'mock_vehicle_id', // Default vehicle
-        };
-        await setDoc(docRef, defaultProfile);
-        return defaultProfile;
+        console.warn(`Profile for user ${userId} with role ${role} not found.`);
+        return null;
     }
 };
 
-export const getDriverProfile = (): Promise<UserProfile | null> => getProfile('driver');
-export const getPassengerProfile = (): Promise<UserProfile | null> => getProfile('passenger');
-export const getFleetManagerProfile = (): Promise<UserProfile | null> => getProfile('fleet-manager');
+export const getDriverProfile = (userId: string): Promise<UserProfile | null> => getProfile(userId, 'driver');
+export const getPassengerProfile = (userId: string): Promise<UserProfile | null> => getProfile(userId, 'passenger');
+export const getFleetManagerProfile = (userId: string): Promise<UserProfile | null> => getProfile(userId, 'fleet-manager');
 
 export const saveUserProfile = async (role: string, profileData: UserProfile): Promise<void> => {
-    const userId = getUserId();
-    const docRef = doc(db, `${role}s`, userId);
+    if (!profileData.id) {
+        throw new Error("User ID is required to save profile.");
+    }
+    const docRef = doc(db, `${role}s`, profileData.id);
     await setDoc(docRef, profileData, { merge: true });
 };
 
