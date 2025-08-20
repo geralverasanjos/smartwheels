@@ -1,4 +1,5 @@
 
+
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;
@@ -78,4 +79,15 @@ export interface Vehicle {
     imageUrl?: string;
     aiHint?: string;
     allowedServices: ('passengers' | 'deliveries')[];
+}
+
+export interface Transaction {
+    id: string;
+    userId: string; // The user this transaction belongs to (passenger, driver, or fleet manager)
+    type: 'top-up' | 'withdraw' | 'trip' | 'transfer-in' | 'transfer-out' | 'fee';
+    amount: number; // Positive for income, negative for expenses
+    description: string;
+    status: 'completed' | 'pending' | 'failed';
+    timestamp: any; // Firestore Server Timestamp
+    relatedUserId?: string; // e.g., for transfers
 }

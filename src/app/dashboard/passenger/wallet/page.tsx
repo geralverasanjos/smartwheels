@@ -2,27 +2,35 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wallet, Landmark, ArrowUpRight, ArrowDownLeft, PlusCircle, ArrowDown, ArrowUp, Send, QrCode } from 'lucide-react';
+import { Wallet, Landmark, ArrowUpRight, ArrowDownLeft, PlusCircle, ArrowDown, ArrowUp, Send, QrCode, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { Separator } from '@/components/ui/separator';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCurrency } from '@/lib/currency';
+import { getTransactionsByUserId } from '@/services/paymentService';
+import type { Transaction } from '@/types';
 
-// Dados de exemplo (virão da API)
-const walletData = {
-    balance: 47.50,
-};
-
-const transactionHistory = [
-    { id: 1, type: 'top-up', date: 'Hoje, 10:30', description: 'Carregamento de Saldo', amount: 20.00 },
-    { id: 2, type: 'trip', date: 'Hoje, 09:15', description: 'Viagem com Carlos S.', amount: -9.50 },
-    { id: 3, type: 'transfer-in', date: 'Ontem', description: 'Recebido de @mario.p', amount: 15.00 },
-];
 
 export default function PassengerWalletPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { formatCurrency } = useCurrency();
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user?.id) {
+            getTransactionsByUserId(user.id)
+                .then(data => {
+                    setTransactions(data);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch transactions:", error);
+                    setLoading(false);
+                });
+        }
+    }, [user]);
 
     const getTransactionIcon = (type: string) => {
         switch (type) {
@@ -37,18 +45,10 @@ export default function PassengerWalletPage() {
                 return null;
         }
     };
-     const getTransactionAmountClass = (type: string) => {
-        switch (type) {
-            case 'top-up':
-            case 'transfer-in':
-                return 'text-green-500';
-            case 'trip':
-            case 'transfer-out':
-            case 'withdraw':
-                return 'text-destructive';
-            default:
-                return '';
-        }
+     const getTransactionAmountClass = (type: string, amount: number) => {
+        if (amount > 0) return 'text-green-500';
+        if (amount < 0) return 'text-destructive';
+        return '';
     };
 
 
@@ -59,11 +59,10 @@ export default function PassengerWalletPage() {
                 <p>{t('wallet_page_subtitle_generic')}</p>
             </div>
 
-            {/* Saldo e Ações Principais */}
             <Card className="text-center">
                 <CardHeader>
                     <p className="text-sm text-muted-foreground">{t('wallet_current_balance')}</p>
-                    <CardTitle className="text-5xl font-bold">{formatCurrency(walletData.balance)}</CardTitle>
+                    <CardTitle className="text-5xl font-bold">{user ? formatCurrency(user.balance || 0) : <Loader2 className="h-10 w-10 animate-spin mx-auto" />}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
                     <Button asChild><Link href="/dashboard/passenger/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
@@ -73,36 +72,41 @@ export default function PassengerWalletPage() {
                 </CardContent>
             </Card>
 
-            {/* Histórico de Transações */}
             <Card>
                 <CardHeader>
                     <CardTitle>{t('wallet_transaction_history')}</CardTitle>
                     <CardDescription>{t('wallet_transaction_history_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        {transactionHistory.length > 0 ? transactionHistory.map((transaction, index) => (
-                            <React.Fragment key={transaction.id}>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 rounded-full bg-muted">
-                                            {getTransactionIcon(transaction.type)}
+                    {loading ? (
+                         <div className="flex justify-center items-center h-24">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {transactions.length > 0 ? transactions.map((transaction, index) => (
+                                <React.Fragment key={transaction.id}>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 rounded-full bg-muted">
+                                                {getTransactionIcon(transaction.type)}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold">{transaction.description}</p>
+                                                <p className="text-sm text-muted-foreground">{new Date(transaction.timestamp.seconds * 1000).toLocaleString()}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold">{transaction.description}</p>
-                                            <p className="text-sm text-muted-foreground">{transaction.date}</p>
-                                        </div>
+                                        <p className={`font-bold text-lg ${getTransactionAmountClass(transaction.type, transaction.amount)}`}>
+                                            {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                        </p>
                                     </div>
-                                    <p className={`font-bold text-lg ${getTransactionAmountClass(transaction.type)}`}>
-                                        {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-                                    </p>
-                                </div>
-                                {index < transactionHistory.length - 1 && <Separator />}
-                            </React.Fragment>
-                        )) : (
-                            <p className="text-sm text-muted-foreground text-center">{t('wallet_no_transactions')}</p>
-                        )}
-                    </div>
+                                    {index < transactions.length - 1 && <Separator />}
+                                </React.Fragment>
+                            )) : (
+                                <p className="text-sm text-muted-foreground text-center">{t('wallet_no_transactions')}</p>
+                            )}
+                        </div>
+                    )}
                 </CardContent>
                 <CardFooter>
                     <Button variant="outline" className="w-full">{t('view_all_transactions')}</Button>
