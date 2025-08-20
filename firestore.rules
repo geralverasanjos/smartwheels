@@ -1,108 +1,92 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is authenticated
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to check if the user is the owner of the document
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return request.auth.uid == userId;
     }
     
-    // Helper function to get user role from their profile
-    function getRole(userId, role) {
-      // It's more secure to check if the document exists before accessing .data
-      return exists(/databases/$(database)/documents/$(role)s/$(userId)) &&
-             get(/databases/$(database)/documents/$(role)s/$(userId)).data.role == role;
+    function isDriver() {
+        return exists(/databases/$(database)/documents/drivers/$(request.auth.uid));
     }
 
-    // Rules for User profiles
-    match /{role(passenger|driver|fleet-manager)}s/{userId} {
-      allow read, update: if isOwner(userId);
+    function isPassenger() {
+        return exists(/databases/$(database)/documents/passengers/$(request.auth.uid));
+    }
+    
+    function isFleetManager() {
+        return exists(/databases/$(database)/documents/fleet-managers/$(request.auth.uid));
+    }
+    
+    // Profile Collections
+    match /passengers/{userId} {
+      allow read, update: if isAuthenticated() && isOwner(userId);
       allow create: if isAuthenticated();
     }
 
-    // Rules for Vehicles
-    match /vehicles/{vehicleId} {
-      allow read: if isAuthenticated();
-      // Only the assigned driver or a fleet manager can update vehicle info
-      allow update: if isAuthenticated() && 
-                      (resource.data.driverId == request.auth.uid || getRole(request.auth.uid, 'fleet-manager'));
-      // Only a fleet manager can create a new vehicle document
-      allow create: if isAuthenticated() && getRole(request.auth.uid, 'fleet-manager');
+    match /drivers/{userId} {
+      allow read, update: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated();
     }
-
-    // Rules for Ride Requests
+    
+    match /fleet-managers/{userId} {
+       allow read, update: if isAuthenticated() && isOwner(userId);
+       allow create: if isAuthenticated();
+    }
+    
+    // Ride Request Collection
     match /rideRequests/{requestId} {
-      allow create: if isAuthenticated() && request.resource.data.passengerId == request.auth.uid;
-
-      allow read: if isAuthenticated() && (
-                    isOwner(resource.data.passengerId) ||
-                    (resource.data.driverId != null && isOwner(resource.data.driverId)) ||
-                    (getRole(request.auth.uid, 'driver') && resource.data.status == 'pending')
-                  );
-
-      allow update: if isAuthenticated() && (
-                      // Passenger can cancel their own request if it's still cancellable
-                      (isOwner(resource.data.passengerId) && request.resource.data.status == 'cancelled' && resource.data.status != 'completed') ||
-                      // Driver can accept a pending request by assigning themselves
-                      (getRole(request.auth.uid, 'driver') && resource.data.status == 'pending' && request.resource.data.driverId == request.auth.uid) ||
-                      // The assigned driver can update the status through the ride lifecycle
-                      (isOwner(resource.data.driverId) && (request.resource.data.status == 'at_pickup' || request.resource.data.status == 'in_progress' || request.resource.data.status == 'completed' || request.resource.data.status == 'cancelled'))
-                    );
+      allow read: if isAuthenticated(); // Allow drivers to read pending requests
+      allow create: if isPassenger() && isOwner(request.resource.data.passengerId);
+      allow update: if (isDriver() && resource.data.driverId == request.auth.uid) || 
+                      (isPassenger() && resource.data.passengerId == request.auth.uid);
     }
-
-    // Rules for Messages within a ride
-    match /messages/{messageId} {
-      // Allow read/write only to participants of the ride
-      function isRideParticipant() {
-        let ride = get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data;
-        return request.auth.uid == ride.passengerId || request.auth.uid == ride.driverId;
-      }
-      
-      allow read: if isAuthenticated() && isRideParticipant();
-      allow create: if isAuthenticated() && isRideParticipant() && request.resource.data.senderId == request.auth.uid;
-      allow update, delete: if false; // Messages are immutable
-    }
-
-    // Rules for Driver Locations
-    match /driverLocations/{driverId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(driverId);
-    }
-
-    // Rules for Trips (history)
+    
+    // Trips (History) Collection
     match /trips/{tripId} {
-       allow read: if isAuthenticated() && (isOwner(resource.data.passengerId) || isOwner(resource.data.driverId) || getRole(request.auth.uid, 'fleet-manager'));
-       allow write: if false; // Created by server-side logic only
+        allow read: if isAuthenticated() && (resource.data.driverId == request.auth.uid || resource.data.passengerId == request.auth.uid);
+        allow create: if isAuthenticated(); // Should be created by a server-side process, but allow for now.
     }
-
-    // Rules for Ratings
-    match /ratings/{ratingId} {
-        allow create: if isAuthenticated();
-        allow read: if isAuthenticated() && (isOwner(resource.data.raterId) || isOwner(resource.data.ratedUserId));
-        allow update, delete: if false;
+    
+    // Vehicles Collection
+    match /vehicles/{vehicleId} {
+        // Assuming drivers own their vehicles or are associated with a fleet
+        // A more complex rule would check fleet ownership
+        allow read: if isAuthenticated();
+        allow create, update: if isDriver() || isFleetManager();
     }
-
-    // Rules for Transactions (Payments/Earnings)
+    
+    // Messages Collection
+    match /messages/{messageId} {
+        // Only participants of a ride can read/write messages for that ride
+        allow read, create: if isAuthenticated() && 
+                              exists(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)) &&
+                              (get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid ||
+                               get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid);
+    }
+    
+    // Transactions Collection
     match /transactions/{transactionId} {
-        allow read: if isAuthenticated() && (isOwner(resource.data.userId));
-        allow write: if false; // Created by server-side logic only
+        allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+        allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Promotions Collection
+    match /promotions/{promotionId} {
+        allow read: if isAuthenticated();
+        allow create, update, delete: if isDriver() || isFleetManager();
     }
 
-    // Rules for Promotions
-    match /driver_promotions/{promoId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated() && getRole(request.auth.uid, 'driver');
-    }
-
-    match /fleet-manager_promotions/{promoId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated() && getRole(request.auth.uid, 'fleet-manager');
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
