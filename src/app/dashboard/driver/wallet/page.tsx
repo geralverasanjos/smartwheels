@@ -7,6 +7,7 @@ import { useAppContext } from '@/contexts/app-context';
 import { Separator } from '@/components/ui/separator';
 import React from 'react';
 import Link from 'next/link';
+import { useCurrency } from '@/lib/currency';
 
 // Dados de exemplo (virão da API)
 const walletData = {
@@ -21,6 +22,7 @@ const transactionHistory = [
 
 export default function DriverWalletPage() {
     const { t } = useAppContext();
+    const { formatCurrency } = useCurrency();
 
     const getTransactionIcon = (type: string) => {
         switch (type) {
@@ -61,7 +63,7 @@ export default function DriverWalletPage() {
             <Card className="text-center">
                 <CardHeader>
                     <p className="text-sm text-muted-foreground">{t('wallet_current_balance')}</p>
-                    <CardTitle className="text-5xl font-bold">€{walletData.balance.toFixed(2)}</CardTitle>
+                    <CardTitle className="text-5xl font-bold">{formatCurrency(walletData.balance)}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
                     <Button asChild><Link href="/dashboard/driver/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
@@ -92,7 +94,7 @@ export default function DriverWalletPage() {
                                         </div>
                                     </div>
                                     <p className={`font-bold text-lg ${getTransactionAmountClass(transaction.type)}`}>
-                                        {transaction.amount > 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                                        {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
                                     </p>
                                 </div>
                                 {index < transactionHistory.length - 1 && <Separator />}
