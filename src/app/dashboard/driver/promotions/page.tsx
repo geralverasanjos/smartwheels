@@ -31,7 +31,7 @@ export default function DriverPromotionsPage() {
             setPromotions(data);
         } catch (error) {
             console.error("Failed to fetch promotions:", error);
-            toast({ title: "Erro", description: "Não foi possível carregar as promoções.", variant: "destructive" });
+            toast({ title: t('error_title'), description: t('error_fetch_promotions'), variant: "destructive" });
         } finally {
             setLoading(false);
         }
@@ -59,7 +59,7 @@ export default function DriverPromotionsPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            await deletePromotion('driver', id);
+            await deletePromotion(id);
             toast({
                 title: t('promo_delete_success_title'),
                 description: t('promo_delete_success_desc'),
@@ -67,7 +67,7 @@ export default function DriverPromotionsPage() {
             fetchPromotions(); // Refresh list
         } catch (error) {
             console.error("Failed to delete promotion:", error);
-            toast({ title: "Erro", description: "Não foi possível apagar a promoção.", variant: "destructive" });
+            toast({ title: t('error_title'), description: t('error_delete_promotion'), variant: "destructive" });
         }
     };
 
@@ -76,21 +76,20 @@ export default function DriverPromotionsPage() {
         if (!editingPromotion) return;
 
         const formData = new FormData(event.currentTarget);
-        const data = Object.fromEntries(formData.entries());
-
-        const promoData: any = {
+        
+        const promoData: Partial<Promotion> = {
             ...editingPromotion,
-            title: data.title as string,
-            type: data.type as Promotion['type'],
-            value: Number(data.value),
-            startDate: data.startDate as string,
-            endDate: data.endDate as string,
-            description: data.description as string,
-            status: 'Ativa' // Default status for new/edited promos
+            title: formData.get('title') as string,
+            type: formData.get('type') as Promotion['type'],
+            value: Number(formData.get('value')),
+            startDate: formData.get('startDate') as string,
+            endDate: formData.get('endDate') as string,
+            description: formData.get('description') as string,
+            status: editingPromotion.status || 'Ativa'
         };
 
         try {
-            await savePromotion('driver', promoData);
+            await savePromotion(promoData as Promotion);
             toast({
                 title: t('promo_save_success_title'),
                 description: t('promo_save_success_desc'),
@@ -100,7 +99,7 @@ export default function DriverPromotionsPage() {
             fetchPromotions(); // Refresh list
         } catch (error) {
             console.error("Failed to save promotion:", error);
-            toast({ title: "Erro", description: "Não foi possível guardar a promoção.", variant: "destructive" });
+            toast({ title: t('error_title'), description: t('error_save_promotion'), variant: "destructive" });
         }
     };
 
@@ -117,7 +116,10 @@ export default function DriverPromotionsPage() {
                 </Button>
             </div>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+                setIsDialogOpen(isOpen);
+                if (!isOpen) setEditingPromotion(null);
+            }}>
                 <DialogContent className="sm:max-w-lg">
                     <form onSubmit={handleSave}>
                         <DialogHeader>
@@ -178,6 +180,8 @@ export default function DriverPromotionsPage() {
                         <div className="flex justify-center items-center h-48">
                             <Loader2 className="h-8 w-8 animate-spin" />
                         </div>
+                    ) : promotions.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">{t('no_promotions_found')}</p>
                     ) : (
                         promotions.map((promo) => (
                             <Card key={promo.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
