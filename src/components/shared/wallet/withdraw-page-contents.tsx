@@ -19,7 +19,7 @@ const savedAccounts = [
 ];
 
 export default function WithdrawPageContents({ role }: { role: UserRole }) {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { formatCurrency } = useCurrency();
     const router = useRouter();
     const [amount, setAmount] = useState('');
@@ -68,7 +68,7 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
                             onChange={(e) => setAmount(e.target.value)}
                             placeholder="0.00"
                         />
-                        <p className="text-xs text-muted-foreground">{t('available_balance')} {formatCurrency(47.50)}</p>
+                        <p className="text-xs text-muted-foreground">{t('available_balance')} {formatCurrency(user?.balance || 0)}</p>
                     </div>
 
                     <div className="space-y-4">
