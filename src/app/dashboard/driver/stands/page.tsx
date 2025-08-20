@@ -12,22 +12,10 @@ import { Label } from '@/components/ui/label';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
-
+import { getStands, saveStand, deleteStand } from '@/services/standsService';
+import type { TaxiStand } from '@/types';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
-
-type TaxiStand = {
-    id: string;
-    name: string;
-    location: { lat: number; lng: number };
-};
-
-const mockStands: TaxiStand[] = [
-    { id: 'stand_1', name: 'Aeroporto - Chegadas', location: { lat: 38.768, lng: -9.128 } },
-    { id: 'stand_2', name: 'Estação do Oriente', location: { lat: 38.767, lng: -9.099 } },
-    { id: 'stand_3', name: 'Praça do Comércio', location: { lat: 38.707, lng: -9.136 } },
-];
-
 
 export default function TaxiStandsPage() {
     const { t } = useAppContext();
@@ -35,33 +23,46 @@ export default function TaxiStandsPage() {
     const { isLoaded, loadError } = useGoogleMaps();
 
     const [stands, setStands] = useState<TaxiStand[]>([]);
+    const [loading, setLoading] = useState(true);
     const [map, setMap] = useState<google.maps.Map | null>(null);
     
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [standData, setStandData] = useState<{id: string | null, name: string, location: {lat: number, lng: number}} | null>(null);
+    const [standData, setStandData] = useState<Partial<TaxiStand> | null>(null);
     
+    const fetchStands = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await getStands();
+            setStands(data);
+        } catch (error) {
+            console.error(error);
+            toast({ title: t('error_title'), description: "Failed to load stands.", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    }, [t, toast]);
+
     useEffect(() => {
         if (isLoaded) {
-            setStands(mockStands);
+            fetchStands();
         }
-    }, [isLoaded]);
+    }, [isLoaded, fetchStands]);
 
     const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
         setMap(mapInstance);
     }, []);
 
     const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-        if (e.latLng) {
-            setStandData({ id: null, name: '', location: { lat: e.latLng.lat(), lng: e.latLng.lng() } });
-            setIsDialogOpen(true);
+        if (e.latLng && isDialogOpen && standData) {
+            setStandData({ ...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() } });
         }
-    }, []);
+    }, [isDialogOpen, standData]);
 
     const handleOpenAddDialog = () => {
         if (map) {
             const center = map.getCenter();
             if (center) {
-                setStandData({ id: null, name: '', location: { lat: center.lat(), lng: center.lng() } });
+                setStandData({ name: '', location: { lat: center.lat(), lng: center.lng() } });
                 setIsDialogOpen(true);
             }
         }
@@ -72,34 +73,39 @@ export default function TaxiStandsPage() {
         setIsDialogOpen(true);
     }
     
-    const handleSaveStand = () => {
-        if (!standData || !standData.name) return;
+    const handleSaveStand = async () => {
+        if (!standData || !standData.name || !standData.location) return;
         
-        if (standData.id) { // Editing
-             setStands(prev => prev.map(s => s.id === standData.id ? { ...s, name: standData.name, location: standData.location } : s));
-             toast({ title: t('toast_stand_updated_title'), description: t('toast_stand_updated_desc', { standName: standData.name })});
-        } else { // Adding
-            const newStand: TaxiStand = {
-                id: `stand_${Date.now()}`,
-                name: standData.name,
-                location: standData.location,
-            };
-            setStands(prev => [...prev, newStand]);
-            toast({ title: t('toast_stand_added_title'), description: t('toast_stand_added_desc', { standName: standData.name }) });
+        try {
+            await saveStand(standData);
+            toast({ 
+                title: standData.id ? t('toast_stand_updated_title') : t('toast_stand_added_title'), 
+                description: standData.id ? t('toast_stand_updated_desc', { standName: standData.name }) : t('toast_stand_added_desc', { standName: standData.name })
+            });
+            fetchStands(); // Refresh list from DB
+        } catch (error) {
+            console.error(error);
+            toast({ title: t('error_title'), description: "Failed to save stand.", variant: "destructive" });
         }
 
         setIsDialogOpen(false);
         setStandData(null);
     };
 
-    const handleDeleteStand = (id: string) => {
+    const handleDeleteStand = async (id: string) => {
         const standToDelete = stands.find(s => s.id === id);
         if (standToDelete) {
-             setStands(prev => prev.filter(stand => stand.id !== id));
-             toast({
-                title: t('toast_stand_deleted_title'),
-                description: t('toast_stand_deleted_desc', { standName: standToDelete.name }),
-             });
+            try {
+                await deleteStand(id);
+                toast({
+                    title: t('toast_stand_deleted_title'),
+                    description: t('toast_stand_deleted_desc', { standName: standToDelete.name }),
+                });
+                fetchStands(); // Refresh list from DB
+            } catch (error) {
+                 console.error(error);
+                 toast({ title: t('error_title'), description: "Failed to delete stand.", variant: "destructive" });
+            }
         }
     }
     
@@ -130,6 +136,8 @@ export default function TaxiStandsPage() {
                 if (!open) {
                     setIsDialogOpen(false);
                     setStandData(null);
+                } else {
+                    setIsDialogOpen(true);
                 }
             }}>
                 <DialogContent>
@@ -175,7 +183,7 @@ export default function TaxiStandsPage() {
                                 title={stand.name}
                             />
                         ))}
-                        {isDialogOpen && standData && (
+                        {isDialogOpen && standData?.location && (
                             <MarkerF
                                 position={standData.location}
                                 draggable={true}
@@ -196,7 +204,7 @@ export default function TaxiStandsPage() {
                      <Button onClick={handleOpenAddDialog}><PlusCircle className="h-4 w-4 mr-2"/>{t('btn_add_stand')}</Button>
                 </CardHeader>
                 <CardContent>
-                    {!isLoaded ? (
+                    {loading ? (
                         <div className="flex justify-center items-center h-24">
                             <Loader2 className="h-8 w-8 animate-spin" />
                         </div>

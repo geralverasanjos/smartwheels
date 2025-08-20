@@ -90,3 +90,9 @@ export interface Transaction {
     timestamp: any; // Firestore Server Timestamp
     relatedUserId?: string; // e.g., for transfers
 }
+
+export type TaxiStand = {
+    id: string;
+    name: string;
+    location: { lat: number; lng: number };
+};
