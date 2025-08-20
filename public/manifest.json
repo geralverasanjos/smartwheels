@@ -1,8 +1,18 @@
 {
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
   "name": "SmartWheels",
   "short_name": "SmartWheels",
   "description": "SmartWheels: Táxi Inteligente, conectando você globalmente.",
   "icons": [
+    {
+      "src": "/assets/icons/icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
     {
       "src": "/assets/icons/icon-72x72.png",
       "sizes": "72x72",
@@ -43,9 +53,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#22c55e"
+  ]
 }
