@@ -1,21 +1,40 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { History, Car, Truck, Receipt } from 'lucide-react';
+import { History, Car, Truck, Receipt, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/lib/currency';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-
-const pastTrips = [
-    { id: '1', type: 'trip', driver: { name: 'Carlos Silva', avatar: 'https://placehold.co/40x40.png?text=CS' }, date: '2024-05-20', value: 12.50, status: 'completed' },
-    { id: '2', type: 'delivery', driver: { name: 'Mariana Costa', avatar: 'https://placehold.co/40x40.png?text=MC' }, date: '2024-05-18', value: 8.00, status: 'completed' },
-    { id: '3', type: 'trip', driver: { name: 'João Almeida', avatar: 'https://placehold.co/40x40.png?text=JA' }, date: '2024-05-15', value: 15.00, status: 'cancelled' },
-];
+import { getUserTripHistory } from '@/services/historyService';
+import type { Trip } from '@/types';
 
 export default function PassengerHistoryPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { formatCurrency, formatDate } = useCurrency();
+    const [trips, setTrips] = useState<Trip[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user || !user.id) {
+            setLoading(false);
+            return;
+        }
+
+        const fetchHistory = async () => {
+            try {
+                const historyData = await getUserTripHistory(user.id, 'passenger');
+                setTrips(historyData);
+            } catch (error) {
+                console.error("Failed to fetch passenger trip history:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, [user]);
 
     return (
         <Card>
@@ -24,18 +43,22 @@ export default function PassengerHistoryPage() {
                 <CardDescription>{t('history_page_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {pastTrips.length > 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <Loader2 className="h-16 w-16 animate-spin" />
+                    </div>
+                ) : trips.length > 0 ? (
                     <div className="space-y-4">
-                        {pastTrips.map(trip => (
+                        {trips.map(trip => (
                             <Card key={trip.id} className="flex flex-col md:flex-row items-center gap-4 p-4">
                                 <div className="flex items-center gap-4 flex-1">
                                     {trip.type === 'trip' ? <Car className="h-8 w-8 text-primary" /> : <Truck className="h-8 w-8 text-primary" />}
                                     <Avatar>
-                                        <AvatarImage src={trip.driver.avatar} data-ai-hint="person face" />
-                                        <AvatarFallback>{trip.driver.name.substring(0, 2)}</AvatarFallback>
+                                        <AvatarImage src={trip.driver?.avatarUrl} data-ai-hint="person face" />
+                                        <AvatarFallback>{trip.driver?.name?.substring(0, 2)}</AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <p className="font-bold">{t(trip.type === 'trip' ? 'trip_type_trip' : 'trip_type_delivery')} com {trip.driver.name}</p>
+                                        <p className="font-bold">{t(trip.type === 'trip' ? 'trip_type_trip' : 'trip_type_delivery')} com {trip.driver?.name || 'N/A'}</p>
                                         <p className="text-sm text-muted-foreground">{formatDate(trip.date)}</p>
                                     </div>
                                 </div>
@@ -61,7 +84,7 @@ export default function PassengerHistoryPage() {
                 ) : (
                     <div className="text-center text-muted-foreground py-16">
                         <History className="mx-auto h-12 w-12" />
-                        <h2 className="text-2xl font-semibold mt-4">{t('history_no_trips')}</h2>
+                        <h2 className="text-2xl font-semibold">{t('history_no_trips')}</h2>
                         <p>{t('history_no_trips_desc')}</p>
                     </div>
                 )}
