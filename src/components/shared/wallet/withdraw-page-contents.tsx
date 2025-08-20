@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/components/dashboard/dashboard-layout';
+import { useCurrency } from '@/lib/currency';
 
 const savedAccounts = [
     { id: 'bank1', type: 'bank', name: 'Conta Principal', details: '**** 1234' },
@@ -20,6 +20,7 @@ const savedAccounts = [
 
 export default function WithdrawPageContents({ role }: { role: UserRole }) {
     const { t } = useAppContext();
+    const { formatCurrency } = useCurrency();
     const router = useRouter();
     const [amount, setAmount] = useState('');
     const [selectedAccount, setSelectedAccount] = useState('bank1');
@@ -67,7 +68,7 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
                             onChange={(e) => setAmount(e.target.value)}
                             placeholder="0.00"
                         />
-                        <p className="text-xs text-muted-foreground">{t('available_balance')}: €47.50</p>
+                        <p className="text-xs text-muted-foreground">{t('available_balance')} {formatCurrency(47.50)}</p>
                     </div>
 
                     <div className="space-y-4">
