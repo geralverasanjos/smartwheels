@@ -1,38 +1,80 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, BarChart2, DollarSign, Milestone, TrendingUp } from "lucide-react";
+import { Download, BarChart2, DollarSign, Milestone, TrendingUp, Loader2 } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import StatCard from "@/components/ui/stat-card";
 import { useCurrency } from "@/lib/currency";
 import React, { useState, useEffect } from 'react';
-
-const monthlyEarningsData = [
-  { month: 'Jan', earnings: 11500 },
-  { month: 'Fev', earnings: 13200 },
-  { month: 'Mar', earnings: 15800 },
-  { month: 'Abr', earnings: 14100 },
-  { month: 'Mai', earnings: 17200 },
-  { month: 'Jun', earnings: 16500 },
-];
-
-const reportSummaryData = [
-    { month: 'Junho 2024', trips: 850, revenue: 16500, avgRating: 4.85 },
-    { month: 'Maio 2024', trips: 890, revenue: 17200, avgRating: 4.82 },
-    { month: 'Abril 2024', trips: 720, revenue: 14100, avgRating: 4.79 },
-    { month: 'Março 2024', trips: 810, revenue: 15800, avgRating: 4.88 },
-];
+import { getFleetTripHistory } from "@/services/historyService";
+import type { Trip, UserProfile } from "@/types";
+import { getDriversByFleetManager } from "@/services/profileService";
 
 export default function FleetReportsPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { formatCurrency } = useCurrency();
+    const [loading, setLoading] = useState(true);
+    const [trips, setTrips] = useState<Trip[]>([]);
+    const [drivers, setDrivers] = useState<UserProfile[]>([]);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
+        const fetchData = async () => {
+            if (!user?.id) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const [tripsData, driversData] = await Promise.all([
+                    getFleetTripHistory(user.id),
+                    getDriversByFleetManager(user.id)
+                ]);
+                setTrips(tripsData);
+                setDrivers(driversData);
+            } catch (error) {
+                console.error("Failed to fetch fleet reports data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [user]);
+
+    const reportSummaryData = trips.reduce((acc, trip) => {
+        const month = new Date(trip.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+        if (!acc[month]) {
+            acc[month] = { month, trips: 0, revenue: 0, count: 0, totalRating: 0 };
+        }
+        acc[month].trips += 1;
+        acc[month].revenue += trip.earnings || 0;
+        if(trip.driver?.rating) {
+             acc[month].totalRating += trip.driver.rating;
+             acc[month].count += 1;
+        }
+        return acc;
+    }, {} as Record<string, { month: string, trips: number, revenue: number, count: number, totalRating: number }>);
+    
+    const monthlyEarningsData = Object.values(reportSummaryData).map(data => ({
+        month: data.month,
+        earnings: data.revenue
+    }));
+    
+    const overallStats = trips.reduce((acc, trip) => {
+        acc.totalTrips += 1;
+        acc.totalRevenue += trip.earnings || 0;
+        acc.totalDistance += trip.distance || 0;
+        return acc;
+    }, { totalTrips: 0, totalRevenue: 0, totalDistance: 0 });
+
+    const avgRating = drivers.reduce((sum, driver) => sum + (driver.rating || 0), 0) / (drivers.length || 1);
+
+
+    if (loading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>
+    }
 
   return (
     <div className="space-y-8">
@@ -48,10 +90,10 @@ export default function FleetReportsPage() {
       </div>
 
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatCard icon={TrendingUp} title="3270" subtitle={t('reports_total_trips')} />
-            <StatCard icon={DollarSign} title={formatCurrency(63600)} subtitle={t('reports_total_revenue')} />
-            <StatCard icon={Milestone} title="12.5 Km" subtitle={t('reports_avg_trip_distance')} />
-            <StatCard icon={BarChart2} title="4.83" subtitle={t('reports_avg_rating')} />
+            <StatCard icon={TrendingUp} title={overallStats.totalTrips.toString()} subtitle={t('reports_total_trips')} />
+            <StatCard icon={DollarSign} title={formatCurrency(overallStats.totalRevenue)} subtitle={t('reports_total_revenue')} />
+            <StatCard icon={Milestone} title={`${(overallStats.totalDistance / (overallStats.totalTrips || 1)).toFixed(1)} Km`} subtitle={t('reports_avg_trip_distance')} />
+            <StatCard icon={BarChart2} title={avgRating.toFixed(2)} subtitle={t('reports_avg_rating')} />
       </div>
 
       <Card>
@@ -66,7 +108,7 @@ export default function FleetReportsPage() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
                         <YAxis tickFormatter={(value) => formatCurrency(Number(value))} />
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))}/>
+                        <Tooltip formatter={(value) => formatCurrency(Number(value) as number)}/>
                         <Legend />
                         <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t('menu_earnings')} />
                     </BarChart>
@@ -92,12 +134,12 @@ export default function FleetReportsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {reportSummaryData.map((row) => (
+                    {Object.values(reportSummaryData).map((row) => (
                         <TableRow key={row.month}>
                             <TableCell className="font-medium">{row.month}</TableCell>
                             <TableCell className="text-center">{row.trips}</TableCell>
                             <TableCell className="text-center">{formatCurrency(row.revenue)}</TableCell>
-                            <TableCell className="text-center">{row.avgRating.toFixed(2)}</TableCell>
+                            <TableCell className="text-center">{(row.totalRating / (row.count || 1)).toFixed(2)}</TableCell>
                             <TableCell className="text-right">
                                 <Button variant="outline" size="sm">
                                     <Download className="mr-2 h-3 w-3" />
