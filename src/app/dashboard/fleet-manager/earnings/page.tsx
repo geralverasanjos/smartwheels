@@ -5,7 +5,6 @@ import { DollarSign, ArrowDown, Banknote, Loader2 } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import React, { useState, useEffect } from 'react';
-import PaymentsPage from "../../payments/page";
 import { getFleetTripHistory } from "@/services/historyService";
 import type { Trip } from "@/types";
 import { useCurrency } from "@/lib/currency";
@@ -145,8 +144,6 @@ export default function FleetEarningsPage() {
             </ResponsiveContainer>
         </CardContent>
       </Card>
-      
-      <PaymentsPage />
       
       <div className="flex justify-end">
         <Button size="lg" asChild>

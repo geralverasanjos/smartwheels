@@ -437,7 +437,7 @@ export const Translations = {
     "id-ID": "Tambah metode pembayaran",
     "th-TH": "เพิ่มวิธีการชำระเงิน"
   },
-  "请选择您想添加的支付方式类型。": {
+  "payment_method_add_desc": {
     "pt-PT": "Selecione o tipo de forma de pagamento que deseja adicionar.",
     "pt-BR": "Selecione o tipo de forma de pagamento que você deseja adicionar.",
     "en-US": "Please select the type of payment method you would like to add.",
@@ -456,7 +456,7 @@ export const Translations = {
     "id-ID": "Silakan pilih jenis metode pembayaran yang ingin Anda tambahkan.",
     "th-TH": "โปรดเลือกประเภทของวิธีการชำระเงินที่คุณต้องการเพิ่ม"
   },
-  "支付方式类型PIX": {
+  "payment_method_type_label": {
     "pt-PT": "Tipo de Chave PIX",
     "pt-BR": "Tipo de Chave PIX",
     "en-US": "PIX Key Type",
@@ -475,7 +475,7 @@ export const Translations = {
     "id-ID": "Tipe Kunci PIX",
     "th-TH": "ประเภทคีย์ PIX"
   },
-  "信用卡/借记卡": {
+  "payment_method_credit_card": {
     "pt-PT": "Cartão de Crédito/Débito",
     "pt-BR": "Cartão de Crédito/Débito",
     "en-US": "Credit/Debit Card",
@@ -494,7 +494,7 @@ export const Translations = {
     "id-ID": "Kartu Kredit/Debit",
     "th-TH": "บัตรเครดิต/เดบิต"
   },
-  "PIX": {
+  "payment_method_pix": {
     "pt-PT": "PIX",
     "pt-BR": "PIX",
     "en-US": "PIX",
@@ -513,7 +513,7 @@ export const Translations = {
     "id-ID": "PIX",
     "th-TH": "PIX"
   },
-  "MB WAY": {
+  "payment_method_mbway": {
     "pt-PT": "MB WAY",
     "pt-BR": "MB WAY",
     "en-US": "MB WAY",
@@ -532,7 +532,7 @@ export const Translations = {
     "id-ID": "MB WAY",
     "th-TH": "MB WAY"
   },
-  "PayPal": {
+  "payment_method_paypal": {
     "pt-PT": "PayPal",
     "pt-BR": "PayPal",
     "en-US": "PayPal",
@@ -551,7 +551,7 @@ export const Translations = {
     "id-ID": "PayPal",
     "th-TH": "PayPal"
   },
-  "银行账户": {
+  "payment_method_bank_account": {
     "pt-PT": "Conta Bancária",
     "pt-BR": "Conta Bancária",
     "en-US": "Bank Account",
@@ -569,44 +569,6 @@ export const Translations = {
     "uk-UA": "Банківський рахунок",
     "id-ID": "Rekening Bank",
     "th-TH": "บัญชีธนาคาร"
-  },
-  "姓名": {
-    "pt-PT": "Nome",
-    "pt-BR": "Nome",
-    "en-US": "Name",
-    "es-ES": "Nombre",
-    "fr-FR": "Nom",
-    "de-DE": "Name",
-    "it-IT": "Nome",
-    "ja-JP": "名前",
-    "zh-CN": "姓名",
-    "ru-RU": "Имя",
-    "ar-SA": "الاسم",
-    "hi-IN": "नाम",
-    "ko-KR": "이름",
-    "he-IL": "שם",
-    "uk-UA": "Ім'я",
-    "id-ID": "Nama",
-    "th-TH": "ชื่อ"
-  },
-  "payment_method_pix_key_type": {
-    "pt-PT": "Tipo de Chave",
-    "pt-BR": "Tipo de Chave",
-    "en-US": "Key type",
-    "es-ES": "Tipo de clave",
-    "fr-FR": "Type de clé",
-    "de-DE": "Schlüsseltyp",
-    "it-IT": "Tipo di chiave",
-    "ja-JP": "キータイプ",
-    "zh-CN": "密钥类型",
-    "ru-RU": "Тип ключа",
-    "ar-SA": "نوع المفتاح",
-    "hi-IN": "कुंजी प्रकार",
-    "ko-KR": "키 유형",
-    "he-IL": "סוג מפתח",
-    "uk-UA": "Тип ключа",
-    "id-ID": "Tipe kunci",
-    "th-TH": "ประเภทคีย์"
   },
   "payment_method_pix_key_type_placeholder": {
     "pt-PT": "Escolha o tipo de chave",
@@ -626,25 +588,6 @@ export const Translations = {
     "uk-UA": "Виберіть тип ключа",
     "id-ID": "Pilih tipe kunci",
     "th-TH": "เลือกประเภทคีย์"
-  },
-  "payment_method_pix_phone ": {
-    "pt-PT": "Telefone",
-    "pt-BR": "Telefone",
-    "en-US": "Phone number",
-    "es-ES": "Número de teléfono",
-    "fr-FR": "Numéro de téléphone",
-    "de-DE": "Telefonnummer",
-    "it-IT": "Numero di telefono",
-    "ja-JP": "電話番号",
-    "zh-CN": "电话号码",
-    "ru-RU": "Номер телефона",
-    "ar-SA": "رقم الهاتف",
-    "hi-IN": "फोन नंबर",
-    "ko-KR": "전화번호",
-    "he-IL": "מספר טלפון",
-    "uk-UA": "Номер телефону",
-    "id-ID": "Nomor telepon",
-    "th-TH": "หมายเลขโทรศัพท์"
   },
   "payment_method_pix_cpf": {
     "pt-PT": "CPF",
@@ -1329,6 +1272,82 @@ export const Translations = {
     "uk-UA": "Переглядайте та експортуйте звіти про свою ефективність та доходи.",
     "id-ID": "Lihat dan ekspor laporan kinerja dan penghasilan Anda.",
     "th-TH": "ดูและส่งออกรายงานผลการปฏิบัติงานและรายได้ของคุณ"
+  },
+  "billing_page_title": {
+    "pt-PT": "Faturação",
+    "pt-BR": "Faturamento",
+    "en-US": "Billing",
+    "es-ES": "Facturación",
+    "fr-FR": "Facturation",
+    "de-DE": "Abrechnung",
+    "it-IT": "Fatturazione",
+    "ja-JP": "請求",
+    "zh-CN": "帐单",
+    "ru-RU": "Биллинг",
+    "ar-SA": "الفواتير",
+    "hi-IN": "बिलिंग",
+    "ko-KR": "청구",
+    "he-IL": "חיוב",
+    "uk-UA": "Біллінг",
+    "id-ID": "Penagihan",
+    "th-TH": "การเรียกเก็บเงิน"
+  },
+  "billing_page_subtitle": {
+    "pt-PT": "Gestão de pagamentos e recebimentos.",
+    "pt-BR": "Gerenciamento de pagamentos e recebimentos.",
+    "en-US": "Management of payments and receipts.",
+    "es-ES": "Gestión de pagos y cobros.",
+    "fr-FR": "Gestion des paiements et des encaissements.",
+    "de-DE": "Verwaltung von Zahlungen und Einnahmen.",
+    "it-IT": "Gestione di pagamenti e incassi.",
+    "ja-JP": "支払いと領収書の管理。",
+    "zh-CN": "付款和收款管理。",
+    "ru-RU": "Управление платежами и поступлениями.",
+    "ar-SA": "إدارة المدفوعات والإيصالات.",
+    "hi-IN": "भुगतान और प्राप्तियों का प्रबंधन।",
+    "ko-KR": "결제 및 영수증 관리.",
+    "he-IL": "ניהול תשלומים וקבלות.",
+    "uk-UA": "Управління платежами та надходженнями.",
+    "id-ID": "Manajemen pembayaran dan penerimaan.",
+    "th-TH": "การจัดการการชำระเงินและใบเสร็จรับเงิน"
+  },
+  "payout_methods_title": {
+    "pt-PT": "Métodos de Recebimento",
+    "pt-BR": "Métodos de Recebimento",
+    "en-US": "Payout Methods",
+    "es-ES": "Métodos de cobro",
+    "fr-FR": "Méthodes de paiement",
+    "de-DE": "Auszahlungsmethoden",
+    "it-IT": "Metodi di pagamento",
+    "ja-JP": "支払い方法",
+    "zh-CN": "收款方式",
+    "ru-RU": "Способы выплаты",
+    "ar-SA": "طرق الدفع",
+    "hi-IN": "भुगतान के तरीके",
+    "ko-KR": "지급 방법",
+    "he-IL": "אמצעי תשלום",
+    "uk-UA": "Способи виплати",
+    "id-ID": "Metode Pembayaran",
+    "th-TH": "วิธีการจ่ายเงิน"
+  },
+  "payout_methods_desc": {
+    "pt-PT": "Gerencie as contas para onde os seus ganhos serão enviados.",
+    "pt-BR": "Gerencie as contas para onde seus ganhos serão enviados.",
+    "en-US": "Manage the accounts where your earnings will be sent.",
+    "es-ES": "Administra las cuentas a las que se enviarán tus ganancias.",
+    "fr-FR": "Gérez les comptes où vos gains seront envoyés.",
+    "de-DE": "Verwalten Sie die Konten, auf die Ihre Einnahmen gesendet werden.",
+    "it-IT": "Gestisci gli account in cui verranno inviati i tuoi guadagni.",
+    "ja-JP": "収益が送金されるアカウントを管理します。",
+    "zh-CN": "管理您的收入将发送到的帐户。",
+    "ru-RU": "Управляйте счетами, на которые будут отправляться ваши доходы.",
+    "ar-SA": "إدارة الحسابات التي سيتم إرسال أرباحك إليها.",
+    "hi-IN": "उन खातों का प्रबंधन करें जहां आपकी कमाई भेजी जाएगी।",
+    "ko-KR": "수익이 지급될 계정을 관리하세요.",
+    "he-IL": "נהל את החשבונות שאליהם יישלחו הרווחים שלך.",
+    "uk-UA": "Керуйте рахунками, на які будуть надсилатися ваші заробітки.",
+    "id-ID": "Kelola akun tempat penghasilan Anda akan dikirim.",
+    "th-TH": "จัดการบัญชีที่จะส่งรายได้ของคุณ"
   }
 }
 export const languages = [
@@ -1353,17 +1372,3 @@ export const languages = [
     
 ];
 export type TranslationKeys = keyof typeof Translations;
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
