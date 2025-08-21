@@ -15,7 +15,6 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const formValues = Object.fromEntries(formData.entries());
         
         const values: Partial<PayoutMethod> = {
             type: methodType as 'bank' | 'paypal',
@@ -24,13 +23,13 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
 
         if (methodType === 'bank') {
             values.details = {
-                bankName: formValues.bank_name as string,
-                accountHolder: formValues.account_holder as string,
-                iban: formValues.iban as string,
+                bankName: formData.get('bank_name') as string,
+                accountHolder: formData.get('account_holder') as string,
+                iban: formData.get('iban') as string,
             };
         } else if (methodType === 'paypal') {
             values.details = {
-                email: formValues.email as string,
+                email: formData.get('email') as string,
             };
         }
 
