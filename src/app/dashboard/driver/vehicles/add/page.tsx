@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Wallet, Landmark, HandCoins, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 import { useAppContext } from '@/contexts/app-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { handleVehicleFee } from '@/lib/payments';
 
@@ -128,6 +128,7 @@ const Step2_ReceivingMethods = ({ onNext, onBack }: { onNext: () => void, onBack
 const Step3_Subscription = ({ onBack }: { onBack: () => void }) => {
     const { t } = useAppContext();
     const router = useRouter();
+    const pathname = usePathname();
     const [termsAccepted, setTermsAccepted] = useState(false);
     
     const handleSubmitAndPay = async () => {
@@ -157,7 +158,7 @@ const Step3_Subscription = ({ onBack }: { onBack: () => void }) => {
                 </div>
                  <div className="flex items-center space-x-2 mt-6 justify-center">
                     <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-                    <Label htmlFor="terms" className="text-xs">{t('terms_acceptance_part1')} <Link href="/terms" className="underline text-primary">{t('terms_acceptance_link')}</Link>.</Label>
+                    <Label htmlFor="terms" className="text-xs">{t('terms_acceptance_part1')} <Link href={`/terms?from=${pathname}`} className="underline text-primary">{t('terms_acceptance_link')}</Link>.</Label>
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between">
