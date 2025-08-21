@@ -125,7 +125,7 @@ export const translations = {
     "ja-JP": "あなたの街で最も公平な、キューでのあなたの位置に基づいて配車を受け取ります。",
     "zh-CN": "根据您在队列中的位置接收行程，这是您所在城市最公平的方式。",
     "ru-RU": "Получайте поездки в зависимости от вашей позиции в очереди, самой справедливой в вашем городе.",
-    "ar-SA": "احصل على الرحلات بناءً على موقعك في قائمة الانتظار، الأكثر عدالة في مدينتك.",
+    "ar-SA": "احصل على الرحلات بناءً na موقعك في قائمة الانتظار، الأكثر عدالة في مدينتك.",
     "hi-IN": "अपने शहर में सबसे निष्पक्ष, कतार में अपनी स्थिति के आधार पर राइड प्राप्त करें।",
     "ko-KR": "도시에서 가장 공정한, 대기열에서의 위치에 따라 탑승을 받으세요.",
     "he-IL": "קבל נסיעות על בסיס המיקום שלך בתור, שהיא ההוגנת ביותר בעיר שלך.",
@@ -479,7 +479,7 @@ export const translations = {
     "pt-PT": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "pt-BR": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "en-US": "The platform charges a small commission fee on the total ride fare.",
-    "es-ES": "La plataforma cobra una pequeña comisión sobre el valor total del viaje.",
+    "es-ES": "La plataforma cobra uma pequena comissão sobre o valor total do viaje.",
     "fr-FR": "La plateforme prélève une petite commission sur le montant total de la course.",
     "de-DE": "Die Plattform erhebt eine kleine Provision auf den gesamten Fahrpreis.",
     "it-IT": "La piattaforma applica una piccola commissione sul costo totale della corsa.",
@@ -859,7 +859,7 @@ export const translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "¿Qué te gustaría hacer hoy?",
+    "es-ES": "Qué te gustaría fazer hoje?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",
@@ -1130,7 +1130,7 @@ export const translations = {
     "de-DE": "Kein Konto? Registrieren",
     "it-IT": "Non hai un account? Registrati",
     "ja-JP": "アカウントをお持ちでないですか？登録",
-    "zh-CN": "没有账户？注册",
+    "zh-CN": "沒有账户？注册",
     "ru-RU": "Нет аккаунта? Зарегистрироваться",
     "ar-SA": "ليس لديك حساب؟ سجل",
     "hi-IN": "खाता नहीं है? रजिस्टर करें",
@@ -1449,5 +1449,3 @@ export const languages = [
 export type TranslationKeys = keyof typeof translations;
 
   
-
-    

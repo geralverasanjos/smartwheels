@@ -21,13 +21,13 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
             details: {}
         };
 
-        if (methodType === 'bank') {
+        if (values.type === 'bank') {
             values.details = {
                 bankName: formData.get('bank_name') as string,
                 accountHolder: formData.get('account_holder') as string,
                 iban: formData.get('iban') as string,
             };
-        } else if (methodType === 'paypal') {
+        } else if (values.type === 'paypal') {
             values.details = {
                 email: formData.get('email') as string,
             };

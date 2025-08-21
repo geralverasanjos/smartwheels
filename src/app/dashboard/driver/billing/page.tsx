@@ -102,8 +102,8 @@ export default function DriverBillingPage() {
             
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('payout_methods_title')}</CardTitle>
-                    <CardDescription>{t('payout_methods_desc')}</CardDescription>
+                    <CardTitle>{t('payout_methods_title_driver')}</CardTitle>
+                    <CardDescription>{t('payout_methods_desc_driver')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                      {loading ? (
