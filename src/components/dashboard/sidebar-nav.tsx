@@ -53,6 +53,7 @@ const passengerNav = [
 const driverNav = [
     { href: "/dashboard/driver", icon: LayoutGrid, labelKey: "role_driver" },
     { href: "/dashboard/driver/earnings", icon: AreaChart, labelKey: "menu_earnings" },
+    { href: "/dashboard/driver/reports", icon: FileText, labelKey: "menu_reports" },
     { href: "/dashboard/driver/history", icon: History, labelKey: "menu_history" },
     { href: "/dashboard/driver/wallet", icon: Wallet, labelKey: "menu_wallet" },
     { href: "/dashboard/payments", icon: CreditCard, labelKey: "menu_payments" },
