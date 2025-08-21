@@ -9,6 +9,7 @@ import PaymentsPage from "../../payments/page";
 import { getFleetTripHistory } from "@/services/historyService";
 import type { Trip } from "@/types";
 import { useCurrency } from "@/lib/currency";
+import Link from "next/link";
 
 export default function FleetEarningsPage() {
     const { t, user } = useAppContext();
@@ -148,8 +149,10 @@ export default function FleetEarningsPage() {
       <PaymentsPage />
       
       <div className="flex justify-end">
-        <Button size="lg">
-            <ArrowDown className="mr-2 h-4 w-4" /> {t('btn_withdraw_funds')}
+        <Button size="lg" asChild>
+            <Link href="/dashboard/fleet-manager/wallet/withdraw">
+                <ArrowDown className="mr-2 h-4 w-4" /> {t('btn_withdraw_funds')}
+            </Link>
         </Button>
       </div>
     </div>
