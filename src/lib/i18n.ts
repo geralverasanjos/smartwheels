@@ -76,25 +76,7 @@ export const Translations = {
     "id-ID": "Kesalahan",
     "th-TH": "ข้อผิดพลาด"
   },
-  "driver_accept_no_data": {
-    "pt-PT": "Não foi possível aceitar a viagem. Por favor, tente novamente.",
-    "pt-BR": "Não foi possível aceitar a viagem. Por favor, tente novamente.",
-    "en-US": "Could not accept the ride. Please try again.",
-    "es-ES": "No se pudo aceptar el viaje. Por favor, inténtalo de nuevo.",
-    "fr-FR": "Impossible d'accepter la course. Veuillez réessayer.",
-    "de-DE": "Die Fahrt konnte nicht angenommen werden. Bitte versuchen Sie es erneut.",
-    "it-IT": "Impossibile accettare la corsa. Per favore, riprova.",
-    "ja-JP": "乗車を受け付けられませんでした。もう一度お試しください。",
-    "zh-CN": "无法接受行程。请再试一次。",
-    "ru-RU": "Не удалось принять поездку. Пожалуйста, попробуйте еще раз.",
-    "ar-SA": "تعذر قبول الرحلة. يرجى المحاولة مرة أخرى.",
-    "hi-IN": "राइड स्वीकार नहीं की जा सकी। कृपया पुनः प्रयास करें।",
-    "ko-KR": "승차를 수락할 수 없습니다. 다시 시도해 주세요.",
-    "he-IL": "לא ניתן היה לקבל את הנסיעה. אנא נסה שוב.",
-    "uk-UA": "Не вдалося прийняти поїздку. Будь ласка, спробуйте ще раз.",
-    "id-ID": "Tidak dapat menerima perjalanan. Silakan coba lagi.",
-    "th-TH": "ไม่สามารถยอมรับการเดินทางได้ โปรดลองอีกครั้ง"
-  },"toast_stand_added_title": {
+"toast_stand_added_title": {
     "pt-PT": "Ponto de Interesse Adicionado",
     "pt-BR": "Ponto de Interesse Adicionado",
     "en-US": "Stand Added",
@@ -150,44 +132,6 @@ export const Translations = {
     "uk-UA": "Ви можете будь-коли змінити назву своєї точки.",
     "id-ID": "Anda dapat mengedit nama titik kumpul Anda kapan saja.",
     "th-TH": "คุณสามารถแก้ไขชื่อจุดสนใจของคุณได้ตลอดเวลา"
-  },
-  "driver_stand_oriente": {
-    "pt-PT": "Ponto de Taxi do Oriente",
-    "pt-BR": "Ponto de Táxi do Oriente",
-    "en-US": "Oriente Taxi Stand",
-    "es-ES": "Parada de taxi de Oriente",
-    "fr-FR": "Station de taxis d'Oriente",
-    "de-DE": "Taxistand Oriente",
-    "it-IT": "Stazione Taxi di Oriente",
-    "ja-JP": "オリエンテタクシースタンド",
-    "zh-CN": "东方出租车候客点",
-    "ru-RU": "Стоянка такси Ориенте",
-    "ar-SA": "موقف سيارات أجرة أورينتي",
-    "hi-IN": "ओरिएंट टैक्सी स्टैंड",
-    "ko-KR": "오리엔테 택시 승강장",
-    "he-IL": "תחנת מוניות אוריינטה",
-    "uk-UA": "Стоянка таксі Орієнте",
-    "id-ID": "Pangkalan Taksi Oriente",
-    "th-TH": "จุดจอดแท็กซี่โอเรียนเต"
-  },
-  "driver_stand_comercio": {
-    "pt-PT": "Praça do Comércio",
-    "pt-BR": "Praça do Comércio",
-    "en-US": "Praça do Comércio",
-    "es-ES": "Praça do Comércio",
-    "fr-FR": "Praça do Comércio",
-    "de-DE": "Praça do Comércio",
-    "it-IT": "Praça do Comércio",
-    "ja-JP": "コメルシオ広場",
-    "zh-CN": "商业广场",
-    "ru-RU": "Площадь Коммерции",
-    "ar-SA": "ساحة التجارة",
-    "hi-IN": "प्राका डो कोमेरसियो",
-    "ko-KR": "코메르시우 광장",
-    "he-IL": "כיכר המסחר",
-    "uk-UA": "Площа Комерції",
-    "id-ID": "Praça do Comércio",
-    "th-TH": "ปราซา โด กอเมร์ซีอู"
   },
   "toast_stand_added_desc": {
     "pt-PT": "O seu ponto de interesse foi adicionado com sucesso. Ele aparecerá no mapa quando estiver online.",
@@ -1024,3 +968,6 @@ export type TranslationKeys = keyof typeof Translations;
 
 
 
+
+
+    
