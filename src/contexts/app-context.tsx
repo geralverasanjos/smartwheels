@@ -53,7 +53,8 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
           const profileData = await getUserProfileByAuthId(firebaseUser.uid);
           setUser(profileData); // This can be the UserProfile or null if not found
           if (!profileData) {
-            console.error(`No profile found for authenticated user ${firebaseUser.uid}.`);
+            // This case might happen briefly during signup before the profile is created.
+            // console.warn(`No profile found for authenticated user ${firebaseUser.uid}, but this might be expected during signup.`);
           }
         } catch (error) {
           console.error("Error fetching user profile:", error);
