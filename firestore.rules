@@ -1,24 +1,41 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if a user is authenticated
+    function isUserAuthenticated() {
+      return request.auth != null;
+    }
 
-    // Users can only read and write to their own profile documents
+    // Helper function to check if the authenticated user is the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Rules for user profiles
     match /passengers/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
-
     match /drivers/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
-
     match /fleet-managers/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
 
-    // Any authenticated user can manage taxi stands
+    // Rules for stands - Any authenticated user can manage stands
     match /stands/{standId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isUserAuthenticated();
+    }
+
+    // Rules for transactions - Users can only read/create their own transactions
+    match /transactions/{transactionId} {
+        allow create: if isOwner(request.resource.data.userId);
+        allow read: if isOwner(resource.data.userId);
+    }
+    
+    // Default deny all other collections for security
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
