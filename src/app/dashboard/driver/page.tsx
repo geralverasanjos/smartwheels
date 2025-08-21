@@ -1,30 +1,23 @@
 
 'use client';
 
-import { useState, useEffect, useReducer, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, User, Star, ArrowRight, Loader2, PlayCircle, CheckCircle, MapPin } from 'lucide-react';
+import { Car, Package, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
-import { Button } from '@/components/ui/button';
-import { useCurrency } from '@/lib/currency';
-import { MarkerF, DirectionsRenderer, HeatmapLayer } from '@react-google-maps/api';
-import { useToast } from '@/hooks/use-toast';
+import { MarkerF, HeatmapLayer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
-import { ToastAction } from '@/components/ui/toast';
 
-const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
-const PASSENGER_PICKUP = { lat: 38.74, lng: -9.15 };
-const TRIP_DESTINATION = { lat: 38.725, lng: -9.13 };
 
-// Mock data for new features
+// Mock data for nearby drivers
 const nearbyDriversData = [
   { lat: 38.722, lng: -9.155 },
   { lat: 38.718, lng: -9.145 },
@@ -32,82 +25,17 @@ const nearbyDriversData = [
 ];
 
 
-type State = {
-  isOnline: boolean;
-  isSimulating: boolean;
-  simulationStep: 'idle' | 'request' | 'enroute_to_pickup' | 'at_pickup' | 'enroute_to_destination' | 'at_destination';
-  vehiclePosition: { lat: number; lng: number };
-  directions: google.maps.DirectionsResult | null;
-  statusMessage: string;
-};
-
-type Action =
-  | { type: 'TOGGLE_ONLINE'; payload: boolean }
-  | { type: 'TOGGLE_SIMULATION' }
-  | { type: 'ACCEPT_RIDE' }
-  | { type: 'DECLINE_RIDE' }
-  | { type: 'ARRIVE_AT_PICKUP' }
-  | { type: 'START_TRIP_TO_DESTINATION' }
-  | { type: 'FINISH_RIDE' }
-  | { type: 'SET_VEHICLE_POSITION'; payload: { lat: number; lng: number } }
-  | { type: 'SET_DIRECTIONS'; payload: google.maps.DirectionsResult | null }
-  | { type: 'SET_STATUS_MESSAGE', payload: string };
-  
-const initialState: State = {
-  isOnline: false,
-  isSimulating: false,
-  simulationStep: 'idle',
-  vehiclePosition: DRIVER_INITIAL_POSITION,
-  directions: null,
-  statusMessage: 'Você está offline.'
-};
-
-function simulationReducer(state: State, action: Action): State {
-    switch (action.type) {
-        case 'TOGGLE_ONLINE':
-            return { ...state, isOnline: action.payload, statusMessage: action.payload ? 'Aguardando novas solicitações...' : 'Você está offline.' };
-        case 'TOGGLE_SIMULATION':
-            const isSimulating = !state.isSimulating;
-            return {
-                ...initialState,
-                isOnline: state.isOnline,
-                isSimulating,
-                simulationStep: isSimulating ? 'request' : 'idle',
-                statusMessage: isSimulating ? state.statusMessage : (state.isOnline ? 'Aguardando novas solicitações...' : 'Você está offline.')
-            };
-        case 'ACCEPT_RIDE':
-            return { ...state, simulationStep: 'enroute_to_pickup', statusMessage: 'A caminho para buscar o passageiro...' };
-        case 'DECLINE_RIDE':
-             return { ...state, simulationStep: 'idle', statusMessage: 'Aguardando novas solicitações...' };
-        case 'ARRIVE_AT_PICKUP':
-            return { ...state, simulationStep: 'at_pickup', statusMessage: 'Passageiro coletado. Inicie a viagem para o destino.' };
-        case 'START_TRIP_TO_DESTINATION':
-            return { ...state, simulationStep: 'enroute_to_destination', statusMessage: 'Viagem em andamento para o destino final.' };
-        case 'FINISH_RIDE':
-            return { ...initialState, isOnline: state.isOnline, isSimulating: state.isSimulating };
-        case 'SET_VEHICLE_POSITION':
-            return { ...state, vehiclePosition: action.payload };
-        case 'SET_DIRECTIONS':
-            return { ...state, directions: action.payload };
-        case 'SET_STATUS_MESSAGE':
-            return { ...state, statusMessage: action.payload };
-        default:
-            return state;
-    }
-}
-
-
 export default function DriverDashboardPage() {
   const { t } = useAppContext();
-  const { toast } = useToast();
   const { isLoaded } = useGoogleMaps();
-  const [state, dispatch] = useReducer(simulationReducer, initialState);
-  const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessage } = state;
+  
+  const [isOnline, setIsOnline] = useState(false);
+  const [vehiclePosition, setVehiclePosition] = useState(DRIVER_INITIAL_POSITION);
+  const [statusMessage, setStatusMessage] = useState('Você está offline.');
   
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('global');
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
-  const { formatCurrency } = useCurrency();
 
   // Initialize heatmap data once Google Maps is loaded
   useEffect(() => {
@@ -123,75 +51,9 @@ export default function DriverDashboardPage() {
     }
   }, [isLoaded]);
 
-
-  const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
-    if (typeof window.google === 'undefined') return;
-
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: new window.google.maps.LatLng(origin.lat, origin.lng),
-        destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === window.google.maps.DirectionsStatus.OK) {
-          dispatch({ type: 'SET_DIRECTIONS', payload: result });
-        } else {
-          console.error(`error fetching directions ${result}`);
-        }
-      }
-    );
-  }, []);
-
   useEffect(() => {
-    if (simulationStep === 'enroute_to_pickup') {
-        handleDirections(vehiclePosition, PASSENGER_PICKUP);
-    } else if (simulationStep === 'enroute_to_destination') {
-        handleDirections(vehiclePosition, TRIP_DESTINATION);
-    } else {
-        dispatch({ type: 'SET_DIRECTIONS', payload: null });
-    }
-  }, [simulationStep, handleDirections, vehiclePosition]);
-
-
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        const moveVehicle = (target: google.maps.LatLngLiteral) => {
-            return setInterval(() => {
-                dispatch({
-                    type: 'SET_VEHICLE_POSITION',
-                    payload: {
-                        lat: vehiclePosition.lat + (target.lat - vehiclePosition.lat) * 0.1,
-                        lng: vehiclePosition.lng + (target.lng - vehiclePosition.lng) * 0.1,
-                    },
-                });
-            }, 1000);
-        };
-
-        if (simulationStep === 'enroute_to_pickup') {
-            interval = moveVehicle(PASSENGER_PICKUP);
-        } else if (simulationStep === 'enroute_to_destination') {
-            interval = moveVehicle(TRIP_DESTINATION);
-        }
-
-        return () => clearInterval(interval);
-    }, [simulationStep, vehiclePosition]);
-
-    useEffect(() => {
-        const checkArrival = (target: google.maps.LatLngLiteral, nextStep: Action['type']) => {
-            const distance = Math.sqrt(Math.pow(vehiclePosition.lat - target.lat, 2) + Math.pow(vehiclePosition.lng - target.lng, 2));
-            if (distance < 0.001) {
-                dispatch({ type: nextStep } as Action);
-            }
-        };
-
-        if (simulationStep === 'enroute_to_pickup') {
-            checkArrival(PASSENGER_PICKUP, 'ARRIVE_AT_PICKUP');
-        } else if (simulationStep === 'enroute_to_destination') {
-            checkArrival(TRIP_DESTINATION, 'FINISH_RIDE');
-        }
-    }, [vehiclePosition, simulationStep]);
+    setStatusMessage(isOnline ? 'Aguardando novas solicitações...' : 'Você está offline.');
+  }, [isOnline]);
   
   const handleServiceChange = (service: keyof typeof services, checked: boolean) => {
     setServices(prev => ({ ...prev, [service]: checked }));
@@ -213,79 +75,26 @@ export default function DriverDashboardPage() {
   }, [isLoaded]);
 
 
-  const renderCurrentActionCard = () => {
-    switch (simulationStep) {
-      case 'request':
-        return (
-          <Card className="border-dashed border-primary animate-pulse">
-            <CardHeader>
-              <CardTitle className="text-primary">Nova Solicitação de Corrida!</CardTitle>
-              <CardDescription>Um passageiro próximo precisa de uma viagem.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <User className="w-5 h-5 text-muted-foreground" />
-                <p className="font-semibold">Ana Sousa (4.8 <Star className="inline w-4 h-4 text-yellow-400 fill-yellow-400" />)</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">De: Ponto de Partida</p>
-                <p className="text-sm text-muted-foreground">Para: Destino Final</p>
-              </div>
-              <p className="text-xl font-bold text-right">{formatCurrency(12.50)}</p>
-            </CardContent>
-            <CardContent className="flex gap-2">
-              <Button variant="outline" className="w-full" onClick={() => dispatch({ type: 'DECLINE_RIDE' })}>Recusar</Button>
-              <Button className="w-full" onClick={() => dispatch({ type: 'ACCEPT_RIDE' })}>Aceitar</Button>
-            </CardContent>
-          </Card>
-        );
-      case 'at_pickup':
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-primary">Aguardando Passageiro</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>Você chegou ao local de partida. Aguarde o passageiro e inicie a viagem.</p>
-                    <Button className="w-full mt-4" onClick={() => dispatch({type: 'START_TRIP_TO_DESTINATION'})}><PlayCircle className="mr-2"/> Iniciar Viagem para o Destino</Button>
-                </CardContent>
-            </Card>
-        )
-      default:
-        return (
-          <Card className="border-dashed">
-            <CardContent className="p-8 flex flex-col items-center justify-center text-center h-36">
-              <p className="font-semibold text-muted-foreground">{statusMessage}</p>
-            </CardContent>
-          </Card>
-        );
-    }
-  };
-
-
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
             <Map>
-              {isLoaded && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
+              {isLoaded && isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
               {isLoaded && isOnline && nearbyDriversData.map((driver, index) => (
                 <MarkerF key={`driver-${index}`} position={driver} icon={getVehicleIcon(false)} />
               ))}
 
               {isLoaded && <MarkerF position={vehiclePosition} icon={getVehicleIcon(true)} />}
               
-              {isSimulating && (
-                <>
-                    <MarkerF position={PASSENGER_PICKUP} label="P" />
-                    {simulationStep === 'enroute_to_destination' && <MarkerF position={TRIP_DESTINATION} label="D" />}
-                </>
-              )}
-              {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true }} />}
             </Map>
         </div>
         <div className="md:col-span-1 flex flex-col gap-6 overflow-y-auto">
             
-            {isSimulating && renderCurrentActionCard()}
+            <Card>
+              <CardContent className="p-8 flex flex-col items-center justify-center text-center h-36">
+                <p className="font-semibold text-muted-foreground">{statusMessage}</p>
+              </CardContent>
+            </Card>
             
             <Card>
                 <CardHeader>
@@ -295,7 +104,7 @@ export default function DriverDashboardPage() {
                     <span className={`font-semibold ${isOnline ? 'text-primary' : 'text-muted-foreground'}`}>
                         {isOnline ? 'Online' : 'Offline'}
                     </span>
-                    <Switch checked={isOnline} onCheckedChange={(checked) => dispatch({ type: 'TOGGLE_ONLINE', payload: checked })} />
+                    <Switch checked={isOnline} onCheckedChange={setIsOnline} />
                     </div>
                 </div>
                 <CardDescription>
@@ -369,16 +178,6 @@ export default function DriverDashboardPage() {
                 )}
             </Card>
 
-            <Card className="border-primary/50">
-                <CardHeader>
-                    <CardTitle>Simulação de Viagem</CardTitle>
-                </CardHeader>
-                 <CardContent className="flex items-center justify-between">
-                     <Label htmlFor="simulation-switch">Ativar Simulação</Label>
-                    <Switch id="simulation-switch" checked={isSimulating} onCheckedChange={() => dispatch({ type: 'TOGGLE_SIMULATION' })} />
-                 </CardContent>
-            </Card>
-            
         </div>
     </div>
   );
