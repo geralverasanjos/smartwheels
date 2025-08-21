@@ -859,7 +859,7 @@ export const translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "Qué te gustaría fazer hoje?",
+    "es-ES": "¿Qué te gustaría hacer hoy?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",

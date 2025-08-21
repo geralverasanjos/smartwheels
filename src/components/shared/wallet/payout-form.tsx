@@ -16,18 +16,20 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         
+        const type = formData.get('type') as 'bank' | 'paypal';
+
         const values: Partial<PayoutMethod> = {
-            type: methodType as 'bank' | 'paypal',
+            type: type,
             details: {}
         };
 
-        if (values.type === 'bank') {
+        if (type === 'bank') {
             values.details = {
                 bankName: formData.get('bank_name') as string,
                 accountHolder: formData.get('account_holder') as string,
                 iban: formData.get('iban') as string,
             };
-        } else if (values.type === 'paypal') {
+        } else if (type === 'paypal') {
             values.details = {
                 email: formData.get('email') as string,
             };
