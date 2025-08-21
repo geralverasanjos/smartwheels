@@ -1,33 +1,32 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Regras mais específicas para cada coleção
-    
-    // Qualquer utilizador autenticado pode ler a lista de pontos de táxi
-    match /stands/{standId} {
-      allow read: if request.auth != null;
-      // Apenas administradores (a serem definidos) poderiam escrever
-      allow write: if false; 
+
+    function isUserAuthenticated() {
+      return request.auth != null;
     }
 
-    // Os utilizadores podem ler/escrever nos seus próprios perfis
     match /passengers/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if isUserAuthenticated() && request.auth.uid == userId;
     }
 
     match /drivers/{userId} {
-      allow read, write: if request.auth.uid == userId;
-    }
-    
-    match /fleet-managers/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if isUserAuthenticated() && request.auth.uid == userId;
     }
 
-    // Regra de negação padrão para segurança
-    match /{document=**} {
-      allow read, write: if false;
+    match /fleet-managers/{userId} {
+      allow read, write: if isUserAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /stands/{standId} {
+      allow read, write: if isUserAuthenticated();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isUserAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isUserAuthenticated();
     }
   }
 }
