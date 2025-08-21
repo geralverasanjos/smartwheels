@@ -13,7 +13,7 @@ import { PlusCircle, Edit, Copy, Trash2, Calendar, Tag, Loader2 } from 'lucide-r
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
-import { getFleetPromotions } from '@/services/promotionService';
+import { getFleetPromotions, savePromotion, deletePromotion } from '@/services/promotionService';
 import type { Promotion } from '@/types';
 
 export default function FleetPromotionsPage() {
@@ -22,47 +22,85 @@ export default function FleetPromotionsPage() {
     const [promotions, setPromotions] = useState<Promotion[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingPromotion, setEditingPromotion] = useState<any>(null);
+    const [editingPromotion, setEditingPromotion] = useState<Partial<Promotion> | null>(null);
+
+    const fetchPromotions = async () => {
+        setLoading(true);
+        try {
+            const data = await getFleetPromotions();
+            setPromotions(data);
+        } catch (error) {
+            console.error("Failed to fetch promotions:", error);
+            toast({ title: t('error_title'), description: t('error_fetch_promotions'), variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        getFleetPromotions()
-            .then(data => {
-                setPromotions(data);
-                setLoading(false);
-            });
+        fetchPromotions();
     }, []);
 
-
     const handleCreate = () => {
-        setEditingPromotion(null);
+        setEditingPromotion({});
         setIsDialogOpen(true);
     };
 
-    const handleEdit = (promo: any) => {
+    const handleEdit = (promo: Promotion) => {
         setEditingPromotion(promo);
         setIsDialogOpen(true);
     };
 
-    const handleDuplicate = (promo: any) => {
-        setEditingPromotion({ ...promo, id: null, title: `${promo.title} (${t('promo_copy_suffix')})` });
+    const handleDuplicate = (promo: Promotion) => {
+        const { id, ...promoCopy } = promo;
+        setEditingPromotion({ ...promoCopy, title: `${promo.title} (${t('promo_copy_suffix')})` });
         setIsDialogOpen(true);
     };
 
-    const handleDelete = (id: number) => {
-        setPromotions(promos => promos.filter(p => p.id !== id));
-        toast({
-            title: t('promo_delete_success_title'),
-            description: t('promo_delete_success_desc'),
-        });
+    const handleDelete = async (id: string) => {
+        try {
+            await deletePromotion(id);
+            toast({
+                title: t('promo_delete_success_title'),
+                description: t('promo_delete_success_desc'),
+            });
+            fetchPromotions(); // Refresh list
+        } catch (error) {
+            console.error("Failed to delete promotion:", error);
+            toast({ title: t('error_title'), description: t('error_delete_promotion'), variant: "destructive" });
+        }
     };
 
-    const handleSave = () => {
-        // Logic to save (add or edit)
-        toast({
-            title: t('promo_save_success_title'),
-            description: t('promo_save_success_desc'),
-        });
-        setIsDialogOpen(false);
+    const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!editingPromotion) return;
+
+        const formData = new FormData(event.currentTarget);
+        
+        const promoData: Partial<Promotion> = {
+            ...editingPromotion,
+            title: formData.get('title') as string,
+            type: formData.get('type') as Promotion['type'],
+            value: Number(formData.get('value')),
+            startDate: formData.get('startDate') as string,
+            endDate: formData.get('endDate') as string,
+            description: formData.get('description') as string,
+            status: editingPromotion.status || 'Ativa'
+        };
+
+        try {
+            await savePromotion(promoData as Promotion);
+            toast({
+                title: t('promo_save_success_title'),
+                description: t('promo_save_success_desc'),
+            });
+            setIsDialogOpen(false);
+            setEditingPromotion(null);
+            fetchPromotions(); // Refresh list
+        } catch (error) {
+            console.error("Failed to save promotion:", error);
+            toast({ title: t('error_title'), description: t('error_save_promotion'), variant: "destructive" });
+        }
     };
 
     return (
@@ -78,52 +116,56 @@ export default function FleetPromotionsPage() {
                 </Button>
             </div>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+                setIsDialogOpen(isOpen);
+                if (!isOpen) setEditingPromotion(null);
+            }}>
                 <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>{editingPromotion?.id ? t('promo_form_title_edit') : t('promo_form_title_create')}</DialogTitle>
-                         <DialogDescription>{t('promo_form_title_create_desc')}</DialogDescription>
-                    </DialogHeader>
-                    {/* The create/edit form would be here */}
-                    <div className="py-4 space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="promo-title">{t('promo_title_label')}</Label>
-                            <Input id="promo-title" placeholder={t('promo_title_placeholder')} defaultValue={editingPromotion?.title} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="promo-type">{t('promo_type_label')}</Label>
-                            <Select defaultValue={editingPromotion?.type}>
-                                <SelectTrigger><SelectValue placeholder={t('promo_type_placeholder')} /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="percentage">{t('promo_type_percentage')}</SelectItem>
-                                    <SelectItem value="fixed_discount">{t('promo_type_fixed')}</SelectItem>
-                                    <SelectItem value="fixed_price">{t('promo_type_fixed_price')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <form onSubmit={handleSave}>
+                        <DialogHeader>
+                            <DialogTitle>{editingPromotion?.id ? t('promo_form_title_edit') : t('promo_form_title_create')}</DialogTitle>
+                            <DialogDescription>{t('promo_form_title_create_desc')}</DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 space-y-4">
                             <div className="space-y-2">
-                            <Label htmlFor="promo-value">{t('promo_value_label')}</Label>
-                            <Input id="promo-value" type="number" placeholder={t('promo_value_placeholder')} defaultValue={editingPromotion?.value} />
-                        </div>
+                                <Label htmlFor="promo-title">{t('promo_title_label')}</Label>
+                                <Input id="promo-title" name="title" placeholder={t('promo_title_placeholder')} defaultValue={editingPromotion?.title} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="promo-type">{t('promo_type_label')}</Label>
+                                <Select name="type" defaultValue={editingPromotion?.type}>
+                                    <SelectTrigger><SelectValue placeholder={t('promo_type_placeholder')} /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="percentage">{t('promo_type_percentage')}</SelectItem>
+                                        <SelectItem value="fixed_discount">{t('promo_type_fixed')}</SelectItem>
+                                        <SelectItem value="fixed_price">{t('promo_type_fixed_price')}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="promo-value">{t('promo_value_label')}</Label>
+                                <Input id="promo-value" name="value" type="number" placeholder={t('promo_value_placeholder')} defaultValue={editingPromotion?.value} required />
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="promo-start">{t('promo_start_date_label')}</Label>
-                                <Input id="promo-start" type="date" defaultValue={editingPromotion?.startDate} />
+                                <div className="space-y-2">
+                                    <Label htmlFor="promo-start">{t('promo_start_date_label')}</Label>
+                                    <Input id="promo-start" name="startDate" type="date" defaultValue={editingPromotion?.startDate} required />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="promo-end">{t('promo_end_date_label')}</Label>
+                                    <Input id="promo-end" name="endDate" type="date" defaultValue={editingPromotion?.endDate} required />
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="promo-end">{t('promo_end_date_label')}</Label>
-                                <Input id="promo-end" type="date" defaultValue={editingPromotion?.endDate} />
+                                <Label htmlFor="promo-desc">{t('promo_conditions_label')}</Label>
+                                <Textarea id="promo-desc" name="description" placeholder={t('promo_conditions_placeholder')} defaultValue={editingPromotion?.description} />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="promo-desc">{t('promo_conditions_label')}</Label>
-                            <Textarea id="promo-desc" placeholder={t('promo_conditions_placeholder')} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild><Button variant="ghost">{t('btn_cancel')}</Button></DialogClose>
-                        <Button onClick={handleSave}>{t('btn_save_promotion')}</Button>
-                    </DialogFooter>
+                        <DialogFooter>
+                            <DialogClose asChild><Button type="button" variant="ghost">{t('btn_cancel')}</Button></DialogClose>
+                            <Button type="submit">{t('btn_save_promotion')}</Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
 
@@ -138,6 +180,8 @@ export default function FleetPromotionsPage() {
                         <div className="flex justify-center items-center h-48">
                             <Loader2 className="h-8 w-8 animate-spin" />
                         </div>
+                    ) : promotions.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">{t('no_promotions_found')}</p>
                     ) : (
                         promotions.map((promo) => (
                             <Card key={promo.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

@@ -30,8 +30,8 @@ export default function ReferralPage() {
             // setReferralData(data);
             setReferralData({
                 referralCode: `FLEET-${user.name?.split(' ')[0].toUpperCase()}-${user.id.substring(0,4)}`,
-                friendsInvited: 0,
-                totalEarnings: 0,
+                friendsInvited: 0, // This would be a real query
+                totalEarnings: 0, // This would be a real query
             });
         }
     }, [user]);

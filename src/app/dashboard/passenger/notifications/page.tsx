@@ -8,7 +8,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { TranslationKeys } from '@/lib/i18n';
 
 interface Notification {
-  id: string; // Changed to string for Firestore IDs
+  id: string; 
   icon: LucideIcon;
   titleKey: TranslationKeys;
   descriptionKey: TranslationKeys;
@@ -16,8 +16,6 @@ interface Notification {
   isRead: boolean;
 }
 
-// Removed initialNotifications mock data
-// const initialNotifications: Notification[] = [ ... ];
 
 export default function PassengerNotificationsPage() {
     const { t, user } = useAppContext();

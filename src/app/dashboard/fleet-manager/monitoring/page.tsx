@@ -8,14 +8,10 @@ import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
 import { Loader2 } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { useAppContext } from '@/contexts/app-context';
+import { getDriversByFleetManager } from '@/services/profileService';
+import type { UserProfile } from '@/types';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
-
-const SIMULATED_VEHICLES_INITIAL = [
-    { id: 'driver_1', name: 'Rui Costa', email: 'rui@email.com', vehicleDetails: { model: 'Tesla Model 3' }, vehicleStatus: { state: 'disponivel' }, lat: 38.740, lng: -9.145 },
-    { id: 'driver_2', name: 'Ana Pereira', email: 'ana@email.com', vehicleDetails: { model: 'Nissan Leaf' }, vehicleStatus: { state: 'em_viagem' }, lat: 38.735, lng: -9.138 },
-    { id: 'driver_3', name: 'Carlos Jorge', email: 'carlos@email.com', vehicleDetails: { model: 'Renault Zoe' }, vehicleStatus: { state: 'em_manutencao' }, lat: 38.738, lng: -9.150 },
-];
 
 const getVehicleIcon = (status: string, isSelected: boolean) => {
     if (typeof window === 'undefined' || !window.google) return null;
@@ -40,30 +36,28 @@ const getVehicleIcon = (status: string, isSelected: boolean) => {
 
 export default function FleetMonitoringPage() {
     const { isLoaded, loadError } = useGoogleMaps();
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     
-    const [vehicles, setVehicles] = useState(SIMULATED_VEHICLES_INITIAL);
+    const [vehicles, setVehicles] = useState<UserProfile[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
     useEffect(() => {
-        const interval = setInterval(() => {
-          setVehicles(currentVehicles =>
-            currentVehicles.map(v => {
-              if (v.vehicleStatus.state === 'em_viagem') {
-                return {
-                  ...v,
-                  lat: v.lat + (Math.random() - 0.5) * 0.001,
-                  lng: v.lng + (Math.random() - 0.5) * 0.001,
-                };
-              }
-              return v;
-            })
-          );
-        }, 3000); 
-    
-        return () => clearInterval(interval);
-      }, []);
+        if (user?.id) {
+            getDriversByFleetManager(user.id).then(drivers => {
+                // Here we might enrich driver data with real-time vehicle location data from another service
+                // For now, we'll assign random locations for demonstration
+                const vehiclesWithLocation = drivers.map(driver => ({
+                    ...driver,
+                    lat: LISBON_CENTER.lat + (Math.random() - 0.5) * 0.1,
+                    lng: LISBON_CENTER.lng + (Math.random() - 0.5) * 0.1,
+                    vehicleStatus: { state: (driver as any).status || 'disponivel' } // Mock status
+                }));
+                setVehicles(vehiclesWithLocation);
+            }).finally(() => setLoading(false));
+        }
+    }, [user]);
 
     const handleOpenAddModal = () => {
         setSelectedVehicle(null);
@@ -81,6 +75,7 @@ export default function FleetMonitoringPage() {
     };
 
     const handleSaveVehicle = (formData: any) => {
+        // This should call a service to save the driver/vehicle data
         if (formData.id) {
             setVehicles(vehicles.map(v => v.id === formData.id ? { ...v, ...formData } : v));
         } else { 
@@ -91,6 +86,7 @@ export default function FleetMonitoringPage() {
     };
 
     const handleDeleteVehicle = (vehicleId: string) => {
+        // This should call a service to delete the driver/vehicle
         setVehicles(vehicles.filter(v => v.id !== vehicleId));
         handleCloseModal();
     };
@@ -100,7 +96,7 @@ export default function FleetMonitoringPage() {
     }, []);
 
     if (loadError) return <div>{t('map_load_error')}</div>;
-    if (!isLoaded) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
+    if (!isLoaded || loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
 
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
@@ -109,7 +105,7 @@ export default function FleetMonitoringPage() {
                     {vehicles.map(vehicle => (
                         <MarkerF
                             key={vehicle.id}
-                            position={{ lat: vehicle.lat, lng: vehicle.lng }}
+                            position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
                             icon={getVehicleIcon(vehicle.vehicleStatus.state, selectedVehicle?.id === vehicle.id) as google.maps.Icon | null}
                             onClick={() => handleSelectOnMap(vehicle)}
                             zIndex={selectedVehicle?.id === vehicle.id ? 10 : 1}

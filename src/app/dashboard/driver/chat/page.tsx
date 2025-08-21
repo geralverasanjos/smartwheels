@@ -14,10 +14,6 @@ const conversations: any[] = [
   // This will be populated dynamically from a real data source.
 ];
 
-const initialMessages: Record<number, any[]> = {
-  // This will be populated dynamically based on the selected conversation.
-};
-
 export default function DriverChatPage() {
     const { t, user } = useAppContext();
     const [selectedConversation, setSelectedConversation] = useState<any>(null);
@@ -121,7 +117,7 @@ export default function DriverChatPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow p-6 space-y-4 overflow-y-auto">
-                            {messages.map(msg => (
+                            {messages.map((msg:any) => (
                                 <div key={msg.id} className={cn("flex items-end gap-2", msg.self ? "justify-end" : "justify-start")}>
                                      {!msg.self && (
                                          <Avatar className="h-8 w-8">
