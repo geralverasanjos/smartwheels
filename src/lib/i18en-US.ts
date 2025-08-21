@@ -125,7 +125,7 @@ export const translations = {
     "ja-JP": "あなたの街で最も公平な、キューでのあなたの位置に基づいて配車を受け取ります。",
     "zh-CN": "根据您在队列中的位置接收行程，这是您所在城市最公平的方式。",
     "ru-RU": "Получайте поездки в зависимости от вашей позиции в очереди, самой справедливой в вашем городе.",
-    "ar-SA": "احصل على الرحلات بناءً na موقعك في قائمة الانتظار، الأكثر عدالة في مدينتك.",
+    "ar-SA": "احصل على الرحلات بناءً على موقعك في قائمة الانتظار، الأكثر عدالة في مدينتك.",
     "hi-IN": "अपने शहर में सबसे निष्पक्ष, कतार में अपनी स्थिति के आधार पर राइड प्राप्त करें।",
     "ko-KR": "도시에서 가장 공정한, 대기열에서의 위치에 따라 탑승을 받으세요.",
     "he-IL": "קבל נסיעות על בסיס המיקום שלך בתור, שהיא ההוגנת ביותר בעיר שלך.",
@@ -1424,82 +1424,6 @@ export const translations = {
     "uk-UA": "Керуйте своїм автопарком і водіями",
     "id-ID": "Kelola armada kendaraan dan pengemudi Anda",
     "th-TH": "จัดการกองยานพาหนะและคนขับของคุณ"
-  },
-  "billing_page_title": {
-    "pt-PT": "Faturação",
-    "pt-BR": "Faturamento",
-    "en-US": "Billing",
-    "es-ES": "Facturación",
-    "fr-FR": "Facturation",
-    "de-DE": "Abrechnung",
-    "it-IT": "Fatturazione",
-    "ja-JP": "請求",
-    "zh-CN": "帐单",
-    "ru-RU": "Биллинг",
-    "ar-SA": "الفواتير",
-    "hi-IN": "बिलिंग",
-    "ko-KR": "청구",
-    "he-IL": "חיוב",
-    "uk-UA": "Біллінг",
-    "id-ID": "Penagihan",
-    "th-TH": "การเรียกเก็บเงิน"
-  },
-  "billing_page_subtitle": {
-    "pt-PT": "Gestão de pagamentos e recebimentos.",
-    "pt-BR": "Gerenciamento de pagamentos e recebimentos.",
-    "en-US": "Management of payments and receipts.",
-    "es-ES": "Gestión de pagos y cobros.",
-    "fr-FR": "Gestion des paiements et des encaissements.",
-    "de-DE": "Verwaltung von Zahlungen und Einnahmen.",
-    "it-IT": "Gestione di pagamenti e incassi.",
-    "ja-JP": "支払いと領収書の管理。",
-    "zh-CN": "付款和收款管理。",
-    "ru-RU": "Управление платежами и поступлениями.",
-    "ar-SA": "إدارة المدفوعات والإيصالات.",
-    "hi-IN": "भुगतान और प्राप्तियों का प्रबंधन।",
-    "ko-KR": "결제 및 영수증 관리.",
-    "he-IL": "ניהול תשלומים וקבלות.",
-    "uk-UA": "Управління платежами та надходженнями.",
-    "id-ID": "Manajemen pembayaran dan penerimaan.",
-    "th-TH": "การจัดการการชำระเงินและใบเสร็จรับเงิน"
-  },
-  "payout_methods_title": {
-    "pt-PT": "Métodos de Recebimento",
-    "pt-BR": "Métodos de Recebimento",
-    "en-US": "Payout Methods",
-    "es-ES": "Métodos de cobro",
-    "fr-FR": "Méthodes de paiement",
-    "de-DE": "Auszahlungsmethoden",
-    "it-IT": "Metodi di pagamento",
-    "ja-JP": "支払い方法",
-    "zh-CN": "收款方式",
-    "ru-RU": "Способы выплаты",
-    "ar-SA": "طرق الدفع",
-    "hi-IN": "भुगतान के तरीके",
-    "ko-KR": "지급 방법",
-    "he-IL": "אמצעי תשלום",
-    "uk-UA": "Способи виплати",
-    "id-ID": "Metode Pembayaran",
-    "th-TH": "วิธีการจ่ายเงิน"
-  },
-  "payout_methods_desc": {
-    "pt-PT": "Gerencie as contas para onde os seus ganhos serão enviados.",
-    "pt-BR": "Gerencie as contas para onde seus ganhos serão enviados.",
-    "en-US": "Manage the accounts where your earnings will be sent.",
-    "es-ES": "Administra las cuentas a las que se enviarán tus ganancias.",
-    "fr-FR": "Gérez les comptes où vos gains seront envoyés.",
-    "de-DE": "Verwalten Sie die Konten, auf die Ihre Einnahmen gesendet werden.",
-    "it-IT": "Gestisci gli account in cui verranno inviati i tuoi guadagni.",
-    "ja-JP": "収益が送金されるアカウントを管理します。",
-    "zh-CN": "管理您的收入将发送到的帐户。",
-    "ru-RU": "Управляйте счетами, на которые будут отправляться ваши доходы.",
-    "ar-SA": "إدارة الحسابات التي سيتم إرسال أرباحك إليها.",
-    "hi-IN": "उन खातों का प्रबंधन करें जहां आपकी कमाई भेजी जाएगी।",
-    "ko-KR": "수익이 지급될 계정을 관리하세요.",
-    "he-IL": "נהל את החשבונות שאליהם יישלחו הרווחים שלך.",
-    "uk-UA": "Керуйте рахунками, на які будуть надсилатися ваші заробітки.",
-    "id-ID": "Kelola akun tempat penghasilan Anda akan dikirim.",
-    "th-TH": "จัดการบัญชีที่จะส่งรายได้ของคุณ"
   }
 }
 export const languages = [
@@ -1526,3 +1450,4 @@ export type TranslationKeys = keyof typeof translations;
 
   
 
+    

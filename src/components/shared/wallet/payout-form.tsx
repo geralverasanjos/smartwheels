@@ -6,15 +6,34 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAppContext } from "@/contexts/app-context";
 import { useState } from "react";
+import type { PayoutMethod } from "@/types";
 
-export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: any) => void; editingMethod: any | null, onClose: () => void; }) => {
+export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: Partial<PayoutMethod>) => void; editingMethod: Partial<PayoutMethod> | null, onClose: () => void; }) => {
     const { t } = useAppContext();
-    const [methodType, setMethodType] = useState(editingMethod?.typeKey?.split('_').pop() || 'bank');
+    const [methodType, setMethodType] = useState(editingMethod?.type || 'bank');
     
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const values = Object.fromEntries(formData.entries());
+        const formValues = Object.fromEntries(formData.entries());
+        
+        const values: Partial<PayoutMethod> = {
+            type: methodType as 'bank' | 'paypal',
+            details: {}
+        };
+
+        if (methodType === 'bank') {
+            values.details = {
+                bankName: formValues.bank_name as string,
+                accountHolder: formValues.account_holder as string,
+                iban: formValues.iban as string,
+            };
+        } else if (methodType === 'paypal') {
+            values.details = {
+                email: formValues.email as string,
+            };
+        }
+
         onSubmit(values);
         onClose();
     };
@@ -29,7 +48,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
             <div className="grid gap-4 py-4">
                  <div className="space-y-2">
                     <Label htmlFor="method-type">{t('payment_method_type_label')}</Label>
-                    <Select value={methodType} onValueChange={setMethodType}>
+                    <Select name="type" value={methodType} onValueChange={(value) => setMethodType(value as 'bank' | 'paypal')}>
                         <SelectTrigger id="method-type">
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>
@@ -43,7 +62,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
                 {methodType === 'paypal' && (
                      <div className="space-y-2">
                         <Label htmlFor="paypal-email">{t('email_label')}</Label>
-                        <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.email} placeholder="seu.email@example.com" required/>
+                        <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.details?.email} placeholder="seu.email@example.com" required/>
                     </div>
                  )}
 
@@ -51,15 +70,15 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
                      <>
                         <div className="space-y-2">
                             <Label htmlFor="bank-name">{t('bank_name_label')}</Label>
-                            <Input id="bank-name" name="bank_name" defaultValue={editingMethod?.bank_name} placeholder="Nome do Banco" required/>
+                            <Input id="bank-name" name="bank_name" defaultValue={editingMethod?.details?.bankName} placeholder="Nome do Banco" required/>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="account-holder">{t('account_holder_label')}</Label>
-                            <Input id="account-holder" name="account_holder" defaultValue={editingMethod?.account_holder} placeholder="Nome do Titular" required />
+                            <Input id="account-holder" name="account_holder" defaultValue={editingMethod?.details?.accountHolder} placeholder="Nome do Titular" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="iban">{t('iban_label')}</Label>
-                            <Input id="iban" name="iban" defaultValue={editingMethod?.iban} placeholder="PT50..." required/>
+                            <Input id="iban" name="iban" defaultValue={editingMethod?.details?.iban} placeholder="PT50..." required/>
                         </div>
                     </>
                 )}

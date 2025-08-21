@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -176,7 +176,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
             <div className="grid gap-4 py-4">
                  <div className="space-y-2">
                     <Label htmlFor="method-type">{t('payment_method_type_label')}</Label>
-                    <Select value={methodType} onValueChange={setMethodType}>
+                    <Select name="type" value={methodType} onValueChange={setMethodType}>
                         <SelectTrigger id="method-type">
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>
