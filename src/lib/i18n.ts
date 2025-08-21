@@ -904,7 +904,7 @@ export const Translations = {
     "ja-JP": "あなたはタクシー乗り場「{standName}」の近くにいます。列に加わりますか？",
     "zh-CN": "您在“{standName}”出租车站附近。您想加入排队吗？",
     "ru-RU": "Вы находитесь рядом со стоянкой такси «{standName}». Хотите встать в очередь?",
-    "ar-SA": "أنت بالقرب من موقف سيارات الأجرة {standName}. هل ترغب في الانضمام إلى قائمة الانتظar?",
+    "ar-SA": "أنت بالقرب من موقف سيارات الأجرة {standName}. هل ترغب في الانضمام إلى قائمة الانتظار?",
     "hi-IN": "आप {standName} टैक्सी स्टैंड के पास हैं। क्या आप कतार में शामिल होना चाहेंगे?",
     "ko-KR": "{standName} 택시 승강장 근처에 있습니다. 줄을 서시겠습니까?",
     "he-IL": "אתה קרוב לתחנת המוניות {standName}. האם תרצה להצטרף לתור?",
@@ -1101,6 +1101,101 @@ export const Translations = {
     "uk-UA": "Перегляньте свої останні транзакції.",
     "id-ID": "Lihat transaksi terbaru Anda.",
     "th-TH": "ดูรายการธุรกรรมล่าสุดของคุณ"
+  },
+   "driver_status_message_offline": {
+    "pt-PT": "Você está offline.",
+    "pt-BR": "Você está offline.",
+    "en-US": "You are offline."
+  },
+  "driver_status_message_online": {
+    "pt-PT": "Aguardando novas solicitações...",
+    "pt-BR": "Aguardando novas solicitações...",
+    "en-US": "Waiting for new requests..."
+  },
+  "driver_queue_position_title": {
+    "pt-PT": "Posição na Fila",
+    "pt-BR": "Posição na Fila",
+    "en-US": "Queue Position"
+  },
+  "driver_not_in_queue": {
+    "pt-PT": "Não está em nenhuma fila de ponto de táxi.",
+    "pt-BR": "Não está em nenhuma fila de ponto de táxi.",
+    "en-US": "Not in any taxi stand queue."
+  },
+  "driver_online_status_title": {
+    "pt-PT": "Status Online",
+    "pt-BR": "Status Online",
+    "en-US": "Online Status"
+  },
+  "status_online": {
+    "pt-PT": "Online",
+    "pt-BR": "Online",
+    "en-US": "Online"
+  },
+  "status_offline": {
+    "pt-PT": "Offline",
+    "pt-BR": "Offline",
+    "en-US": "Offline"
+  },
+  "driver_online_status_desc_online": {
+    "pt-PT": "Você está visível e pronto para receber pedidos.",
+    "pt-BR": "Você está visível e pronto para receber pedidos.",
+    "en-US": "You are visible and ready to receive requests."
+  },
+  "driver_online_status_desc_offline": {
+    "pt-PT": "Você não está recebendo solicitações de corrida.",
+    "pt-BR": "Você não está recebendo solicitações de corrida.",
+    "en-US": "You are not receiving ride requests."
+  },
+  "driver_active_services_title": {
+    "pt-PT": "Tipos de Serviço Ativos:",
+    "pt-BR": "Tipos de Serviço Ativos:",
+    "en-US": "Active Service Types:"
+  },
+  "driver_service_passengers": {
+    "pt-PT": "Passageiros (Táxi)",
+    "pt-BR": "Passageiros (Táxi)",
+    "en-US": "Passengers (Taxi)"
+  },
+  "driver_service_deliveries": {
+    "pt-PT": "Entregas Pequenas",
+    "pt-BR": "Entregas Pequenas",
+    "en-US": "Small Deliveries"
+  },
+  "driver_queue_operation_title": {
+    "pt-PT": "Fila de Operação:",
+    "pt-BR": "Fila de Operação:",
+    "en-US": "Operation Queue:"
+  },
+  "driver_queue_global": {
+    "pt-PT": "Fila Global",
+    "pt-BR": "Fila Global",
+    "en-US": "Global Queue"
+  },
+  "driver_queue_stand": {
+    "pt-PT": "Fila de Ponto de Táxi",
+    "pt-BR": "Fila de Ponto de Táxi",
+    "en-US": "Taxi Stand Queue"
+  },
+  "driver_queue_both": {
+    "pt-PT": "Ambos",
+    "pt-BR": "Ambos",
+    "en-US": "Both"
+  },
+  "driver_select_stand_label": {
+    "pt-PT": "Escolha o Ponto de Táxi",
+    "pt-BR": "Escolha o Ponto de Táxi",
+    "en-US": "Choose Taxi Stand"
+  },
+  "driver_select_stand_placeholder": {
+    "pt-PT": "Selecione um ponto...",
+    "pt-BR": "Selecione um ponto...",
+    "en-US": "Select a stand..."
+  },
+  "driver_no_stands_available": {
+    "pt-PT": "Nenhum ponto disponível",
+    "pt-BR": "Nenhum ponto disponível",
+    "en-US": "No stands available"
   }
 };
 export const languages = [
@@ -1142,3 +1237,4 @@ export type TranslationKeys = keyof typeof Translations;
 
 
     
+

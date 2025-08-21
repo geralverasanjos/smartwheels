@@ -60,8 +60,8 @@ export default function DriverDashboardPage() {
   }, [isLoaded]);
 
   useEffect(() => {
-    setStatusMessage(isOnline ? 'Aguardando novas solicitações...' : 'Você está offline.');
-  }, [isOnline]);
+    setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
+  }, [isOnline, t]);
   
   const handleServiceChange = (service: keyof typeof services, checked: boolean) => {
     setServices(prev => ({ ...prev, [service]: checked }));
@@ -107,13 +107,13 @@ export default function DriverDashboardPage() {
             {isOnline && (queueMode === 'stand' || queueMode === 'both') && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Posição na Fila</CardTitle>
+                  <CardTitle>{t('driver_queue_position_title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {queuePosition.position > 0 ? (
                     <p className="text-2xl font-bold">{queuePosition.position} / {queuePosition.total}</p>
                   ) : (
-                    <p className="text-muted-foreground">Não está em nenhuma fila de ponto de táxi.</p>
+                    <p className="text-muted-foreground">{t('driver_not_in_queue')}</p>
                   )}
                 </CardContent>
               </Card>
@@ -122,16 +122,16 @@ export default function DriverDashboardPage() {
             <Card>
                 <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Status Online</CardTitle>
+                    <CardTitle>{t('driver_online_status_title')}</CardTitle>
                     <div className="flex items-center gap-2">
                     <span className={`font-semibold ${isOnline ? 'text-primary' : 'text-muted-foreground'}`}>
-                        {isOnline ? 'Online' : 'Offline'}
+                        {t(isOnline ? 'status_online' : 'status_offline')}
                     </span>
                     <Switch checked={isOnline} onCheckedChange={setIsOnline} />
                     </div>
                 </div>
                 <CardDescription>
-                    {isOnline ? 'Você está visível e pronto para receber pedidos.' : 'Você não está recebendo solicitações de corrida.'}
+                    {t(isOnline ? 'driver_online_status_desc_online' : 'driver_online_status_desc_offline')}
                 </CardDescription>
                 </CardHeader>
                  {isOnline && (
@@ -139,7 +139,7 @@ export default function DriverDashboardPage() {
                     <Separator />
                     <CardContent className="pt-6 space-y-6">
                     <div>
-                        <Label className="font-semibold">Tipos de Serviço Ativos:</Label>
+                        <Label className="font-semibold">{t('driver_active_services_title')}</Label>
                         <div className="space-y-3 mt-3">
                         <div className="flex items-center space-x-3">
                             <Checkbox 
@@ -148,7 +148,7 @@ export default function DriverDashboardPage() {
                                 onCheckedChange={(checked) => handleServiceChange('passengers', !!checked)}
                             />
                             <Label htmlFor="passengers" className="flex items-center gap-2 text-sm font-normal">
-                            <Car className="h-4 w-4" /> Passageiros (Táxi)
+                            <Car className="h-4 w-4" /> {t('driver_service_passengers')}
                             </Label>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -158,40 +158,40 @@ export default function DriverDashboardPage() {
                                 onCheckedChange={(checked) => handleServiceChange('deliveries', !!checked)} 
                             />
                             <Label htmlFor="deliveries" className="flex items-center gap-2 text-sm font-normal">
-                            <Package className="h-4 w-4" /> Entregas Pequenas
+                            <Package className="h-4 w-4" /> {t('driver_service_deliveries')}
                             </Label>
                         </div>
                         </div>
                     </div>
                     <Separator />
                     <div>
-                        <Label className="font-semibold">Fila de Operação:</Label>
+                        <Label className="font-semibold">{t('driver_queue_operation_title')}</Label>
                         <RadioGroup value={queueMode} onValueChange={setQueueMode} className="mt-3 space-y-2">
                         <div className="flex items-center space-x-3">
                             <RadioGroupItem value="global" id="globalQueue" />
-                            <Label htmlFor="globalQueue" className="font-normal">Fila Global</Label>
+                            <Label htmlFor="globalQueue" className="font-normal">{t('driver_queue_global')}</Label>
                         </div>
                         <div className="flex items-center space-x-3">
                             <RadioGroupItem value="stand" id="standQueue" />
-                            <Label htmlFor="standQueue" className="font-normal">Fila de Ponto de Táxi</Label>
+                            <Label htmlFor="standQueue" className="font-normal">{t('driver_queue_stand')}</Label>
                         </div>
                          <div className="flex items-center space-x-3">
                             <RadioGroupItem value="both" id="bothQueues" />
-                            <Label htmlFor="bothQueues" className="font-normal">Ambos</Label>
+                            <Label htmlFor="bothQueues" className="font-normal">{t('driver_queue_both')}</Label>
                         </div>
                         </RadioGroup>
                         {(queueMode === 'stand' || queueMode === 'both') && (
                         <div className="mt-4 pl-8">
-                            <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">Escolha o Ponto de Táxi</Label>
+                            <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">{t('driver_select_stand_label')}</Label>
                             <Select>
                             <SelectTrigger id="taxiStand">
-                                <SelectValue placeholder="Selecione um ponto..." />
+                                <SelectValue placeholder={t('driver_select_stand_placeholder')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {taxiStands.map(stand => (
                                     <SelectItem key={stand.id} value={stand.id}>{stand.name}</SelectItem>
                                 ))}
-                                {taxiStands.length === 0 && <SelectItem value="none" disabled>Nenhum ponto disponível</SelectItem>}
+                                {taxiStands.length === 0 && <SelectItem value="none" disabled>{t('driver_no_stands_available')}</SelectItem>}
                             </SelectContent>
                             </Select>
                         </div>
