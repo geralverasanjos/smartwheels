@@ -96,3 +96,16 @@ export type TaxiStand = {
     name: string;
     location: { lat: number; lng: number };
 };
+
+export interface PayoutMethod {
+    id: string;
+    userId: string;
+    type: 'bank' | 'paypal';
+    isDefault: boolean;
+    details: {
+        accountHolder?: string;
+        bankName?: string;
+        iban?: string;
+        email?: string;
+    };
+}
