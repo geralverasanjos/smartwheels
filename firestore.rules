@@ -1,9 +1,9 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper Functions
     function isUserAuthenticated() {
       return request.auth != null;
     }
@@ -11,31 +11,33 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
+    
+    // User Profiles
     match /passengers/{userId} {
+      allow read, update: if isOwner(userId);
       allow create: if isUserAuthenticated() && isOwner(request.resource.data.id);
-      allow read, update: if isUserAuthenticated() && isOwner(userId);
     }
-    
+
     match /drivers/{userId} {
+      allow read, update: if isOwner(userId) || (exists(/databases/$(database)/documents/fleet-managers/$(request.auth.uid)) && get(/databases/$(database)/documents/drivers/$(userId)).data.fleetManagerId == request.auth.uid);
       allow create: if isUserAuthenticated() && isOwner(request.resource.data.id);
-      allow read, update: if isUserAuthenticated() && isOwner(userId);
-      // Fleet manager can also read driver data
-      allow get: if isUserAuthenticated() && resource.data.fleetManagerId == request.auth.uid;
-    }
-
-    match /fleet-managers/{userId} {
-      allow create: if isUserAuthenticated() && isOwner(request.resource.data.id);
-      allow read, update: if isUserAuthenticated() && isOwner(userId);
-    }
-
-    match /stands/{standId} {
-      allow read, write: if isUserAuthenticated();
     }
     
+    match /fleet-managers/{userId} {
+      allow read, update: if isOwner(userId);
+      allow create: if isUserAuthenticated() && isOwner(request.resource.data.id);
+    }
+    
+    // Taxi Stands
+    match /stands/{standId} {
+      allow read: if isUserAuthenticated();
+      allow write: if isUserAuthenticated();
+    }
+    
+    // Transactions
     match /transactions/{transactionId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
+        allow create: if request.auth.uid == request.resource.data.userId;
+        allow read: if request.auth.uid == resource.data.userId;
     }
   }
 }
