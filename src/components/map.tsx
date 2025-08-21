@@ -43,6 +43,7 @@ export function Map({ children, onMapLoad, onMapClick }: MapProps) {
       options={{
         disableDefaultUI: true,
         zoomControl: true,
+        gestureHandling: 'cooperative',
       }}
       onLoad={onMapLoad}
       onClick={onMapClick}
