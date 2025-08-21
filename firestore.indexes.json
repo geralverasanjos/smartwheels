@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "collectionId": "transactions",
+      "collectionGroup": "transactions",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "userId", "order": "ASCENDING" },
@@ -9,7 +9,7 @@
       ]
     },
     {
-      "collectionId": "messages",
+      "collectionGroup": "messages",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "rideId", "order": "ASCENDING" },
