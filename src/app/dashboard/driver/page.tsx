@@ -30,10 +30,7 @@ const nearbyDriversData = [
   { lat: 38.718, lng: -9.145 },
   { lat: 38.725, lng: -9.152 },
 ];
-const taxiStands = [
-    { name: 'Oriente', location: { lat: 38.767, lng: -9.099 } },
-    { name: 'Comercio', location: { lat: 38.707, lng: -9.136 } },
-];
+
 
 type State = {
   isOnline: boolean;
@@ -108,7 +105,7 @@ export default function DriverDashboardPage() {
   const { isOnline, isSimulating, simulationStep, vehiclePosition, directions, statusMessage } = state;
   
   const [services, setServices] = useState({ passengers: true, deliveries: true });
-  const [queueMode, setQueueMode] = useState('stand');
+  const [queueMode, setQueueMode] = useState('global');
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
   const { formatCurrency } = useCurrency();
 
@@ -125,34 +122,6 @@ export default function DriverDashboardPage() {
         ]);
     }
   }, [isLoaded]);
-
-  // Simulate proximity check for taxi stands
-  useEffect(() => {
-    if (!isOnline) return;
-
-    const proximityCheckInterval = setInterval(() => {
-        const nearbyStand = taxiStands.find(stand => {
-             const distance = Math.sqrt(
-                Math.pow(vehiclePosition.lat - stand.location.lat, 2) +
-                Math.pow(vehiclePosition.lng - stand.location.lng, 2)
-            );
-            return distance < 0.05; // Adjust threshold as needed
-        });
-
-        if (nearbyStand) {
-            toast({
-                title: t('toast_stand_nearby_title'),
-                description: t('toast_stand_nearby_desc', { standName: nearbyStand.name }),
-                duration: 5000,
-                action: (
-                    <ToastAction altText="Aceitar" onClick={() => console.log('Joining queue for', nearbyStand.name)}>Aceitar</ToastAction>
-                ),
-            });
-        }
-    }, 15000); // Check every 15 seconds
-
-    return () => clearInterval(proximityCheckInterval);
-  }, [isOnline, vehiclePosition, t, toast]);
 
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
@@ -400,25 +369,6 @@ export default function DriverDashboardPage() {
                 )}
             </Card>
 
-            {isOnline && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Posição na Fila</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center justify-around text-center">
-                  <div>
-                    <p className="text-3xl font-bold">5</p>
-                    <p className="text-xs text-muted-foreground">Sua Posição</p>
-                  </div>
-                   <Separator orientation="vertical" className="h-12" />
-                  <div>
-                    <p className="text-3xl font-bold">12</p>
-                    <p className="text-xs text-muted-foreground">Total na Fila</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             <Card className="border-primary/50">
                 <CardHeader>
                     <CardTitle>Simulação de Viagem</CardTitle>
@@ -433,7 +383,3 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
-
-
-
-

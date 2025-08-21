@@ -24,6 +24,7 @@ export default function TaxiStandsPage() {
 
     const [stands, setStands] = useState<TaxiStand[]>([]);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [map, setMap] = useState<google.maps.Map | null>(null);
     
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -75,7 +76,7 @@ export default function TaxiStandsPage() {
     
     const handleSaveStand = async () => {
         if (!standData || !standData.name || !standData.location) return;
-        
+        setSaving(true);
         try {
             await saveStand(standData);
             toast({ 
@@ -83,13 +84,14 @@ export default function TaxiStandsPage() {
                 description: standData.id ? t('toast_stand_updated_desc', { standName: standData.name }) : t('toast_stand_added_desc', { standName: standData.name })
             });
             fetchStands(); // Refresh list from DB
+            setIsDialogOpen(false);
+            setStandData(null);
         } catch (error) {
             console.error(error);
             toast({ title: t('error_title'), description: "Failed to save stand.", variant: "destructive" });
+        } finally {
+            setSaving(false);
         }
-
-        setIsDialogOpen(false);
-        setStandData(null);
     };
 
     const handleDeleteStand = async (id: string) => {
@@ -159,7 +161,10 @@ export default function TaxiStandsPage() {
                     </div>
                     <DialogFooter>
                         <DialogClose asChild><Button variant="ghost">{t('btn_cancel')}</Button></DialogClose>
-                        <Button onClick={handleSaveStand} disabled={!standData?.name}>{t('btn_save')}</Button>
+                        <Button onClick={handleSaveStand} disabled={!standData?.name || saving}>
+                            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {t('btn_save')}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
