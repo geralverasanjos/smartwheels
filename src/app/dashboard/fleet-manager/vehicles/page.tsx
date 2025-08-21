@@ -98,7 +98,7 @@ export default function VehiclesPage() {
                     <p>{t('vehicle_page_subtitle')}</p>
                 </div>
                  <Button asChild>
-                    <Link href="/dashboard/driver/vehicles/add">
+                    <Link href="/dashboard/fleet-manager/vehicles/add">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         {t('btn_add_vehicle')}
                     </Link>
@@ -113,7 +113,7 @@ export default function VehiclesPage() {
                     </CardHeader>
                     <CardContent>
                         <Button asChild>
-                             <Link href="/dashboard/driver/vehicles/add">
+                             <Link href="/dashboard/fleet-manager/vehicles/add">
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 {t('btn_add_your_first_vehicle')}
                             </Link>
