@@ -379,7 +379,7 @@ export default function DriverDashboardPage() {
                             <Label htmlFor="bothQueues" className="font-normal">Ambos</Label>
                         </div>
                         </RadioGroup>
-                        {queueMode === 'stand' && (
+                        {(queueMode === 'stand' || queueMode === 'both') && (
                         <div className="mt-4 pl-8">
                             <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">Escolha o Ponto de Táxi</Label>
                             <Select defaultValue="aeroporto-chegadas">
@@ -433,6 +433,7 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
+
 
 
 
