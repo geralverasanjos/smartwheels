@@ -2,15 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Rules for user profiles
     match /passengers/{userId} {
       allow read, update: if request.auth.uid == userId;
       allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
     }
 
     match /drivers/{userId} {
-      allow read, write: if request.auth.uid == userId;
-      allow read: if get(/databases/$(database)/documents/fleet-managers/$(request.auth.uid)).data.id == resource.data.fleetManagerId;
+      allow read, update: if request.auth.uid == userId;
+      allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
     }
 
     match /fleet-managers/{userId} {
@@ -18,36 +17,19 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
     }
     
-    // Rules for taxi stands
     match /stands/{standId} {
       allow read, write: if request.auth != null;
     }
 
-    // Rules for financial transactions
-    match /transactions/{transactionId} {
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow read: if request.auth.uid == resource.data.userId;
-    }
-
-    // Rules for ride requests
     match /rideRequests/{requestId} {
-      allow create: if request.auth.uid == request.resource.data.passengerId;
-      allow read, update: if request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId;
-    }
+      // Allow any authenticated user to create a ride request
+      allow create: if request.auth != null;
+      
+      // Allow authenticated users to read pending requests
+      allow read: if request.auth != null;
 
-    // Rules for chat messages
-    match /messages/{messageId} {
-      allow create, read: if request.auth != null;
-    }
-
-    // Rules for promotions
-    match /promotions/{promoId} {
-        allow read, write: if request.auth != null;
-    }
-    
-    // Rules for vehicles
-    match /vehicles/{vehicleId} {
-        allow read, write: if request.auth != null;
+      // Allow the passenger who created the request or the assigned driver to update it
+      allow update: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
     }
   }
 }
