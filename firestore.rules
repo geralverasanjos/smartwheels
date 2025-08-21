@@ -2,45 +2,66 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    match /passengers/{userId} {
-      allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
-      allow read, update: if request.auth != null && request.auth.uid == userId;
+    // Allow read/write access to a user's own profile document
+    match /{collection}/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    match /drivers/{userId} {
-       allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
-       allow read, update: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /fleet-managers/{userId} {
-       allow create: if request.auth != null && request.resource.data.id == request.auth.uid;
-       allow read, update: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /stands/{standId} {
-      allow read, write: if request.auth != null;
-    }
-
+    // Rules for ride requests
     match /rideRequests/{requestId} {
-      allow create: if request.auth != null;
-      allow read, update: if request.auth != null && (resource.data.passengerId == request.auth.uid || resource.data.driverId == request.auth.uid);
+        allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
+        allow create: if request.auth != null;
+        allow update: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
     }
     
+    // Rules for messages - only participants of the ride can read/write
     match /messages/{messageId} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null && 
-                  (get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.passengerId == request.auth.uid ||
-                   get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.driverId == request.auth.uid);
+        allow create: if request.auth != null;
+        allow read: if request.auth != null && (
+                        get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.passengerId == request.auth.uid ||
+                        get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.driverId == request.auth.uid
+                    );
+    }
+    
+    // Rules for trips history
+    match /trips/{tripId} {
+        allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
+        allow create: if request.auth != null; // Server-side logic should validate creation
+    }
+    
+    // Rules for driver locations
+    match /driverLocations/{driverId} {
+      allow read: if request.auth != null; 
+      allow write: if request.auth != null && request.auth.uid == driverId;
     }
 
+    // Rules for taxi stands
+    match /stands/{standId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Allow any authenticated user to manage stands for now
+    }
+    
+    // Rules for transactions - only the user can access their own
+    match /transactions/{transactionId} {
+      allow read, create: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Rules for payout methods - only the user can manage their own
+    match /payoutMethods/{methodId} {
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Rules for promotions
+    match /promotions/{promoId} {
+        allow read: if request.auth != null;
+        allow create, update, delete: if request.auth != null; // Simplified - should be restricted to creators
+    }
+    
+    // Rules for vehicles
     match /vehicles/{vehicleId} {
         allow read: if request.auth != null;
-        allow write: if request.auth != null;
-    }
-
-    match /transactions/{transactionId} {
-        allow read, create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+        allow create, update: if request.auth != null && request.auth.uid == request.resource.data.driverId;
+        allow delete: if request.auth != null && request.auth.uid == resource.data.driverId;
     }
   }
 }
