@@ -1,3 +1,4 @@
+
 'use client';
 // src/services/standsService.ts
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, DocumentData } from 'firebase/firestore';
@@ -20,7 +21,7 @@ export const getStands = async (): Promise<TaxiStand[]> => {
     }
 };
 
-export const saveStand = async (stand: Partial<TaxiStand>): Promise<DocumentData> => {
+export const saveStand = async (stand: TaxiStand): Promise<DocumentData> => {
     try {
         if (stand.id) {
             const docRef = doc(db, 'stands', stand.id);
@@ -28,7 +29,9 @@ export const saveStand = async (stand: Partial<TaxiStand>): Promise<DocumentData
             await updateDoc(docRef, standData);
             return docRef;
         } else {
-            return await addDoc(standsCollection, stand);
+            // Firestore will auto-generate an ID, so we don't pass `id` in the data
+            const { id, ...standData } = stand;
+            return await addDoc(standsCollection, standData);
         }
     } catch (error) {
         console.error("Error saving stand:", error);

@@ -14,6 +14,8 @@ import { Map } from '@/components/map';
 import { MarkerF, HeatmapLayer } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
+import { getStands } from '@/services/standsService';
+import type { TaxiStand } from '@/types';
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 
@@ -37,6 +39,7 @@ export default function DriverDashboardPage() {
   const [queueMode, setQueueMode] = useState('global');
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
   const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
+  const [taxiStands, setTaxiStands] = useState<TaxiStand[]>([]);
 
 
   // Initialize heatmap data once Google Maps is loaded
@@ -50,6 +53,9 @@ export default function DriverDashboardPage() {
             new google.maps.LatLng(38.708, -9.135),
             new google.maps.LatLng(38.714, -9.145),
         ]);
+        
+        // Fetch taxi stands
+        getStands().then(setTaxiStands).catch(console.error);
     }
   }, [isLoaded]);
 
@@ -177,14 +183,15 @@ export default function DriverDashboardPage() {
                         {(queueMode === 'stand' || queueMode === 'both') && (
                         <div className="mt-4 pl-8">
                             <Label htmlFor="taxiStand" className="text-xs text-muted-foreground">Escolha o Ponto de Táxi</Label>
-                            <Select defaultValue="aeroporto-chegadas">
+                            <Select>
                             <SelectTrigger id="taxiStand">
-                                <SelectValue />
+                                <SelectValue placeholder="Selecione um ponto..." />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="aeroporto-chegadas">Aeroporto - Chegadas</SelectItem>
-                                <SelectItem value="estacao-oriente">Estação do Oriente</SelectItem>
-                                <SelectItem value="praca-comercio">Praça do Comércio</SelectItem>
+                                {taxiStands.map(stand => (
+                                    <SelectItem key={stand.id} value={stand.id}>{stand.name}</SelectItem>
+                                ))}
+                                {taxiStands.length === 0 && <SelectItem value="none" disabled>Nenhum ponto disponível</SelectItem>}
                             </SelectContent>
                             </Select>
                         </div>

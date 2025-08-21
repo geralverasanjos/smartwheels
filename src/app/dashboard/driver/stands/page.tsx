@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -62,10 +63,8 @@ export default function TaxiStandsPage() {
     const handleOpenAddDialog = () => {
         if (map) {
             const center = map.getCenter();
-            if (center) {
-                setStandData({ name: '', location: { lat: center.lat(), lng: center.lng() } });
-                setIsDialogOpen(true);
-            }
+            setStandData({ name: '', location: { lat: center?.lat() || LISBON_CENTER.lat, lng: center?.lng() || LISBON_CENTER.lng } });
+            setIsDialogOpen(true);
         }
     }
 
@@ -78,7 +77,7 @@ export default function TaxiStandsPage() {
         if (!standData || !standData.name || !standData.location) return;
         setSaving(true);
         try {
-            await saveStand(standData);
+            await saveStand(standData as TaxiStand);
             toast({ 
                 title: standData.id ? t('toast_stand_updated_title') : t('toast_stand_added_title'), 
                 description: standData.id ? t('toast_stand_updated_desc', { standName: standData.name }) : t('toast_stand_added_desc', { standName: standData.name })
