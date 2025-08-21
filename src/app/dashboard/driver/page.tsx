@@ -36,6 +36,8 @@ export default function DriverDashboardPage() {
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('global');
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
+  const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
+
 
   // Initialize heatmap data once Google Maps is loaded
   useEffect(() => {
@@ -95,6 +97,21 @@ export default function DriverDashboardPage() {
                 <p className="font-semibold text-muted-foreground">{statusMessage}</p>
               </CardContent>
             </Card>
+
+            {isOnline && (queueMode === 'stand' || queueMode === 'both') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Posição na Fila</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {queuePosition.position > 0 ? (
+                    <p className="text-2xl font-bold">{queuePosition.position} / {queuePosition.total}</p>
+                  ) : (
+                    <p className="text-muted-foreground">Não está em nenhuma fila de ponto de táxi.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             
             <Card>
                 <CardHeader>
