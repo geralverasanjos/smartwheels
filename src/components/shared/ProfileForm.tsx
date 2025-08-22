@@ -11,47 +11,36 @@ import type { UserProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/app-context";
 import type { TranslationKeys } from "@/lib/i18n";
-import { saveUserProfile, uploadProfilePhoto } from "@/services/profileService";
-import { useState } from "react";
+import { uploadProfilePhoto } from "@/services/profileService";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 
 interface ProfileFormProps {
     userData: UserProfile;
+    onSave: (data: UserProfile) => Promise<void>;
+    isSaving: boolean;
     titleKey: TranslationKeys;
     descriptionKey: TranslationKeys;
 }
 
-export default function ProfileForm({ userData, titleKey, descriptionKey }: ProfileFormProps) {
+export default function ProfileForm({ userData, onSave, isSaving, titleKey, descriptionKey }: ProfileFormProps) {
     const { t } = useAppContext();
     const { toast } = useToast();
-    const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [localAvatarUrl, setLocalAvatarUrl] = useState(userData.avatarUrl);
 
     const { register, handleSubmit, setValue, formState: { errors, isDirty } } = useForm<UserProfile>({
         defaultValues: userData,
     });
+    
+    useEffect(() => {
+        // When the avatarUrl in userData changes (e.g., after a new upload), update the local state.
+        setLocalAvatarUrl(userData.avatarUrl);
+        // Also update the form value, but only if it's different, to avoid unnecessary re-renders.
+        setValue('avatarUrl', userData.avatarUrl, { shouldDirty: true });
+    }, [userData.avatarUrl, setValue]);
 
-    const onSubmit = async (data: UserProfile) => {
-        setIsSaving(true);
-        try {
-            await saveUserProfile({ ...data, id: userData.id, avatarUrl: localAvatarUrl });
-            toast({
-                title: t('toast_profile_updated_title'),
-                description: t('toast_profile_updated_desc'),
-            });
-        } catch (error) {
-            console.error("Failed to save profile:", error);
-            toast({
-                title: t('error_title'),
-                description: t('error_saving_profile'),
-                variant: "destructive"
-            });
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -93,7 +82,7 @@ export default function ProfileForm({ userData, titleKey, descriptionKey }: Prof
 
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSave)}>
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-4">
@@ -110,7 +99,7 @@ export default function ProfileForm({ userData, titleKey, descriptionKey }: Prof
                     <div className="flex items-center gap-6">
                         <Avatar className="h-24 w-24">
                             <AvatarImage src={localAvatarUrl} alt={userData.name} data-ai-hint="person face" />
-                            <AvatarFallback>{userData.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback>{userData.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                             <Label htmlFor="avatar-upload" className={cn("cursor-pointer", isUploading && "cursor-not-allowed opacity-50")}>
