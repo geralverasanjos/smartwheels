@@ -13,6 +13,7 @@ import { useAppContext } from "@/contexts/app-context";
 import type { TranslationKeys } from "@/lib/i18n";
 import { saveUserProfile, uploadProfilePhoto } from "@/services/profileService";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ProfileFormProps {
     userData: UserProfile;
