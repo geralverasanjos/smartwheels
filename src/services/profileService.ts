@@ -42,7 +42,12 @@ export const saveUserProfile = async (profileData: UserProfile): Promise<void> =
     }
     const collectionName = `${profileData.role}s`;
     const docRef = doc(db, collectionName, profileData.id);
-    await setDoc(docRef, profileData, { merge: true });
+    
+    // Do not save the 'id' field inside the document itself
+    const dataToSave = { ...profileData };
+    delete (dataToSave as any).id;
+
+    await setDoc(docRef, dataToSave, { merge: true });
 };
 
 
