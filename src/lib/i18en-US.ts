@@ -866,7 +866,7 @@ export const translations = {
     "ja-JP": "今日は何をしたいですか？",
     "zh-CN": "今天想做什么？",
     "ru-RU": "Что бы вы хотели сделать сегодня?",
-    "ar-SA": "माذا تريد أن تفعل اليوم؟",
+    "ar-SA": "ماذا تريد أن تفعل اليوم؟",
     "hi-IN": "आप आज क्या करना चाहेंगे?",
     "ko-KR": "오늘 무엇을 하고 싶으신가요?",
     "he-IL": "מה תרצה לעשות היום?",
@@ -1449,3 +1449,5 @@ export const languages = [
 export type TranslationKeys = keyof typeof translations;
 
   
+
+    
