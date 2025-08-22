@@ -5,12 +5,12 @@ import { DollarSign, ArrowDown, Banknote, Loader2 } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import React, { useState, useEffect } from 'react';
-import { getDriverTripHistory } from "@/services/historyService";
+import { getFleetTripHistory } from "@/services/historyService";
 import type { Trip } from "@/types";
 import { useCurrency } from "@/lib/currency";
 import Link from "next/link";
 
-export default function DriverEarnings() {
+export default function FleetEarningsPage() {
     const { t, user } = useAppContext();
     const { formatCurrency } = useCurrency();
     const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function DriverEarnings() {
             };
             setLoading(true);
             try {
-                const trips = await getDriverTripHistory(user.id);
+                const trips = await getFleetTripHistory(user.id);
                 const today = new Date();
                 const startOfWeek = new Date(today);
                 startOfWeek.setDate(today.getDate() - today.getDay());
@@ -69,7 +69,7 @@ export default function DriverEarnings() {
                 });
 
             } catch (error) {
-                console.error("Failed to fetch earnings data:", error);
+                console.error("Failed to fetch fleet earnings data:", error);
             } finally {
                 setLoading(false);
             }
@@ -89,8 +89,8 @@ export default function DriverEarnings() {
   return (
     <div className="space-y-8">
        <div>
-        <h1 className="text-3xl font-bold font-headline">{t('earnings_page_title')}</h1>
-        <p className="text-muted-foreground">{t('earnings_page_subtitle')}</p>
+        <h1 className="text-3xl font-bold font-headline">{t('earnings_page_title_fleet')}</h1>
+        <p className="text-muted-foreground">{t('earnings_page_subtitle_fleet')}</p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -136,8 +136,8 @@ export default function DriverEarnings() {
                 <BarChart data={earningsData.weeklyPerformance}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="day" />
-                    <YAxis tickFormatter={(value) => formatCurrency(Number(value))} />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <YAxis tickFormatter={(value) => formatCurrency(Number(value))}/>
+                    <Tooltip formatter={(value: number) => formatCurrency(value)}/>
                     <Legend />
                     <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t('earnings_week')} />
                 </BarChart>
@@ -147,7 +147,7 @@ export default function DriverEarnings() {
       
       <div className="flex justify-end">
         <Button size="lg" asChild>
-            <Link href="/dashboard/driver/wallet/withdraw">
+            <Link href="/dashboard/fleet-manager/wallet/withdraw">
                 <ArrowDown className="mr-2 h-4 w-4" /> {t('btn_withdraw_funds')}
             </Link>
         </Button>

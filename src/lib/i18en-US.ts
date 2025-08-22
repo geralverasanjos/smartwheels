@@ -479,7 +479,7 @@ export const translations = {
     "pt-PT": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "pt-BR": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "en-US": "The platform charges a small commission fee on the total ride fare.",
-    "es-ES": "La plataforma cobra uma pequena comissão sobre o valor total do viaje.",
+    "es-ES": "La plataforma cobra una pequeña comisión sobre el valor total del viaje.",
     "fr-FR": "La plateforme prélève une petite commission sur le montant total de la course.",
     "de-DE": "Die Plattform erhebt eine kleine Provision auf den gesamten Fahrpreis.",
     "it-IT": "La piattaforma applica una piccola commissione sul costo totale della corsa.",
@@ -859,7 +859,7 @@ export const translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "Qué te gustaría fazer hoje?",
+    "es-ES": "¿Qué te gustaría hacer hoy?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",
@@ -1005,7 +1005,7 @@ export const translations = {
     "he-IL": "הצג את כל הנסיעות והמשלוחים הקודמים שלך.",
     "uk-UA": "Переглянути всі свої минулі поїздки та доставки.",
     "id-ID": "Lihat semua perjalanan dan pengiriman Anda sebelumnya.",
-    "th-TH": "ที่นี่คุณสามารถดูการเดินทาง การจัดส่ง และธุรกรรมที่ผ่านมาทั้งหมดของคุณได้"
+    "th-TH": "ดูประวัติการเดินทางและการจัดส่งทั้งหมดของคุณ"
   },
   "menu_wallet_swg": {
     "pt-PT": "Carteira",
@@ -1346,7 +1346,7 @@ export const translations = {
     "ko-KR": "당신을 위해 만들어진 여행",
     "he-IL": "נסיעות שנעשו בשבילך",
     "uk-UA": "Поїздки, створені для вас",
-    "id-ID": "Perjalanan yang dibuat для Anda",
+    "id-ID": "Perjalanan yang dibuat untuk Anda",
     "th-TH": "ทริปที่สร้างมาเพื่อคุณ"
   },
   "welcome_subtitle": {
@@ -1443,7 +1443,7 @@ export const languages = [
     { value: "he-IL", label: "עברית", flagCode: "il", currency: { code: "ILS", symbol: "₪" } },
     { value: "uk-UA", label: "Українська", flagCode: "ua", currency: { code: "UAH", symbol: "₴" } },
     { value: "id-ID", label: "Bahasa Indonesia", flagCode: "id", currency: { code: "IDR", symbol: "Rp" } },
-    { value: "th-TH", label: "ภาษาไทย", flagCode: "th", currency: { code: "THB", symbol: "฿" } }
+    { value: "th-TH", label: "ภาษาไทย", flagCode: "th", currency: { code: "THB", symbol: "฿" } },
     
 ];
 export type TranslationKeys = keyof typeof translations;
