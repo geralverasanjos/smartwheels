@@ -9,6 +9,7 @@ import { Banknote, CreditCard, Landmark, Loader2, PlusCircle, Trash2 } from 'luc
 import { useState, useEffect } from 'react';
 import { getPayoutMethods, savePayoutMethod, deletePayoutMethod } from '@/services/payoutService';
 import type { PayoutMethod } from '@/types';
+import { PayPalIcon, MBWayIcon } from '@/components/ui/icons';
 
 export default function DriverBillingPage() {
     const { t, user } = useAppContext();
@@ -24,7 +25,7 @@ export default function DriverBillingPage() {
             return;
         }
         fetchMethods(user.id);
-    }, [user]);
+    }, [user?.id]);
 
     const fetchMethods = async (userId: string) => {
         setLoading(true);
@@ -54,6 +55,7 @@ export default function DriverBillingPage() {
             setIsDialogOpen(false);
             setEditingMethod(null);
         } catch (error) {
+            console.error("Failed to save method:", error);
             toast({ title: t('error_title'), description: 'Failed to save method.', variant: 'destructive' });
         }
     }
@@ -77,7 +79,9 @@ export default function DriverBillingPage() {
     const getIcon = (type: PayoutMethod['type']) => {
         switch(type) {
             case 'bank': return Landmark;
-            case 'paypal': return Banknote;
+            case 'paypal': return PayPalIcon;
+            case 'pix': return Banknote;
+            case 'mbway': return MBWayIcon;
             default: return CreditCard;
         }
     }
@@ -88,6 +92,12 @@ export default function DriverBillingPage() {
         }
         if (method.type === 'paypal') {
             return method.details.email;
+        }
+        if (method.type === 'pix') {
+            return `${t(method.details.keyType as any) || ''}: ${method.details.key}`;
+        }
+        if (method.type === 'mbway') {
+            return `+${method.details.phone}`;
         }
         return 'N/A';
     }
@@ -116,7 +126,7 @@ export default function DriverBillingPage() {
                             <div key={method.id} className="flex items-center gap-4 rounded-lg border p-4">
                                 <Icon className="h-6 w-6 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-semibold">{method.details.accountHolder || method.details.email}</p>
+                                    <p className="font-semibold">{method.details.accountHolder || method.details.email || method.details.key || method.details.phone}</p>
                                     <p className="text-sm text-muted-foreground">{getMethodDetails(method)}</p>
                                 </div>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(method.id)}>
