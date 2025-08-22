@@ -2,66 +2,76 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to a user's own profile document
-    match /{collection}/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    // Rules for ride requests
-    match /rideRequests/{requestId} {
-        allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
-        allow create: if request.auth != null;
-        allow update: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
+    // Profiles can only be read/written by their owner
+    match /{role}/{userId} where role in ['passengers', 'drivers', 'fleet-managers'] {
+      allow read, write: if isOwner(userId);
     }
     
-    // Rules for messages - only participants of the ride can read/write
-    match /messages/{messageId} {
-        allow create: if request.auth != null;
-        allow read: if request.auth != null && (
-                        get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.passengerId == request.auth.uid ||
-                        get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.driverId == request.auth.uid
-                    );
-    }
-    
-    // Rules for trips history
-    match /trips/{tripId} {
-        allow read: if request.auth != null && (request.auth.uid == resource.data.passengerId || request.auth.uid == resource.data.driverId);
-        allow create: if request.auth != null; // Server-side logic should validate creation
-    }
-    
-    // Rules for driver locations
-    match /driverLocations/{driverId} {
-      allow read: if request.auth != null; 
-      allow write: if request.auth != null && request.auth.uid == driverId;
-    }
-
-    // Rules for taxi stands
-    match /stands/{standId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null; // Allow any authenticated user to manage stands for now
-    }
-    
-    // Rules for transactions - only the user can access their own
-    match /transactions/{transactionId} {
-      allow read, create: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-    
-    // Rules for payout methods - only the user can manage their own
-    match /payoutMethods/{methodId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-
-    // Rules for promotions
-    match /promotions/{promoId} {
-        allow read: if request.auth != null;
-        allow create, update, delete: if request.auth != null; // Simplified - should be restricted to creators
-    }
-    
-    // Rules for vehicles
+    // Vehicles can be read by any authenticated user
+    // Write access is restricted to the driver associated with the vehicle
     match /vehicles/{vehicleId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isOwner(resource.data.driverId);
+    }
+    
+    // Ride requests can be created by any authenticated user
+    // They can be read/updated by the passenger or the assigned driver
+    match /rideRequests/{requestId} {
+      allow create: if request.auth != null;
+      allow read, update: if isOwner(resource.data.passengerId) || isOwner(resource.data.driverId);
+    }
+    
+    // Messages can be created by the passenger or driver of a ride
+    // They can only be read by the passenger or driver involved in the ride
+    match /messages/{messageId} {
+      allow create: if get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId == request.auth.uid ||
+                       get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId == request.auth.uid;
+      allow read: if get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.passengerId == request.auth.uid ||
+                     get(/databases/$(database)/documents/rideRequests/$(resource.data.rideId)).data.driverId == request.auth.uid;
+    }
+    
+    // Transactions can only be created by the user they belong to.
+    // They can be listed if the query is filtering by the current user's ID.
+    match /transactions/{transactionId} {
+        allow read, write: if isOwner(request.resource.data.userId);
+        allow list: if request.auth.uid == request.query.where.userId;
+    }
+    
+    // Payout methods can only be accessed by the user they belong to
+    match /payoutMethods/{methodId} {
+        allow list, read: if request.auth.uid == resource.data.userId;
+        allow create: if isOwner(request.resource.data.userId);
+        allow delete: if isOwner(resource.data.userId);
+    }
+
+    // Trip history can only be read by the passenger or driver involved
+    match /trips/{tripId} {
+      allow read: if isOwner(resource.data.passengerId) || isOwner(resource.data.driverId);
+      allow create: if request.auth != null; 
+    }
+    
+    // Stands can be read by any authenticated user, and created/edited/deleted by drivers or fleet managers
+    match /stands/{standId} {
         allow read: if request.auth != null;
-        allow create, update: if request.auth != null && request.auth.uid == request.resource.data.driverId;
-        allow delete: if request.auth != null && request.auth.uid == resource.data.driverId;
+        allow write: if exists(/databases/$(database)/documents/drivers/$(request.auth.uid)) || 
+                      exists(/databases/$(database)/documents/fleet-managers/$(request.auth.uid));
+    }
+
+    // Driver locations can only be updated by the driver themselves
+    match /driverLocations/{driverId} {
+        allow read, write: if isOwner(driverId);
+    }
+
+    // Promotions can be read by anyone, but only created/edited/deleted by drivers or fleet managers
+    match /promotions/{promoId} {
+      allow read: if request.auth != null;
+      allow write: if exists(/databases/$(database)/documents/drivers/$(request.auth.uid)) || 
+                      exists(/databases/$(database)/documents/fleet-managers/$(request.auth.uid));
     }
   }
 }
