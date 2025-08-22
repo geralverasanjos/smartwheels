@@ -14,6 +14,7 @@ import type { TranslationKeys } from "@/lib/i18n";
 import { saveUserProfile, uploadProfilePhoto } from "@/services/profileService";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 interface ProfileFormProps {
     userData: UserProfile;
@@ -35,7 +36,6 @@ export default function ProfileForm({ userData, titleKey, descriptionKey }: Prof
     const onSubmit = async (data: UserProfile) => {
         setIsSaving(true);
         try {
-            // Corrected data object to ensure ID is preserved and only form data is passed
             await saveUserProfile({ ...data, id: userData.id, avatarUrl: localAvatarUrl });
             toast({
                 title: t('toast_profile_updated_title'),
@@ -77,13 +77,33 @@ export default function ProfileForm({ userData, titleKey, descriptionKey }: Prof
             setIsUploading(false);
         }
     };
+    
+    const getStatusVariant = (status?: string): 'default' | 'destructive' | 'secondary' => {
+        switch (status) {
+            case 'active':
+                return 'default';
+            case 'pending':
+                return 'secondary';
+            case 'inactive':
+                return 'destructive';
+            default:
+                return 'secondary';
+        }
+    };
 
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             <Card>
                 <CardHeader>
-                    <CardTitle>{t(titleKey)}</CardTitle>
+                    <div className="flex items-center gap-4">
+                        <CardTitle>{t(titleKey)}</CardTitle>
+                        {userData.status && (
+                             <Badge variant={getStatusVariant(userData.status)}>
+                                {t(`status_${userData.status}` as TranslationKeys) || userData.status}
+                            </Badge>
+                        )}
+                    </div>
                     <CardDescription>{t(descriptionKey)}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">

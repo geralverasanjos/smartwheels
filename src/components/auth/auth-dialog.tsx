@@ -54,6 +54,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
         email: signupEmail,
         name: signupName || 'New User',
         role: signupRole,
+        status: 'active',
         balance: 0,
       };
 
