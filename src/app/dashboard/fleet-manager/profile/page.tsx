@@ -8,32 +8,29 @@ import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function FleetManagerProfilePage() {
-    const { t, user } = useAppContext();
+    const { t, user, setUser } = useAppContext();
     const { toast } = useToast();
-    const [userData, setUserData] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-         if (user === undefined) {
-            setLoading(true);
-            return;
-        }
-        if (user === null) {
+         if (user !== undefined) {
             setLoading(false);
-             // Optionally redirect to login
-            return;
         }
-        
-        setUserData(user);
-        setLoading(false);
     }, [user]);
 
     const handleSaveProfile = async (data: UserProfile) => {
-        if (!userData?.id) return;
+        if (!user?.id) return;
         setIsSaving(true);
         try {
-            await saveUserProfile({ ...data, id: userData.id, role: 'fleet-manager' });
+             const updatedProfile: UserProfile = { 
+                ...user, 
+                ...data, 
+                id: user.id, 
+                role: 'fleet-manager' 
+            };
+            await saveUserProfile(updatedProfile);
+            setUser(updatedProfile);
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
@@ -54,13 +51,13 @@ export default function FleetManagerProfilePage() {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
     }
     
-    if (!userData) {
+    if (!user) {
         return <div>{t('error_loading_profile')}</div>
     }
 
     return (
         <ProfileForm 
-            userData={userData}
+            userData={user}
             onSave={handleSaveProfile}
             isSaving={isSaving}
             titleKey="fleet_profile_title"

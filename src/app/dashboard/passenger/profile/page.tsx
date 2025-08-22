@@ -23,7 +23,13 @@ export default function PassengerProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const updatedProfile = { ...user, ...data, id: user.id, role: 'passenger' };
+            // Combine existing user data with form data to ensure all fields are preserved
+            const updatedProfile: UserProfile = { 
+                ...user, 
+                ...data, 
+                id: user.id, 
+                role: 'passenger' 
+            };
             await saveUserProfile(updatedProfile);
             setUser(updatedProfile); // Update context state immediately
             toast({
