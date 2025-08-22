@@ -8,34 +8,24 @@ import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PassengerProfilePage() {
-    const { t, user } = useAppContext();
+    const { t, user, setUser } = useAppContext();
     const { toast } = useToast();
-    const [userData, setUserData] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        if (user === undefined) {
-            setLoading(true);
-            return;
-        }
-        if (user === null) {
+        if (user !== undefined) {
             setLoading(false);
-            // Optionally redirect to login
-            return;
         }
-
-        // We already have the user profile from the context,
-        // but if we needed to fetch more detailed data, we could do it here.
-        setUserData(user);
-        setLoading(false);
     }, [user]);
 
     const handleSaveProfile = async (data: UserProfile) => {
-        if (!userData?.id) return;
+        if (!user?.id) return;
         setIsSaving(true);
         try {
-            await saveUserProfile({ ...data, id: userData.id, role: 'passenger' });
+            const updatedProfile = { ...user, ...data, id: user.id, role: 'passenger' };
+            await saveUserProfile(updatedProfile);
+            setUser(updatedProfile); // Update context state immediately
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
@@ -56,14 +46,14 @@ export default function PassengerProfilePage() {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
     }
     
-    if (!userData) {
+    if (!user) {
         // This case would be hit if the user is not logged in or profile failed to load.
         return <div>{t('error_loading_profile')}</div>
     }
 
     return (
         <ProfileForm 
-            userData={userData}
+            userData={user}
             onSave={handleSaveProfile}
             isSaving={isSaving}
             titleKey="passenger_profile_title"

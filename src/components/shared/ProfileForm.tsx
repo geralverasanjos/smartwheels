@@ -19,7 +19,7 @@ import { Badge } from "../ui/badge";
 interface ProfileFormProps {
     userData: UserProfile;
     onSave: (data: UserProfile) => Promise<void>;
-    isSaving: boolean;
+    isSaving?: boolean;
     titleKey: TranslationKeys;
     descriptionKey: TranslationKeys;
 }
@@ -28,19 +28,13 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
     const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
-    const [localAvatarUrl, setLocalAvatarUrl] = useState(userData.avatarUrl);
-
-    const { register, handleSubmit, setValue, formState: { errors, isDirty } } = useForm<UserProfile>({
+    
+    const { register, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm<UserProfile>({
         defaultValues: userData,
     });
     
-    useEffect(() => {
-        // When the avatarUrl in userData changes (e.g., after a new upload), update the local state.
-        setLocalAvatarUrl(userData.avatarUrl);
-        // Also update the form value, but only if it's different, to avoid unnecessary re-renders.
-        setValue('avatarUrl', userData.avatarUrl, { shouldDirty: true });
-    }, [userData.avatarUrl, setValue]);
-
+    // Watch for changes in the avatarUrl form value to update the UI
+    const avatarUrl = watch('avatarUrl');
 
     const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -49,7 +43,6 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
         setIsUploading(true);
         try {
             const downloadURL = await uploadProfilePhoto(file, userData.id);
-            setLocalAvatarUrl(downloadURL);
             setValue('avatarUrl', downloadURL, { shouldDirty: true }); // Mark form as dirty
              toast({
                 title: "Foto atualizada",
@@ -98,7 +91,7 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
                 <CardContent className="space-y-8">
                     <div className="flex items-center gap-6">
                         <Avatar className="h-24 w-24">
-                            <AvatarImage src={localAvatarUrl} alt={userData.name} data-ai-hint="person face" />
+                            <AvatarImage src={avatarUrl} alt={userData.name} data-ai-hint="person face" />
                             <AvatarFallback>{userData.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

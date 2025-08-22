@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, Dispatch, SetStateAction } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
@@ -15,6 +15,7 @@ interface AppContextType {
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKeys, replacements?: Record<string, string | number>) => string;
   user: UserProfile | null | undefined; // undefined: loading, null: not logged in, UserProfile: logged in
+  setUser: Dispatch<SetStateAction<UserProfile | null | undefined>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -69,7 +70,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, t, user }}>
+    <AppContext.Provider value={{ language, setLanguage, t, user, setUser }}>
       {children}
     </AppContext.Provider>
   );
