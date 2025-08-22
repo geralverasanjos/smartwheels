@@ -15,14 +15,10 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        const type = formData.get('type') as PayoutMethod['type'];
+
+        const values: Partial<PayoutMethod> = { type, details: {} };
         
-        const type = formData.get('type') as 'bank' | 'paypal';
-
-        const values: Partial<PayoutMethod> = {
-            type: type,
-            details: {}
-        };
-
         if (type === 'bank') {
             values.details = {
                 bankName: formData.get('bank_name') as string,
@@ -34,7 +30,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
                 email: formData.get('email') as string,
             };
         }
-
+        
         onSubmit(values);
         onClose();
     };
@@ -49,7 +45,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
             <div className="grid gap-4 py-4">
                  <div className="space-y-2">
                     <Label htmlFor="method-type">{t('payment_method_type_label')}</Label>
-                    <Select name="type" value={methodType} onValueChange={(value) => setMethodType(value as 'bank' | 'paypal')}>
+                    <Select name="type" value={methodType} onValueChange={(value) => setMethodType(value as PayoutMethod['type'])}>
                         <SelectTrigger id="method-type">
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>

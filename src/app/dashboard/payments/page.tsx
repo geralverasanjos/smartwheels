@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -42,6 +42,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import type { PayoutMethod } from '@/types';
+
 
 const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -156,12 +158,27 @@ export default function PaymentsPage() {
 
 export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: any) => void; editingMethod: any | null, onClose: () => void; }) => {
     const { t } = useAppContext();
-    const [methodType, setMethodType] = useState(editingMethod?.typeKey?.split('_').pop() || 'card');
+    const [methodType, setMethodType] = useState(editingMethod?.type || 'bank');
     
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const values = Object.fromEntries(formData.entries());
+        const type = formData.get('type') as PayoutMethod['type'];
+
+        const values: Partial<PayoutMethod> = { type, details: {} };
+        
+        if (type === 'bank') {
+            values.details = {
+                bankName: formData.get('bank_name') as string,
+                accountHolder: formData.get('account_holder') as string,
+                iban: formData.get('iban') as string,
+            };
+        } else if (type === 'paypal') {
+            values.details = {
+                email: formData.get('email') as string,
+            };
+        }
+        
         onSubmit(values);
         onClose();
     };
@@ -169,92 +186,44 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
     return (
         <form onSubmit={handleSubmit}>
             <DialogHeader>
-                <DialogTitle>{editingMethod ? t('payment_method_edit_title') : t('payment_method_add_title')}</DialogTitle>
-                <DialogDescription>{t('payment_method_add_desc')}</DialogDescription>
+                <DialogTitle>{editingMethod ? t('payout_method_edit_title') : t('payout_method_add_title')}</DialogTitle>
+                <DialogDescription>{t('payout_method_add_desc')}</DialogDescription>
             </DialogHeader>
             
             <div className="grid gap-4 py-4">
                  <div className="space-y-2">
                     <Label htmlFor="method-type">{t('payment_method_type_label')}</Label>
-                    <Select name="type" value={methodType} onValueChange={setMethodType}>
+                    <Select name="type" value={methodType} onValueChange={(value) => setMethodType(value as PayoutMethod['type'])}>
                         <SelectTrigger id="method-type">
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="card">{t('payment_method_credit_card')}</SelectItem>
-                            <SelectItem value="pix">PIX</SelectItem>
-                            <SelectItem value="mbway">MB WAY</SelectItem>
-                            <SelectItem value="paypal">PayPal</SelectItem>
                             <SelectItem value="bank">{t('payment_method_bank_account')}</SelectItem>
+                            <SelectItem value="paypal">PayPal</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
-                {methodType === 'pix' && (
-                    <>
-                        <div className="space-y-2">
-                            <Label htmlFor="pix-name">{t('name_label')}</Label>
-                            <Input id="pix-name" name="name" defaultValue={editingMethod?.name} />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="pix-key-type">{t('payment_method_pix_key_type')}</Label>
-                             <Select name="pix_key_type">
-                                <SelectTrigger id="pix-key-type">
-                                    <SelectValue placeholder={t('payment_method_pix_key_type_placeholder')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="phone">{t('payment_method_pix_phone')}</SelectItem>
-                                    <SelectItem value="email">{t('email_label')}</SelectItem>
-                                    <SelectItem value="cpf">{t('payment_method_pix_cpf')}</SelectItem>
-                                    <SelectItem value="random">{t('payment_method_pix_random')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="pix-key">{t('payment_method_pix_key')}</Label>
-                            <Input id="pix-key" name="pix_key" />
-                        </div>
-                    </>
-                )}
-
-                {methodType === 'mbway' && (
-                     <>
-                        <div className="space-y-2">
-                            <Label htmlFor="mbway-name">{t('name_label')}</Label>
-                            <Input id="mbway-name" name="name" defaultValue={editingMethod?.name} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="mbway-phone">{t('payment_method_pix_phone')}</Label>
-                            <Input id="mbway-phone" name="phone" type="tel" defaultValue={editingMethod?.phone} />
-                        </div>
-                    </>
-                )}
-                 {methodType === 'paypal' && (
+                {methodType === 'paypal' && (
                      <div className="space-y-2">
                         <Label htmlFor="paypal-email">{t('email_label')}</Label>
-                        <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.email} />
+                        <Input id="paypal-email" name="email" type="email" defaultValue={editingMethod?.details?.email} placeholder="seu.email@example.com" required/>
                     </div>
                  )}
 
-                {(methodType === 'card' || methodType === 'bank') && (
+                {methodType === 'bank' && (
                      <>
                         <div className="space-y-2">
-                            <Label htmlFor="card-name">{t('payment_method_card_name')}</Label>
-                            <Input id="card-name" name="card_name" defaultValue={editingMethod?.card_name} />
+                            <Label htmlFor="bank-name">{t('bank_name_label')}</Label>
+                            <Input id="bank-name" name="bank_name" defaultValue={editingMethod?.details?.bankName} placeholder="Nome do Banco" required/>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="card-number">{t('payment_method_card_number')}</Label>
-                            <Input id="card-number" name="card_number" defaultValue={editingMethod?.card_number} />
+                            <Label htmlFor="account-holder">{t('account_holder_label')}</Label>
+                            <Input id="account-holder" name="account_holder" defaultValue={editingMethod?.details?.accountHolder} placeholder="Nome do Titular" required />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="card-expiry">{t('payment_method_card_expiry')}</Label>
-                                <Input id="card-expiry" name="card_expiry" placeholder="MM/AA" defaultValue={editingMethod?.card_expiry} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="card-cvv">CVV</Label>
-                                <Input id="card-cvv" name="card_cvv" defaultValue={editingMethod?.card_cvv} />
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="iban">{t('iban_label')}</Label>
+                            <Input id="iban" name="iban" defaultValue={editingMethod?.details?.iban} placeholder="PT50..." required/>
                         </div>
                     </>
                 )}
