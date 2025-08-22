@@ -1,6 +1,7 @@
 'use client';
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
@@ -103,5 +104,29 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
     } catch (error) {
         console.error("Error fetching drivers for fleet manager:", error);
         return [];
+    }
+};
+
+/**
+ * Uploads a profile photo to Firebase Storage and returns the download URL.
+ * @param file The image file to upload.
+ * @param userId The ID of the user to associate the photo with.
+ * @returns A promise that resolves to the public URL of the uploaded image.
+ */
+export const uploadProfilePhoto = async (file: File, userId: string): Promise<string> => {
+    if (!file) throw new Error("No file provided for upload.");
+    if (!userId) throw new Error("User ID is required for photo upload.");
+
+    const storage = getStorage();
+    const filePath = `profile-photos/${userId}/${file.name}`;
+    const storageRef = ref(storage, filePath);
+
+    try {
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL;
+    } catch (error) {
+        console.error("Error uploading profile photo:", error);
+        throw new Error("Failed to upload photo.");
     }
 };

@@ -859,14 +859,14 @@ export const translations = {
     "pt-PT": "O que gostaria de fazer hoje?",
     "pt-BR": "O que você gostaria de fazer hoje?",
     "en-US": "What would you like to do today?",
-    "es-ES": "¿Qué te gustaría hacer hoy?",
+    "es-ES": "Qué te gustaría fazer hoje?",
     "fr-FR": "Que souhaitez-vous faire aujourd'hui ?",
     "de-DE": "Was möchten Sie heute tun?",
     "it-IT": "Cosa vorresti fare oggi?",
     "ja-JP": "今日は何をしたいですか？",
     "zh-CN": "今天想做什么？",
     "ru-RU": "Что бы вы хотели сделать сегодня?",
-    "ar-SA": "ماذا تريد أن تفعل اليوم؟",
+    "ar-SA": "माذا تريد أن تفعل اليوم؟",
     "hi-IN": "आप आज क्या करना चाहेंगे?",
     "ko-KR": "오늘 무엇을 하고 싶으신가요?",
     "he-IL": "מה תרצה לעשות היום?",
@@ -1005,7 +1005,7 @@ export const translations = {
     "he-IL": "הצג את כל הנסיעות והמשלוחים הקודמים שלך.",
     "uk-UA": "Переглянути всі свої минулі поїздки та доставки.",
     "id-ID": "Lihat semua perjalanan dan pengiriman Anda sebelumnya.",
-    "th-TH": "ดูประวัติการเดินทางและการจัดส่งทั้งหมดของคุณ"
+    "th-TH": "ที่นี่คุณสามารถดูการเดินทาง การจัดส่ง และธุรกรรมที่ผ่านมาทั้งหมดของคุณได้"
   },
   "menu_wallet_swg": {
     "pt-PT": "Carteira",
@@ -1346,7 +1346,7 @@ export const translations = {
     "ko-KR": "당신을 위해 만들어진 여행",
     "he-IL": "נסיעות שנעשו בשבילך",
     "uk-UA": "Поїздки, створені для вас",
-    "id-ID": "Perjalanan yang dibuat untuk Anda",
+    "id-ID": "Perjalanan yang dibuat для Anda",
     "th-TH": "ทริปที่สร้างมาเพื่อคุณ"
   },
   "welcome_subtitle": {
@@ -1424,82 +1424,6 @@ export const translations = {
     "uk-UA": "Керуйте своїм автопарком і водіями",
     "id-ID": "Kelola armada kendaraan dan pengemudi Anda",
     "th-TH": "จัดการกองยานพาหนะและคนขับของคุณ"
-  },
-  "payment_method_type_credit_card": {
-    "pt-PT": "Cartão de Crédito/Débito",
-    "pt-BR": "Cartão de Crédito/Débito",
-    "en-US": "Credit/Debit Card",
-    "es-ES": "Tarjeta de crédito/débito",
-    "fr-FR": "Carte de crédit/débit",
-    "de-DE": "Kredit-/Debitkarte",
-    "it-IT": "Carta di credito/debito",
-    "ja-JP": "クレジットカード/デビットカード",
-    "zh-CN": "信用卡/借记卡",
-    "ru-RU": "Кредитная/дебетовая карта",
-    "ar-SA": "بطاقة الائتمان/الخصم",
-    "hi-IN": "क्रेडिट/डेबिट कार्ड",
-    "ko-KR": "신용/직불 카드",
-    "he-IL": "כרטיס אשראי/חיוב",
-    "uk-UA": "Кредитна/дебетова картка",
-    "id-ID": "Kartu Kredit/Debit",
-    "th-TH": "บัตรเครดิต/เดบิต"
-  },
-  "payment_method_card_name": {
-    "pt-PT": "Nome do Titular",
-    "pt-BR": "Nome do Titular",
-    "en-US": "Cardholder Name",
-    "es-ES": "Nombre del titular",
-    "fr-FR": "Nom du titulaire",
-    "de-DE": "Name des Karteninhabers",
-    "it-IT": "Nome del titolare",
-    "ja-JP": "カード名義人",
-    "zh-CN": "持卡人姓名",
-    "ru-RU": "Имя владельца карты",
-    "ar-SA": "اسم حامل البطاقة",
-    "hi-IN": "कार्डधारक का नाम",
-    "ko-KR": "카드 소지자 이름",
-    "he-IL": "שם בעל הכרטיס",
-    "uk-UA": "Ім'я власника картки",
-    "id-ID": "Nama Pemegang Kartu",
-    "th-TH": "ชื่อผู้ถือบัตร"
-  },
-  "payment_method_card_number": {
-    "pt-PT": "Número do Cartão",
-    "pt-BR": "Número do Cartão",
-    "en-US": "Card Number",
-    "es-ES": "Número de tarjeta",
-    "fr-FR": "Numéro de carte",
-    "de-DE": "Kartennummer",
-    "it-IT": "Numero di carta",
-    "ja-JP": "カード番号",
-    "zh-CN": "卡号",
-    "ru-RU": "Номер карты",
-    "ar-SA": "رقم البطاقة",
-    "hi-IN": "कार्ड नंबर",
-    "ko-KR": "카드 번호",
-    "he-IL": "מספר כרטיס",
-    "uk-UA": "Номер картки",
-    "id-ID": "Nomor Kartu",
-    "th-TH": "หมายเลขบัตร"
-  },
-  "payment_method_card_expiry": {
-    "pt-PT": "Data de Validade",
-    "pt-BR": "Data de Validade",
-    "en-US": "Expiry Date",
-    "es-ES": "Fecha de vencimiento",
-    "fr-FR": "Date d'expiration",
-    "de-DE": "Ablaufdatum",
-    "it-IT": "Data di scadenza",
-    "ja-JP": "有効期限",
-    "zh-CN": "到期日期",
-    "ru-RU": "Срок действия",
-    "ar-SA": "تاريخ انتهاء الصلاحية",
-    "hi-IN": "समाप्ति तिथि",
-    "ko-KR": "만료일",
-    "he-IL": "תאריך תפוגה",
-    "uk-UA": "Термін дії",
-    "id-ID": "Tanggal Kedaluwarsa",
-    "th-TH": "วันหมดอายุ"
   }
 }
 export const languages = [
@@ -1519,10 +1443,9 @@ export const languages = [
     { value: "he-IL", label: "עברית", flagCode: "il", currency: { code: "ILS", symbol: "₪" } },
     { value: "uk-UA", label: "Українська", flagCode: "ua", currency: { code: "UAH", symbol: "₴" } },
     { value: "id-ID", label: "Bahasa Indonesia", flagCode: "id", currency: { code: "IDR", symbol: "Rp" } },
-    { value: "th-TH", label: "ภาษาไทย", flagCode: "th", currency: { code: "THB", symbol: "฿" } },
+    { value: "th-TH", label: "ภาษาไทย", flagCode: "th", currency: { code: "THB", symbol: "฿" } }
     
 ];
 export type TranslationKeys = keyof typeof translations;
 
   
-
