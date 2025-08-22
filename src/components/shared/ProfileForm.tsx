@@ -35,7 +35,8 @@ export default function ProfileForm({ userData, titleKey, descriptionKey }: Prof
     const onSubmit = async (data: UserProfile) => {
         setIsSaving(true);
         try {
-            await saveUserProfile({ ...userData, ...data, avatarUrl: localAvatarUrl });
+            // Corrected data object to ensure ID is preserved and only form data is passed
+            await saveUserProfile({ ...data, id: userData.id, avatarUrl: localAvatarUrl });
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
