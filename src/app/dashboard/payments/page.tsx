@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 
 export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: Partial<PayoutMethod>) => void; editingMethod: Partial<PayoutMethod> | null, onClose: () => void; }) => {
     const { t } = useAppContext();
-    const [methodType, setMethodType] = useState(editingMethod?.type || 'bank');
+    const [methodType, setMethodType] = useState(editingMethod?.type || 'card');
     
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -32,7 +32,14 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
         
         const values: Partial<PayoutMethod> = { type, details: {}, isDefault: false };
         
-        if (type === 'bank') {
+        if (type === 'card') {
+            values.details = {
+                cardholderName: formData.get('card_name') as string,
+                cardNumber: formData.get('card_number') as string,
+                cardExpiry: formData.get('card_expiry') as string,
+                cardCvv: formData.get('card_cvv') as string,
+            }
+        } else if (type === 'bank') {
             values.details = {
                 bankName: formData.get('bank_name') as string,
                 accountHolder: formData.get('account_holder') as string,
@@ -60,8 +67,8 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
     return (
         <form onSubmit={handleSubmit}>
             <DialogHeader>
-                <DialogTitle>{editingMethod ? t('payout_method_edit_title') : t('payout_method_add_title')}</DialogTitle>
-                <DialogDescription>{t('payout_method_add_desc')}</DialogDescription>
+                <DialogTitle>{editingMethod ? t('payment_method_edit_title') : t('payout_method_add_title')}</DialogTitle>
+                <DialogDescription>{t('payment_method_add_desc')}</DialogDescription>
             </DialogHeader>
             
             <div className="grid gap-4 py-4">
@@ -72,6 +79,7 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
                             <SelectValue placeholder={t('payment_method_select_placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="card">{t('payment_method_type_credit_card')}</SelectItem>
                             <SelectItem value="bank">{t('payment_method_bank_account')}</SelectItem>
                             <SelectItem value="paypal">{t('payment_method_paypal')}</SelectItem>
                             <SelectItem value="pix">{t('payment_method_pix')}</SelectItem>
@@ -80,6 +88,28 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
                     </Select>
                 </div>
                 
+                {methodType === 'card' && (
+                    <>
+                        <div className="space-y-2">
+                            <Label htmlFor="card-name">{t('payment_method_card_name')}</Label>
+                            <Input id="card-name" name="card_name" defaultValue={editingMethod?.details?.cardholderName} placeholder="Nome no Cartão" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="card-number">{t('payment_method_card_number')}</Label>
+                            <Input id="card-number" name="card_number" defaultValue={editingMethod?.details?.cardNumber} placeholder="**** **** **** 1234" required/>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label htmlFor="card-expiry">{t('payment_method_card_expiry')}</Label>
+                                <Input id="card-expiry" name="card_expiry" defaultValue={editingMethod?.details?.cardExpiry} placeholder="MM/AA" required/>
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="card-cvv">CVV</Label>
+                                <Input id="card-cvv" name="card_cvv" defaultValue={editingMethod?.details?.cardCvv} placeholder="123" required/>
+                            </div>
+                        </div>
+                    </>
+                )}
                 {methodType === 'bank' && (
                      <>
                         <div className="space-y-2">

@@ -100,7 +100,7 @@ export type TaxiStand = {
 export interface PayoutMethod {
     id: string;
     userId: string;
-    type: 'bank' | 'paypal' | 'pix' | 'mbway';
+    type: 'bank' | 'paypal' | 'pix' | 'mbway' | 'card';
     isDefault: boolean;
     details: {
         accountHolder?: string;
@@ -110,5 +110,9 @@ export interface PayoutMethod {
         keyType?: string;
         key?: string;
         phone?: string;
+        cardholderName?: string;
+        cardNumber?: string;
+        cardExpiry?: string;
+        cardCvv?: string;
     };
 }

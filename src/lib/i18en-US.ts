@@ -479,7 +479,7 @@ export const translations = {
     "pt-PT": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "pt-BR": "A plataforma cobra uma pequena taxa de comissão sobre o valor total da corrida.",
     "en-US": "The platform charges a small commission fee on the total ride fare.",
-    "es-ES": "La plataforma cobra una pequeña comisión sobre el valor total del viaje.",
+    "es-ES": "La plataforma cobra uma pequena comissão sobre o valor total do viaje.",
     "fr-FR": "La plateforme prélève une petite commission sur le montant total de la course.",
     "de-DE": "Die Plattform erhebt eine kleine Provision auf den gesamten Fahrpreis.",
     "it-IT": "La piattaforma applica una piccola commissione sul costo totale della corsa.",
@@ -1424,6 +1424,82 @@ export const translations = {
     "uk-UA": "Керуйте своїм автопарком і водіями",
     "id-ID": "Kelola armada kendaraan dan pengemudi Anda",
     "th-TH": "จัดการกองยานพาหนะและคนขับของคุณ"
+  },
+  "payment_method_type_credit_card": {
+    "pt-PT": "Cartão de Crédito/Débito",
+    "pt-BR": "Cartão de Crédito/Débito",
+    "en-US": "Credit/Debit Card",
+    "es-ES": "Tarjeta de crédito/débito",
+    "fr-FR": "Carte de crédit/débit",
+    "de-DE": "Kredit-/Debitkarte",
+    "it-IT": "Carta di credito/debito",
+    "ja-JP": "クレジットカード/デビットカード",
+    "zh-CN": "信用卡/借记卡",
+    "ru-RU": "Кредитная/дебетовая карта",
+    "ar-SA": "بطاقة الائتمان/الخصم",
+    "hi-IN": "क्रेडिट/डेबिट कार्ड",
+    "ko-KR": "신용/직불 카드",
+    "he-IL": "כרטיס אשראי/חיוב",
+    "uk-UA": "Кредитна/дебетова картка",
+    "id-ID": "Kartu Kredit/Debit",
+    "th-TH": "บัตรเครดิต/เดบิต"
+  },
+  "payment_method_card_name": {
+    "pt-PT": "Nome do Titular",
+    "pt-BR": "Nome do Titular",
+    "en-US": "Cardholder Name",
+    "es-ES": "Nombre del titular",
+    "fr-FR": "Nom du titulaire",
+    "de-DE": "Name des Karteninhabers",
+    "it-IT": "Nome del titolare",
+    "ja-JP": "カード名義人",
+    "zh-CN": "持卡人姓名",
+    "ru-RU": "Имя владельца карты",
+    "ar-SA": "اسم حامل البطاقة",
+    "hi-IN": "कार्डधारक का नाम",
+    "ko-KR": "카드 소지자 이름",
+    "he-IL": "שם בעל הכרטיס",
+    "uk-UA": "Ім'я власника картки",
+    "id-ID": "Nama Pemegang Kartu",
+    "th-TH": "ชื่อผู้ถือบัตร"
+  },
+  "payment_method_card_number": {
+    "pt-PT": "Número do Cartão",
+    "pt-BR": "Número do Cartão",
+    "en-US": "Card Number",
+    "es-ES": "Número de tarjeta",
+    "fr-FR": "Numéro de carte",
+    "de-DE": "Kartennummer",
+    "it-IT": "Numero di carta",
+    "ja-JP": "カード番号",
+    "zh-CN": "卡号",
+    "ru-RU": "Номер карты",
+    "ar-SA": "رقم البطاقة",
+    "hi-IN": "कार्ड नंबर",
+    "ko-KR": "카드 번호",
+    "he-IL": "מספר כרטיס",
+    "uk-UA": "Номер картки",
+    "id-ID": "Nomor Kartu",
+    "th-TH": "หมายเลขบัตร"
+  },
+  "payment_method_card_expiry": {
+    "pt-PT": "Data de Validade",
+    "pt-BR": "Data de Validade",
+    "en-US": "Expiry Date",
+    "es-ES": "Fecha de vencimiento",
+    "fr-FR": "Date d'expiration",
+    "de-DE": "Ablaufdatum",
+    "it-IT": "Data di scadenza",
+    "ja-JP": "有効期限",
+    "zh-CN": "到期日期",
+    "ru-RU": "Срок действия",
+    "ar-SA": "تاريخ انتهاء الصلاحية",
+    "hi-IN": "समाप्ति तिथि",
+    "ko-KR": "만료일",
+    "he-IL": "תאריך תפוגה",
+    "uk-UA": "Термін дії",
+    "id-ID": "Tanggal Kedaluwarsa",
+    "th-TH": "วันหมดอายุ"
   }
 }
 export const languages = [
@@ -1450,4 +1526,3 @@ export type TranslationKeys = keyof typeof translations;
 
   
 
-    
