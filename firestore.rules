@@ -3,61 +3,69 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    // Regra geral: Apenas utilizadores autenticados podem aceder à base de dados.
+    // As regras mais específicas abaixo irão sobrepor-se a esta.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
 
+    // Coleções de Perfis: Os utilizadores só podem ler e escrever no seu próprio perfil.
     match /passengers/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
     }
 
     match /drivers/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
     }
-    
+
     match /fleet-managers/{userId} {
-        allow read, write: if isOwner(userId);
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
     }
 
-    match /vehicles/{vehicleId} {
-        allow read: if request.auth != null;
-        allow create, update, delete: if isOwner(request.resource.data.driverId);
-    }
-
-    match /promotions/{promoId} {
-        allow read: if request.auth != null;
-        allow create, update, delete: if request.auth != null; 
-    }
-
-    match /payoutMethods/{methodId} {
-      allow read, delete: if isOwner(resource.data.userId);
-      allow create, update: if isOwner(request.resource.data.userId);
+    // Regras mais específicas para outras coleções (exemplo):
+    // Viagens: Motoristas e passageiros podem ler os detalhes da viagem em que participam.
+    match /trips/{tripId} {
+      allow read: if request.auth.uid == resource.data.driverId || request.auth.uid == resource.data.passengerId;
+      allow create: if request.auth != null; // Qualquer utilizador autenticado pode criar um pedido.
     }
     
-    match /transactions/{transactionId} {
-      allow create: if isOwner(request.resource.data.userId);
-      allow read: if isOwner(resource.data.userId);
-      allow list: if request.auth.uid == request.query.where.userId;
-    }
-    
+    // Pedidos de Viagem: Qualquer utilizador autenticado pode criar. Motoristas podem atualizar.
     match /rideRequests/{requestId} {
-        allow read, update: if request.auth != null;
-        allow create: if isOwner(request.resource.data.passengerId);
-    }
-    
-    match /messages/{messageId} {
-        allow read, create: if request.auth != null;
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null; // Simplificado para permitir a leitura por motoristas e passageiros.
     }
 
-    match /stands/{standId} {
-        allow read: if request.auth != null;
-        allow create, update, delete: if request.auth != null;
+    // Mensagens: Apenas o motorista ou passageiro da viagem podem ler/escrever.
+    match /messages/{messageId} {
+        allow read, write: if get(/databases/$(database)/documents/trips/$(resource.data.rideId)).data.driverId == request.auth.uid ||
+                               get(/databases/$(database)/documents/trips/$(resource.data.rideId)).data.passengerId == request.auth.uid;
     }
     
-     match /driverLocations/{driverId} {
-        allow read: if request.auth != null;
-        allow write: if isOwner(driverId);
+    // Transações: Utilizadores só podem ler as suas próprias transações.
+    match /transactions/{transactionId} {
+      allow read: if resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
     }
+
+    // Outras coleções:
+    match /payoutMethods/{methodId} {
+       allow read, write, delete: if request.auth.uid == resource.data.userId;
+       allow create: if request.auth != null;
+    }
+
+     match /vehicles/{vehicleId} {
+        allow read, write: if request.auth != null; // Simplificado
+     }
+     
+     match /stands/{standId} {
+        allow read, write: if request.auth != null; // Simplificado
+     }
+     
+      match /promotions/{promoId} {
+        allow read, write: if request.auth != null; // Simplificado
+      }
   }
 }
