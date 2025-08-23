@@ -23,6 +23,8 @@ export interface UserProfile {
     rating?: number;
     activeVehicleId?: string; // Optional, only for drivers
     fleetManagerId?: string; // Optional, only for drivers in a fleet
+    identityDocumentUrl?: string;
+    driverLicenseUrl?: string;
 }
 
 export interface Trip {
