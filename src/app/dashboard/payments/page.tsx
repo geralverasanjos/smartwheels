@@ -30,36 +30,38 @@ export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: {
         const formData = new FormData(e.currentTarget);
         const type = methodType as PayoutMethod['type'];
         
-        const values: Partial<PayoutMethod> = { type, details: {}, isDefault: false };
+        const values: Partial<PayoutMethod> = { type, isDefault: false };
+        let details: PayoutMethod['details'] = {};
         
         if (type === 'card') {
-            values.details = {
+            details = {
                 cardholderName: formData.get('card_name') as string,
                 cardNumber: formData.get('card_number') as string,
                 cardExpiry: formData.get('card_expiry') as string,
                 cardCvv: formData.get('card_cvv') as string,
-            }
+            };
         } else if (type === 'bank') {
-            values.details = {
+            details = {
                 bankName: formData.get('bank_name') as string,
                 accountHolder: formData.get('account_holder') as string,
                 iban: formData.get('iban') as string,
             };
         } else if (type === 'paypal') {
-            values.details = {
+            details = {
                 email: formData.get('email') as string,
             };
         } else if (type === 'pix') {
-             values.details = {
+             details = {
                 keyType: formData.get('pix_key_type') as string,
                 key: formData.get('pix_key') as string,
             };
         } else if (type === 'mbway') {
-            values.details = {
+            details = {
                 phone: formData.get('mbway_phone') as string,
             };
         }
         
+        values.details = details;
         onSubmit(values);
         onClose();
     };
