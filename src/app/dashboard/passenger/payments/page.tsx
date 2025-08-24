@@ -1,5 +1,5 @@
 'use client';
-import { AddEditPaymentMethodForm } from '@/app/dashboard/payments/page';
+import { AddEditPaymentMethodForm } from '@/components/shared/wallet/payout-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { UserRole } from '@/components/dashboard/dashboard-layout';
 import { useCurrency } from '@/lib/currency';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
-import { AddEditPaymentMethodForm } from '@/app/dashboard/payments/page'; // Import the form
+import { AddEditPaymentMethodForm } from '@/components/shared/wallet/payout-form';
 
 const savedAccounts = [
     { id: 'bank1', type: 'bank', name: 'Conta Principal', details: '**** 1234' },
