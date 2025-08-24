@@ -11,7 +11,7 @@ import { getPayoutMethods, savePayoutMethod, deletePayoutMethod } from '@/servic
 import type { PayoutMethod } from '@/types';
 import { PayPalIcon, MBWayIcon } from '@/components/ui/icons';
 
-export default function PassengerPaymentsPage() {
+export default function Page() {
     const { t, user } = useAppContext();
     const { toast } = useToast();
     const [paymentMethods, setPaymentMethods] = useState<PayoutMethod[]>([]);
@@ -41,7 +41,8 @@ export default function PassengerPaymentsPage() {
 
     const handleSave = async (values: Partial<PayoutMethod>) => {
         if (!user?.id) return;
-        const methodToSave: Omit<PayoutMethod, 'id'> = {
+        
+        const methodToSave = {
             userId: user.id,
             type: values.type!,
             details: values.details!,
