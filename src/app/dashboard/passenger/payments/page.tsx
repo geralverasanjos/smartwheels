@@ -30,7 +30,6 @@ export default function PassengerPaymentsPage() {
     const fetchMethods = async (userId: string) => {
         setLoading(true);
         try {
-            // Using getPayoutMethods service but this could be a new service like getPaymentMethods
             const methods = await getPayoutMethods(userId);
             setPaymentMethods(methods);
         } catch (error) {
@@ -52,7 +51,7 @@ export default function PassengerPaymentsPage() {
         try {
             await savePayoutMethod(methodToSave, editingMethod?.id);
             toast({ title: t('payout_method_saved') });
-            fetchMethods(user.id); // Refresh list
+            fetchMethods(user.id);
             setIsDialogOpen(false);
             setEditingMethod(null);
         } catch (error) {
