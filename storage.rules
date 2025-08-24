@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read and write access for all authenticated users.
+    // This allows users to upload their profile pictures and documents.
+    // You can restrict this further if needed, e.g., by path.
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
