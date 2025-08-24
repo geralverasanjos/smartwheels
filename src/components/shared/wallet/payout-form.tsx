@@ -41,7 +41,7 @@ const formSchema = z.object({
 });
 
 
-export const AddEditPaymentMethodForm = ({ onSubmit, editingMethod, onClose }: { onSubmit: (values: Partial<PayoutMethod>) => void; editingMethod: Partial<PayoutMethod> | null, onClose: () => void; }) => {
+export function AddEditPaymentMethodForm({ onSubmit, editingMethod, onClose }: { onSubmit: (values: Partial<PayoutMethod>) => void; editingMethod: Partial<PayoutMethod> | null, onClose: () => void; }) {
     const { t } = useAppContext();
     const { control, handleSubmit, watch, formState: { errors } } = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
