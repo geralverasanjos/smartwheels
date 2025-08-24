@@ -2,79 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if a user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    // Helper function to check if the user is the owner of the document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // Rules for user profiles
-    match /passengers/{userId} {
-      allow read, update, delete: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated();
-    }
-
-    match /drivers/{userId} {
-      allow read, update, delete: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated();
-       // Fleet managers can view their drivers
-      allow get: if isAuthenticated() && get(/databases/$(database)/documents/fleet-managers/$(resource.data.fleetManagerId)).data.id == request.auth.uid;
-    }
-
-    match /fleet-managers/{userId} {
-      allow read, update, delete: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated();
-    }
-
-    // Rules for ride requests
-    match /rideRequests/{rideId} {
-      allow create: if isAuthenticated();
-      allow read, update: if isAuthenticated() && (isOwner(resource.data.passengerId) || isOwner(resource.data.driverId));
-    }
-    
-    // Rules for messages within a ride
-    match /messages/{messageId} {
-        allow read, create: if isAuthenticated() && (isOwner(get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.passengerId) || isOwner(get(/databases/$(database)/documents/rideRequests/$(request.resource.data.rideId)).data.driverId));
-    }
-
-    // Rules for trip history
-    match /trips/{tripId} {
-      allow read, create: if isAuthenticated();
-    }
-
-    // Rules for transactions
-    match /transactions/{transactionId} {
-        allow read, create: if isAuthenticated() && isOwner(request.resource.data.userId);
-    }
-    
-    // Rules for payout methods
-    match /payoutMethods/{methodId} {
-        allow read, create, delete, update: if isAuthenticated() && isOwner(request.resource.data.userId);
-    }
-    
-     // Rules for taxi stands
-    match /stands/{standId} {
-      allow read: if isAuthenticated();
-      // Allow create/update/delete for authenticated users (e.g., drivers or admins)
-      // For more security, you could restrict this to a specific role
-      allow write: if isAuthenticated();
-    }
-    
-    // Rules for vehicles
-    match /vehicles/{vehicleId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated(); // Should be restricted to driver/fleet-manager owning it
-    }
-    
-    // Promotions can be read by anyone authenticated, write by admin/fleet-manager (not specified)
-    match /promotions/{promoId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated(); // Simplified for now
+    // Regra geral para permitir acesso a utilizadores autenticados
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
