@@ -113,18 +113,19 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
 };
 
 /**
- * Uploads a profile photo to Firebase Storage and returns the download URL.
+ * Uploads a profile photo or document to Firebase Storage and returns the download URL.
  * The path will be `profile-photos/{userId}/{timestamp}-{fileName}`.
- * @param file The image file to upload.
- * @param userId The ID of the user to associate the photo with.
- * @returns A promise that resolves to the public URL of the uploaded image.
+ * @param file The file to upload.
+ * @param userId The ID of the user to associate the file with.
+ * @returns A promise that resolves to the public URL of the uploaded file.
  */
 export const uploadProfilePhoto = async (file: File, userId: string): Promise<string> => {
     if (!file) throw new Error("No file provided for upload.");
-    if (!userId) throw new Error("User ID is required for photo upload.");
+    if (!userId) throw new Error("User ID is required for file upload.");
 
     const storage = getStorage();
     const timestamp = Date.now();
+    // Use the docType in the filename to distinguish between different document types
     const uniqueFileName = `${timestamp}-${file.name}`;
     const filePath = `profile-photos/${userId}/${uniqueFileName}`;
     const storageRef = ref(storage, filePath);
@@ -134,7 +135,7 @@ export const uploadProfilePhoto = async (file: File, userId: string): Promise<st
         const downloadURL = await getDownloadURL(snapshot.ref);
         return downloadURL;
     } catch (error) {
-        console.error("Error uploading profile photo:", error);
-        throw new Error("Failed to upload photo.");
+        console.error("Error uploading file:", error);
+        throw new Error("Failed to upload file.");
     }
 };
