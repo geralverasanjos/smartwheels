@@ -70,11 +70,11 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     } catch (error: any) {
       console.error("Signup error:", error);
       if (error.code === 'auth/email-already-in-use') {
-        setAuthError('Email already in use. Please try signing in.');
+        setAuthError(t('auth_error_email_in_use'));
       } else if (error.code === 'auth/weak-password') {
-        setAuthError('Password is too weak. Please choose a stronger password.');
+        setAuthError(t('auth_error_weak_password'));
       } else {
-        setAuthError('An error occurred during signup. Please try again.');
+        setAuthError(t('auth_error_generic'));
       }
     }
   };
@@ -89,13 +89,12 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
       if (userProfile && onSuccess) {
         onSuccess(userProfile);
       } else {
-        // Handle case where user is authenticated but profile doesn't exist
-        setAuthError('Could not find user profile. Please try signing up.');
+        setAuthError(t('auth_error_no_profile'));
       }
       setIsOpen(false);
     } catch (error: any) {
       console.error("Signin error:", error);
-      setAuthError('Invalid email or password. Please try again.');
+      setAuthError(t('auth_error_invalid_credentials'));
     }
   };
 
