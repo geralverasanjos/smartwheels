@@ -19,6 +19,25 @@ export const Translations = {
     "id-ID": "Akun Saya",
     "th-TH": "บัญชีของฉัน"
   },
+  "payout_method_deleted": {
+    "pt-PT": "O método de pagamento foi eliminado com sucesso.",
+    "pt-BR": "O método de pagamento foi excluído com sucesso.",
+    "en-US": "Payout method deleted successfully.",
+    "es-ES": "Método de pago eliminado con éxito.",
+    "fr-FR": "La méthode de paiement a été supprimée avec succès.",
+    "de-DE": "Auszahlungsmethode erfolgreich gelöscht.",
+    "it-IT": "Metodo di pagamento eliminato con successo.",
+    "ja-JP": "支払い方法が正常に削除されました。",
+    "zh-CN": "付款方式已成功删除。",
+    "ru-RU": "Способ выплаты успешно удален.",
+    "ar-SA": "تم حذف طريقة الدفع بنجاح.",
+    "hi-IN": "भुगतान विधि सफलतापूर्वक हटा दी गई।",
+    "ko-KR": "지급 방법이 성공적으로 삭제되었습니다.",
+    "he-IL": "אמצעי התשלום נמחק בהצלחה.",
+    "uk-UA": "Спосіб виплати успішно видалено.",
+    "id-ID": "Metode pembayaran berhasil dihapus.",
+    "th-TH": "วิธีการจ่ายเงินถูกลบเรียบร้อยแล้ว"
+  },
   "status_online": {
     "pt-PT": "Online",
     "pt-BR": "Online",
