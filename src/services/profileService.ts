@@ -114,6 +114,7 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
 
 /**
  * Uploads a profile photo to Firebase Storage and returns the download URL.
+ * The path will be `profile-photos/{userId}/{timestamp}-{fileName}`.
  * @param file The image file to upload.
  * @param userId The ID of the user to associate the photo with.
  * @returns A promise that resolves to the public URL of the uploaded image.
@@ -123,7 +124,9 @@ export const uploadProfilePhoto = async (file: File, userId: string): Promise<st
     if (!userId) throw new Error("User ID is required for photo upload.");
 
     const storage = getStorage();
-    const filePath = `profile-photos/${userId}/${file.name}`;
+    const timestamp = Date.now();
+    const uniqueFileName = `${timestamp}-${file.name}`;
+    const filePath = `profile-photos/${userId}/${uniqueFileName}`;
     const storageRef = ref(storage, filePath);
 
     try {
