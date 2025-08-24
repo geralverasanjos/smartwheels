@@ -25,6 +25,7 @@ export interface UserProfile {
     fleetManagerId?: string; // Optional, only for drivers in a fleet
     identityDocumentUrl?: string;
     driverLicenseUrl?: string;
+    vehicleDocumentUrl?: string;
 }
 
 export interface Trip {

@@ -3,8 +3,7 @@ import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, File, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { uploadProfilePhoto } from '@/services/profileService';
@@ -17,7 +16,7 @@ interface FileUploadCardProps {
     icon: LucideIcon;
     fileUrl?: string | null;
     userId: string;
-    docType: 'identityDocumentUrl' | 'driverLicenseUrl';
+    docType: keyof UserProfile; // Make it more generic to accept different doc types
     onSave: (data: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -25,17 +24,22 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
     const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
-    const [fileName, setFileName] = useState<string | null>(null);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !userId) return;
 
-        setFileName(file.name);
         setIsUploading(true);
         try {
-            const downloadURL = await uploadProfilePhoto(file, `${userId}-${docType}`);
-            await onSave({ [docType]: downloadURL });
+            // Use a more specific path for each document type to avoid collisions
+            const storagePath = `documents/${userId}/${docType}/${file.name}`;
+            const downloadURL = await uploadProfilePhoto(file, storagePath);
+            
+            // Create a partial profile update object
+            const profileUpdate: Partial<UserProfile> = { [docType]: downloadURL };
+
+            await onSave(profileUpdate);
+
             toast({
                 title: t('toast_doc_uploaded_title'),
                 description: t('toast_doc_uploaded_desc'),
@@ -49,7 +53,6 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
             });
         } finally {
             setIsUploading(false);
-            setFileName(null);
         }
     };
 
@@ -59,7 +62,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
                 <Icon className="h-8 w-8 text-muted-foreground" />
                 <div>
                     <CardTitle>{title}</CardTitle>
@@ -81,8 +84,8 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                     )}
                 </div>
                 
-                <label htmlFor={docType} className="w-full">
-                    <Button asChild className="w-full" variant="outline">
+                <label htmlFor={docType} className="w-full cursor-pointer">
+                     <Button asChild className="w-full" variant="outline" disabled={isUploading}>
                         <span>
                             {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                             {t(fileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}

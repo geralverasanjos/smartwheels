@@ -21,8 +21,6 @@ const getProfile = async (userId: string, role: 'passenger' | 'driver' | 'fleet-
     if (docSnap.exists()) {
         return { id: docSnap.id, role, ...docSnap.data() } as UserProfile;
     } else {
-        // This is not an error, just means the user is not in this collection.
-        // console.warn(`Profile for user ${userId} not found in ${collectionName}.`);
         return null;
     }
 };
@@ -36,14 +34,13 @@ export const getFleetManagerProfile = (userId: string): Promise<UserProfile | nu
  * Saves a user's profile to the appropriate Firestore collection based on their role.
  * @param profileData The complete user profile data, including role and ID.
  */
-export const saveUserProfile = async (profileData: UserProfile): Promise<void> => {
+export const saveUserProfile = async (profileData: Partial<UserProfile>): Promise<void> => {
     if (!profileData.id || !profileData.role) {
         throw new Error("User ID and role are required to save profile.");
     }
     const collectionName = `${profileData.role}s`;
     const docRef = doc(db, collectionName, profileData.id);
     
-    // Do not save the 'id' field inside the document itself
     const dataToSave = { ...profileData };
     delete (dataToSave as any).id;
 
@@ -72,7 +69,6 @@ export const getUserProfileByAuthId = async (authId: string): Promise<UserProfil
         }
     }
     
-    console.warn(`Profile for authId ${authId} not found in any collection.`);
     return null; // User profile not found in any collection
 };
 
@@ -114,21 +110,16 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
 
 /**
  * Uploads a profile photo or document to Firebase Storage and returns the download URL.
- * The path will be `profile-photos/{userId}/{timestamp}-{fileName}`.
  * @param file The file to upload.
- * @param userId The ID of the user to associate the file with.
+ * @param path The full path in Firebase Storage where the file will be saved.
  * @returns A promise that resolves to the public URL of the uploaded file.
  */
-export const uploadProfilePhoto = async (file: File, userId: string): Promise<string> => {
+export const uploadProfilePhoto = async (file: File, path: string): Promise<string> => {
     if (!file) throw new Error("No file provided for upload.");
-    if (!userId) throw new Error("User ID is required for file upload.");
+    if (!path) throw new Error("A storage path is required for file upload.");
 
     const storage = getStorage();
-    const timestamp = Date.now();
-    // Use the docType in the filename to distinguish between different document types
-    const uniqueFileName = `${timestamp}-${file.name}`;
-    const filePath = `profile-photos/${userId}/${uniqueFileName}`;
-    const storageRef = ref(storage, filePath);
+    const storageRef = ref(storage, path);
 
     try {
         const snapshot = await uploadBytes(storageRef, file);

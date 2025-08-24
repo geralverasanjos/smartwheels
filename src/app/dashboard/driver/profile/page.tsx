@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
 import type { UserProfile } from '@/types';
-import { Loader2, FileCheck, ShieldCheck } from 'lucide-react';
+import { Loader2, FileCheck, ShieldCheck, Car } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
@@ -46,24 +46,13 @@ export default function DriverProfilePage() {
             setIsSaving(false);
         }
     };
-    
-    const handleDocumentUpload = async (docType: 'identityDocumentUrl' | 'driverLicenseUrl', file: File) => {
-        if (!user) return;
-        // The upload logic is inside FileUploadCard, here we just need to update the user profile
-        // This is a mock function for now, as the real URL update will happen via the component itself
-        // and onSave in the main ProfileForm.
-        console.log(`Uploading ${file.name} for ${docType}`);
-        toast({
-            title: "Ficheiro Carregado",
-            description: "O seu documento foi carregado. Clique em 'Salvar Alterações' no formulário principal para guardar a referência.",
-        })
-    }
 
     if (loading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
     }
     
     if (!user) {
+        // This case should ideally be handled by the layout, but as a fallback:
         return <div>{t('error_loading_profile')}</div>
     }
 
@@ -82,7 +71,7 @@ export default function DriverProfilePage() {
                     <CardDescription>{t('driver_docs_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
-                     <FileUploadCard
+                    <FileUploadCard
                         title={t('identity_document_title')}
                         description={t('identity_document_desc')}
                         icon={FileCheck}
@@ -98,6 +87,15 @@ export default function DriverProfilePage() {
                         fileUrl={user.driverLicenseUrl}
                         userId={user.id}
                         docType="driverLicenseUrl"
+                        onSave={handleSaveProfile}
+                    />
+                     <FileUploadCard
+                        title={t('vehicle_doc_photo_label')}
+                        description={t('vehicle_doc_photo_desc')}
+                        icon={Car}
+                        fileUrl={(user as any).vehicleDocumentUrl} // Assuming this field exists
+                        userId={user.id}
+                        docType="vehicleDocumentUrl"
                         onSave={handleSaveProfile}
                     />
                 </CardContent>
