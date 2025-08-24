@@ -2,14 +2,14 @@
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
 import type { UserProfile } from '@/types';
-import { Loader2, FileCheck, ShieldCheck } from 'lucide-react';
+import { Loader2, FileCheck } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import FileUploadCard from '@/components/shared/file-upload-card';
 
-export default function DriverProfilePage() {
+export default function PassengerProfilePage() {
     const { t, user, setUser } = useAppContext();
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
@@ -46,18 +46,6 @@ export default function DriverProfilePage() {
             setIsSaving(false);
         }
     };
-    
-    const handleDocumentUpload = async (docType: 'identityDocumentUrl' | 'driverLicenseUrl', file: File) => {
-        if (!user) return;
-        // The upload logic is inside FileUploadCard, here we just need to update the user profile
-        // This is a mock function for now, as the real URL update will happen via the component itself
-        // and onSave in the main ProfileForm.
-        console.log(`Uploading ${file.name} for ${docType}`);
-        toast({
-            title: "Ficheiro Carregado",
-            description: "O seu documento foi carregado. Clique em 'Salvar Alterações' no formulário principal para guardar a referência.",
-        })
-    }
 
     if (loading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
@@ -73,13 +61,13 @@ export default function DriverProfilePage() {
                 userData={user}
                 onSave={handleSaveProfile}
                 isSaving={isSaving}
-                titleKey="driver_profile_title"
-                descriptionKey="driver_profile_desc"
+                titleKey="passenger_profile_title"
+                descriptionKey="passenger_profile_desc"
             />
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('vehicle_docs_title')}</CardTitle>
-                    <CardDescription>{t('driver_docs_desc')}</CardDescription>
+                    <CardTitle>{t('documents_title')}</CardTitle>
+                    <CardDescription>{t('passenger_docs_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
                      <FileUploadCard
@@ -89,15 +77,6 @@ export default function DriverProfilePage() {
                         fileUrl={user.identityDocumentUrl}
                         userId={user.id}
                         docType="identityDocumentUrl"
-                        onSave={handleSaveProfile}
-                    />
-                    <FileUploadCard
-                        title={t('driver_license_title')}
-                        description={t('driver_license_desc')}
-                        icon={ShieldCheck}
-                        fileUrl={user.driverLicenseUrl}
-                        userId={user.id}
-                        docType="driverLicenseUrl"
                         onSave={handleSaveProfile}
                     />
                 </CardContent>
