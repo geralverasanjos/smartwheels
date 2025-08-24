@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 import type { PayoutMethod } from '@/types';
 import { Button } from '@/components/ui/button';
 

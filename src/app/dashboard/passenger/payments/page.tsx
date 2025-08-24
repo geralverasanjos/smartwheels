@@ -88,6 +88,9 @@ export default function PassengerPaymentsPage() {
     }
     
     const getMethodDetails = (method: PayoutMethod) => {
+        if (method.type === 'card') {
+            return `**** **** **** ${method.details.cardNumber?.slice(-4)}`;
+        }
         if (method.type === 'bank') {
             return `${method.details.bankName} - **** ${method.details.iban?.slice(-4)}`;
         }
@@ -127,7 +130,7 @@ export default function PassengerPaymentsPage() {
                             <div key={method.id} className="flex items-center gap-4 rounded-lg border p-4">
                                 <Icon className="h-6 w-6 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-semibold">{method.details.accountHolder || method.details.email || method.details.key || method.details.phone}</p>
+                                    <p className="font-semibold">{method.details.cardholderName || method.details.accountHolder || method.details.email || method.details.key || method.details.phone}</p>
                                     <p className="text-sm text-muted-foreground">{getMethodDetails(method)}</p>
                                 </div>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(method.id)}>

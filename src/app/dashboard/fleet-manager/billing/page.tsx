@@ -87,6 +87,9 @@ export default function FleetManagerBillingPage() {
     }
     
     const getMethodDetails = (method: PayoutMethod) => {
+        if (method.type === 'card') {
+            return `**** **** **** ${method.details.cardNumber?.slice(-4)}`;
+        }
         if (method.type === 'bank') {
             return `${method.details.bankName} - **** ${method.details.iban?.slice(-4)}`;
         }
