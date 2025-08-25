@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
@@ -25,7 +26,7 @@ export default function DriverProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const updatedProfileData: UserProfile = { ...user, ...data };
+            const updatedProfileData = { ...user, ...data };
             await saveUserProfile(updatedProfileData);
             setUser(updatedProfileData);
             toast({
@@ -88,7 +89,7 @@ export default function DriverProfilePage() {
                         fileUrl={user.identityDocumentUrl}
                         userId={user.id}
                         docType="identityDocumentUrl"
-                        onSave={handleSaveDocumentUrl}
+                        onUpload={handleSaveDocumentUrl}
                     />
                     <FileUploadCard
                         title={t('driver_license_title')}
@@ -97,7 +98,7 @@ export default function DriverProfilePage() {
                         fileUrl={user.driverLicenseUrl}
                         userId={user.id}
                         docType="driverLicenseUrl"
-                        onSave={handleSaveDocumentUrl}
+                        onUpload={handleSaveDocumentUrl}
                     />
                 </CardContent>
             </Card>

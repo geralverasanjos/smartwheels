@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
 import type { UserProfile } from '@/types';
-import { Loader2, FileCheck, ShieldCheck, Car } from 'lucide-react';
+import { Loader2, FileCheck, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
-import { saveUserProfile, uploadProfilePhoto } from '@/services/profileService';
+import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import FileUploadCard from '@/components/shared/file-upload-card';
@@ -26,7 +26,7 @@ export default function FleetManagerProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const updatedProfileData = { ...user, ...data };
+            const updatedProfileData: UserProfile = { ...user, ...data };
             await saveUserProfile(updatedProfileData);
             setUser(updatedProfileData);
             toast({
@@ -45,10 +45,11 @@ export default function FleetManagerProfilePage() {
         }
     };
     
-    // Handles the upload and then saves the URL to the user's profile
     const handleSaveDocumentUrl = async (docType: keyof UserProfile, url: string) => {
-        if (!user?.id) return;
-        
+        if (!user?.id) {
+          throw new Error("User not authenticated for document URL save.");
+        }
+
         const updatedProfile = {
             ...user,
             [docType]: url,
@@ -88,7 +89,7 @@ export default function FleetManagerProfilePage() {
                         fileUrl={user.identityDocumentUrl}
                         userId={user.id}
                         docType="identityDocumentUrl"
-                        onSave={handleSaveDocumentUrl}
+                        onUpload={handleSaveDocumentUrl}
                     />
                     <FileUploadCard
                         title={t('commercial_license_title')}
@@ -97,7 +98,7 @@ export default function FleetManagerProfilePage() {
                         fileUrl={user.commercialLicenseUrl}
                         userId={user.id}
                         docType="commercialLicenseUrl"
-                        onSave={handleSaveDocumentUrl}
+                        onUpload={handleSaveDocumentUrl}
                     />
                     <FileUploadCard
                         title={t('operator_license_title')}
@@ -106,11 +107,10 @@ export default function FleetManagerProfilePage() {
                         fileUrl={user.operatorLicenseUrl}
                         userId={user.id}
                         docType="operatorLicenseUrl"
-                        onSave={handleSaveDocumentUrl}
+                        onUpload={handleSaveDocumentUrl}
                     />
                 </CardContent>
             </Card>
         </div>
     );
 }
-

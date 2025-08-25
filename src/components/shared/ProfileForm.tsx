@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Upload } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type { UserProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/app-context";
@@ -19,27 +19,30 @@ import { Badge } from "../ui/badge";
 interface ProfileFormProps {
     userData: UserProfile;
     onSave: (data: Partial<UserProfile>) => Promise<void>;
-    isSaving?: boolean;
+    isSaving: boolean;
     titleKey: TranslationKeys;
     descriptionKey: TranslationKeys;
 }
 
 export default function ProfileForm({ userData, onSave, isSaving, titleKey, descriptionKey }: ProfileFormProps) {
-    const { t, setUser } = useAppContext();
+    const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
     
     const { register, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm<UserProfile>({
         defaultValues: userData,
     });
-
+    
+    // This effect ensures the form is reset with new data if the user prop changes
     useEffect(() => {
-        setValue('name', userData.name);
-        setValue('email', userData.email);
-        setValue('phone', userData.phone);
-        setValue('nif', userData.nif);
-        setValue('address', userData.address);
-        setValue('avatarUrl', userData.avatarUrl);
+        if(userData) {
+            setValue('name', userData.name || '');
+            setValue('email', userData.email || '');
+            setValue('phone', userData.phone || '');
+            setValue('nif', userData.nif || '');
+            setValue('address', userData.address || '');
+            setValue('avatarUrl', userData.avatarUrl || '');
+        }
     }, [userData, setValue]);
     
     const avatarUrl = watch('avatarUrl');

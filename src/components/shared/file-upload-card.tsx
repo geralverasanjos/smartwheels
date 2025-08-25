@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -19,13 +20,18 @@ interface FileUploadCardProps {
     fileUrl?: string | null;
     userId: string;
     docType: keyof UserProfile;
-    onSave: (docType: keyof UserProfile, url: string) => Promise<void>;
+    onUpload: (docType: keyof UserProfile, url: string) => Promise<void>;
 }
 
-export default function FileUploadCard({ title, description, icon: Icon, fileUrl, userId, docType, onSave }: FileUploadCardProps) {
+export default function FileUploadCard({ title, description, icon: Icon, fileUrl, userId, docType, onUpload }: FileUploadCardProps) {
     const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
+    const [currentFileUrl, setCurrentFileUrl] = useState(fileUrl);
+    
+    useEffect(() => {
+        setCurrentFileUrl(fileUrl);
+    }, [fileUrl]);
     
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -35,7 +41,8 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
         try {
             const storagePath = `documents/${userId}/${docType}/${file.name}`;
             const downloadURL = await uploadProfilePhoto(file, storagePath);
-            await onSave(docType, downloadURL);
+            await onUpload(docType, downloadURL);
+            setCurrentFileUrl(downloadURL); 
             toast({
                 title: t('toast_doc_uploaded_title'),
                 description: t('toast_doc_uploaded_desc'),
@@ -52,7 +59,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
         }
     };
 
-    const status = fileUrl ? 'approved' : 'pending';
+    const status = currentFileUrl ? 'approved' : 'pending';
     const statusText = status === 'approved' ? t('status_approved') : t('status_pending');
     const StatusIcon = status === 'approved' ? CheckCircle : AlertCircle;
 
@@ -71,9 +78,9 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                         <StatusIcon className={cn("h-5 w-5", status === 'approved' ? 'text-green-500' : 'text-yellow-500')} />
                         <span className="text-sm font-medium">{statusText}</span>
                     </div>
-                    {fileUrl && (
+                    {currentFileUrl && (
                         <Button variant="link" size="sm" asChild>
-                            <Link href={fileUrl} target="_blank" rel="noopener noreferrer" className='flex items-center gap-1'>
+                            <Link href={currentFileUrl} target="_blank" rel="noopener noreferrer" className='flex items-center gap-1'>
                                 <Eye className="h-4 w-4" />
                                 {t('btn_view_document')}
                             </Link>
@@ -85,7 +92,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                      <Button asChild className="w-full" variant="outline" disabled={isUploading}>
                         <span>
                             {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            {t(fileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
+                            {t(currentFileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
                         </span>
                     </Button>
                     <Input
