@@ -1,4 +1,3 @@
-
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;
@@ -26,9 +25,9 @@ export interface UserProfile {
     fleetManagerId?: string; // Optional, only for drivers in a fleet
     
     // Driver & Personal Documents
-    identityDocumentUrl?: string;
-    driverLicenseUrl?: string;
-    vehicleDocumentUrl?: string;
+    identityDocumentUrl?: string | null;
+    driverLicenseUrl?: string | null;
+    vehicleDocumentUrl?: string | null;
 
     // Fleet Manager Documents & Info
     companyName?: string;

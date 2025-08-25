@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -18,7 +17,7 @@ interface FileUploadCardProps {
     fileUrl?: string | null;
     userId: string;
     docType: keyof UserProfile;
-    onSave: (data: Partial<UserProfile>) => Promise<void>;
+    onSave: (docType: keyof UserProfile, url: string) => Promise<void>;
 }
 
 export default function FileUploadCard({ title, description, icon: Icon, fileUrl, userId, docType, onSave }: FileUploadCardProps) {
@@ -36,9 +35,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
             const storagePath = `documents/${userId}/${docType}/${file.name}`;
             const downloadURL = await uploadProfilePhoto(file, storagePath);
             
-            const profileUpdate: Partial<UserProfile> = { [docType]: downloadURL };
-
-            await onSave(profileUpdate);
+            await onSave(docType, downloadURL);
             setLocalFileUrl(downloadURL); // Update local state to reflect change immediately
 
             toast({
@@ -49,7 +46,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
             console.error(`Failed to upload ${docType}:`, error);
             toast({
                 title: t('error_title'),
-                description: t('error_uploading_doc'),
+                description: "Failed to upload document",
                 variant: "destructive"
             });
         } finally {
@@ -99,4 +96,3 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
         </Card>
     );
 }
-
