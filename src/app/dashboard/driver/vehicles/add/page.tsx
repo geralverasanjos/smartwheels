@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Wallet, Landmark, HandCoins, UploadCloud } from 'lucide-react';
+import { ArrowLeft, UploadCloud, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAppContext } from '@/contexts/app-context';
 import { useRouter, usePathname } from 'next/navigation';
@@ -43,7 +42,6 @@ const FileUploadField = ({ label, id, onFileChange }: { label: string, id: strin
     );
 };
 
-// --- Sub-componente para o Passo 1: Detalhes do Veículo ---
 const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
     const { t } = useAppContext();
     const [files, setFiles] = useState({ carPhoto: '', docPhoto: '', permitPhoto: '' });
@@ -93,63 +91,40 @@ const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
     );
 };
 
-// --- Sub-componente para o Passo 2: Métodos de Recebimento ---
-const Step2_ReceivingMethods = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
-    const { t } = useAppContext();
-    return (
-        <div className="space-y-4 animate-in fade-in-0">
-            <CardHeader>
-                <CardTitle>{t('step2_title')}</CardTitle>
-                <CardDescription>{t('step2_desc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                 <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3"><HandCoins className="h-5 w-5 text-green-500" /><Label>{t('method_cash')}</Label></div>
-                    <Switch defaultChecked />
-                </div>
-                 <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3"><Wallet className="h-5 w-5 text-blue-600" /><Label>{t('payment_method_paypal')}</Label></div>
-                    <Switch />
-                </div>
-                 <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3"><Landmark className="h-5 w-5 text-gray-500" /><Label>{t('payment_method_bank_account')}</Label></div>
-                    <Switch />
-                </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={onBack}>{t('btn_previous')}</Button>
-                <Button onClick={onNext}>{t('btn_next_step')}</Button>
-            </CardFooter>
-        </div>
-    );
-};
-
-// --- Sub-componente para o Passo 3: Subscrição ---
-const Step3_Subscription = ({ onBack }: { onBack: () => void }) => {
+const Step2_Subscription = ({ onBack }: { onBack: () => void }) => {
     const { t } = useAppContext();
     const router = useRouter();
     const pathname = usePathname();
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     
     const handleSubmitAndPay = async () => {
-        // Lógica de guardar os dados antes de redirecionar
-        console.log("Saving all data before payment redirect...");
+        setIsProcessing(true);
+        console.log("Saving vehicle data with 'pending_payment' status...");
+        // TODO: Save vehicle data to Firestore with status 'pending_payment' and get the new vehicle ID.
+        const newVehicleId = `vehicle_${Date.now()}`; // Mock ID
+
+        console.log("Initiating payment for new vehicle ID:", newVehicleId);
         try {
-            const { approvalUrl } = await handleVehicleFee();
+            const { approvalUrl } = await handleVehicleFee(newVehicleId);
             if (approvalUrl) {
-                router.push(approvalUrl);
+                // Redirect to PayPal for payment
+                window.location.href = approvalUrl;
+            } else {
+                 console.error("No approval URL returned from PayPal.");
+                 setIsProcessing(false);
             }
         } catch (error) {
-            console.error("Payment initiation failed", error);
-            // Show a toast or error message to the user
+            console.error("Payment initiation failed:", error);
+            setIsProcessing(false);
         }
     }
 
     return (
          <div className="space-y-4 animate-in fade-in-0">
             <CardHeader className="text-center">
-                <CardTitle>{t('step3_title')}</CardTitle>
-                <CardDescription>{t('step3_desc')}</CardDescription>
+                <CardTitle>{t('step2_title')}</CardTitle>
+                <CardDescription>{t('step2_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="text-center">
                 <div className="p-4 bg-muted rounded-lg">
@@ -162,8 +137,9 @@ const Step3_Subscription = ({ onBack }: { onBack: () => void }) => {
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-                 <Button variant="outline" onClick={onBack}>{t('btn_previous')}</Button>
-                 <Button onClick={handleSubmitAndPay} disabled={!termsAccepted}>
+                 <Button variant="outline" onClick={onBack} disabled={isProcessing}>{t('btn_previous')}</Button>
+                 <Button onClick={handleSubmitAndPay} disabled={!termsAccepted || isProcessing}>
+                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('btn_save_and_proceed_payment')}
                  </Button>
             </CardFooter>
@@ -172,7 +148,6 @@ const Step3_Subscription = ({ onBack }: { onBack: () => void }) => {
 };
 
 
-// --- O Componente Principal da Página ---
 export default function AddVehiclePage() {
     const { t } = useAppContext();
     const [step, setStep] = useState(1);
@@ -193,8 +168,7 @@ export default function AddVehiclePage() {
             
             <Card className="max-w-2xl mx-auto w-full">
                 {step === 1 && <Step1_VehicleDetails onNext={() => setStep(2)} />}
-                {step === 2 && <Step2_ReceivingMethods onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-                {step === 3 && <Step3_Subscription onBack={() => setStep(2)} />}
+                {step === 2 && <Step2_Subscription onBack={() => setStep(1)} />}
             </Card>
         </div>
     );

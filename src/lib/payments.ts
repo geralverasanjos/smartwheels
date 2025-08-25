@@ -1,140 +1,81 @@
 
-/**
- * @fileOverview Server-side payment processing logic using PayPal as the default.
- * This file contains functions to interact with the PayPal REST API.
- * It uses secret API keys and should never be imported into a client-side component.
- */
-
 'use server';
 
-// In a real application, you would install the PayPal SDK:
-// npm install @paypal/checkout-server-sdk
-//
-// import paypal from '@paypal/checkout-server-sdk';
+// In a real application, you would install the PayPal SDK. For this prototype, we'll use fetch with mock logic.
 
 /**
- * Sets up the PayPal environment.
- * Uses credentials from environment variables.
- * @returns A PayPalHttpClient instance.
+ * Sets up the PayPal environment. In a real app, this would use the PayPal SDK.
+ * @returns A mock PayPal client object.
  */
 function getPayPalClient() {
-  const clientId = process.env.PAYPAL_CLIENT_ID || '';
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET || '';
-  const mode = process.env.PAYPAL_MODE || 'sandbox';
-
-  // This is a conceptual setup. The actual implementation depends on the SDK.
-  // For example, with the official SDK:
-  // const environment = mode === 'live'
-  //   ? new paypal.core.LiveEnvironment(clientId, clientSecret)
-  //   : new paypal.core.SandboxEnvironment(clientId, clientSecret);
-  // const client = new paypal.core.PayPalHttpClient(environment);
-  // return client;
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+  const mode = process.env.PAYPAL_MODE || 'sandbox'; // Default to sandbox
 
   if (!clientId || !clientSecret) {
     console.error('PayPal client ID or secret is not configured in .env.local');
+    throw new Error('PayPal credentials are not set.');
   }
-  
-  // Returning a mock client for prototyping purposes
+
+  const baseUrl = mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+  const getAccessToken = async () => {
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+    const data = await response.json();
+    return data.access_token;
+  };
+
   return {
-    execute: async (request: any) => {
-        console.log(`Executing PayPal request (mock) in ${mode} mode:`, request);
-        if (request.verb === 'POST' && request.path.includes('/v2/checkout/orders')) {
-             return {
-                statusCode: 201,
-                result: {
-                    id: `mock_order_${Date.now()}`,
-                    status: 'CREATED',
-                    links: [
-                        { href: `https://www.sandbox.paypal.com/checkoutnow?token=mock_order_${Date.now()}`, rel: 'approve', method: 'GET' }
-                    ]
-                }
-            };
+    execute: async (request: { method: string, path: string, body?: any, headers?: any }) => {
+        const accessToken = await getAccessToken();
+        const response = await fetch(`${baseUrl}${request.path}`, {
+            method: request.method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+                ...request.headers,
+            },
+            body: request.body ? JSON.stringify(request.body) : undefined,
+        });
+
+        const jsonResponse = await response.json();
+
+        if (!response.ok) {
+            console.error('PayPal API Error:', jsonResponse);
+            throw new Error(`PayPal API request failed: ${jsonResponse.message || response.statusText}`);
         }
-         return {
-            statusCode: 200,
-            result: {
-                status: 'COMPLETED'
-            }
-        }
+        
+        return jsonResponse;
     }
   };
 }
 
 /**
- * Creates a PayPal order to charge a one-time fee (e.g., platform service fee).
- * @param amount The amount to charge, as a string (e.g., "10.00").
- * @param currency The currency code (e.g., "EUR", "BRL", "USD").
+ * Creates a PayPal order for the vehicle registration fee.
+ * @param vehicleId The unique ID of the vehicle being registered.
  * @returns The PayPal order object, including the approval link.
  */
-export async function createPayPalOrder(amount: string, currency: string) {
-  const paypalClient = getPayPalClient();
-  
-  const request = {
-      verb: 'POST',
-      path: '/v2/checkout/orders',
-      body: {
-        intent: 'CAPTURE',
-        purchase_units: [{
-            amount: {
-                currency_code: currency,
-                value: amount
-            }
-        }],
-        application_context: {
-            return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/driver/wallet?paypal_success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/driver/wallet?paypal_cancel=true`,
-            brand_name: 'SmartWheels',
-            user_action: 'PAY_NOW'
-        }
-    },
-    headers: {
-        'Content-Type': 'application/json'
+export async function handleVehicleFee(vehicleId: string) {
+    const feeAmount = "3.00";
+    const currency = "EUR";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_BASE_URL is not defined in your environment variables.");
     }
-  };
 
-  try {
-    const response = await paypalClient.execute(request);
-    return response.result;
-  } catch (error) {
-    console.error('PayPal Error:', error);
-    throw new Error('Could not create PayPal order.');
-  }
-}
-
-/**
- * Captures the payment for a previously created PayPal order.
- * This function is called after the user approves the payment on the PayPal site.
- * @param orderId The ID of the PayPal order.
- * @returns The result of the capture operation.
- */
-export async function capturePayPalOrder(orderId: string) {
     const paypalClient = getPayPalClient();
     
     const request = {
-        verb: 'POST',
-        path: `/v2/checkout/orders/${orderId}/capture`,
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
-
-    try {
-        const response = await paypalClient.execute(request);
-        return response.result;
-    } catch (error) {
-        console.error('PayPal Capture Error:', error);
-        throw new Error('Could not capture PayPal payment.');
-    }
-}
-
-
-export async function handleVehicleFee() {
-    const feeAmount = "3.00";
-    const currency = "EUR";
-
-    const paypalClient = getPayPalClient();
-    const request = {
-        verb: 'POST',
+        method: 'POST',
         path: '/v2/checkout/orders',
         body: {
             intent: 'CAPTURE',
@@ -143,27 +84,27 @@ export async function handleVehicleFee() {
                     currency_code: currency,
                     value: feeAmount
                 },
-                description: 'Taxa de Listagem de Veículo'
+                description: `Taxa de Registo do Veículo #${vehicleId}`,
+                custom_id: vehicleId, // Pass the vehicle ID to track the payment
             }],
             application_context: {
-                return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/driver/veiculos?payment=success`,
-                cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/driver/veiculos?payment=cancelled`,
+                return_url: `${baseUrl}/payment/success?vehicleId=${vehicleId}`,
+                cancel_url: `${baseUrl}/payment/cancel?vehicleId=${vehicleId}`,
                 brand_name: 'SmartWheels',
                 user_action: 'PAY_NOW'
             }
         },
-        headers: {
-            'Content-Type': 'application/json'
-        }
     };
 
     try {
-        const response = await paypalClient.execute(request);
-        const approvalLink = response.result.links.find((link: any) => link.rel === 'approve');
+        const order = await paypalClient.execute(request);
+        const approvalLink = order.links.find((link: any) => link.rel === 'approve');
+        
         if (approvalLink) {
             return { approvalUrl: approvalLink.href };
         } else {
-            throw new Error('No approval URL found');
+            console.error("PayPal Order response:", order);
+            throw new Error('No approval URL found in PayPal response.');
         }
     } catch (error) {
         console.error('Failed to create PayPal order for vehicle fee:', error);
