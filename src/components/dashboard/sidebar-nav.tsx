@@ -79,6 +79,7 @@ const fleetManagerNav = [
     { href: "/dashboard/fleet-manager/refer", icon: Award, labelKey: "menu_refer" },
     { href: "/dashboard/fleet-manager/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/fleet-manager/profile", icon: User, labelKey: "menu_profile" },
+    { href: "/dashboard/fleet-manager/profile2", icon: User, labelKey: "Perfil 2" as any },
 ];
 
 
