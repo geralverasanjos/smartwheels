@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Upload } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import type { UserProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/app-context";
@@ -18,22 +18,30 @@ import { Badge } from "../ui/badge";
 
 interface ProfileFormProps {
     userData: UserProfile;
-    onSave: (data: UserProfile) => Promise<void>;
+    onSave: (data: Partial<UserProfile>) => Promise<void>;
     isSaving?: boolean;
     titleKey: TranslationKeys;
     descriptionKey: TranslationKeys;
 }
 
 export default function ProfileForm({ userData, onSave, isSaving, titleKey, descriptionKey }: ProfileFormProps) {
-    const { t } = useAppContext();
+    const { t, setUser } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
     
     const { register, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm<UserProfile>({
         defaultValues: userData,
     });
+
+    useEffect(() => {
+        setValue('name', userData.name);
+        setValue('email', userData.email);
+        setValue('phone', userData.phone);
+        setValue('nif', userData.nif);
+        setValue('address', userData.address);
+        setValue('avatarUrl', userData.avatarUrl);
+    }, [userData, setValue]);
     
-    // Watch for changes in the avatarUrl form value to update the UI
     const avatarUrl = watch('avatarUrl');
 
     const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,11 +50,12 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
 
         setIsUploading(true);
         try {
-            const downloadURL = await uploadProfilePhoto(file, userData.id);
-            setValue('avatarUrl', downloadURL, { shouldDirty: true }); // Mark form as dirty
+            const storagePath = `profilePhotos/${userData.id}/${file.name}`;
+            const downloadURL = await uploadProfilePhoto(file, storagePath);
+            setValue('avatarUrl', downloadURL, { shouldDirty: true });
              toast({
-                title: "Foto atualizada",
-                description: "A sua nova foto de perfil foi carregada. Clique em 'Salvar' para confirmar.",
+                title: t('photo_upload_success_title'),
+                description: t('photo_upload_success_desc'),
             });
         } catch (error) {
             console.error("Failed to upload photo:", error);
@@ -73,9 +82,13 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
         }
     };
 
+    const handleFormSubmit = (data: UserProfile) => {
+        onSave(data);
+    };
+
 
     return (
-        <form onSubmit={handleSubmit(onSave)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-4">
