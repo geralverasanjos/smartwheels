@@ -1,3 +1,4 @@
+
 'use server';
 
 // In a real application, you would install the PayPal SDK. For this prototype, we'll use fetch.
@@ -55,7 +56,11 @@ function getPayPalClient() {
 
         if (!response.ok) {
             console.error('PayPal API Error:', JSON.stringify(jsonResponse, null, 2));
-            throw new Error(`PayPal API request failed: ${jsonResponse.message || response.statusText}`);
+            throw {
+                ...new Error(`PayPal API request failed: ${jsonResponse.message || response.statusText}`),
+                statusCode: response.status,
+                details: jsonResponse.details,
+            };
         }
         
         return jsonResponse;
@@ -72,78 +77,101 @@ function getPayPalClient() {
 async function getOrCreateBillingPlan(paypalClient: any) {
     const productId = `SMARTWHEELS-PRODUCT-${process.env.NODE_ENV}`;
     const planId = `SMARTWHEELS-PLAN-${process.env.NODE_ENV}`;
-    
-    // In a real app, you would check if the product and plan exist first.
-    // For this prototype, we'll try to create them. We'll ignore errors if they already exist.
+    let finalProductId = '';
+
+    // 1. Get or Create Product
     try {
-        // 1. Create a Product
-        await paypalClient.execute({
-            method: 'POST',
-            path: '/v1/catalogs/products',
-            body: {
-                name: 'SmartWheels Vehicle Subscription',
-                description: 'Monthly access fee for using the SmartWheels platform.',
-                type: 'SERVICE',
-                category: 'SOFTWARE',
-                image_url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
-                home_url: process.env.NEXT_PUBLIC_BASE_URL,
-            },
-            headers: {
-                'PayPal-Request-Id': productId,
-            }
+        console.log(`Checking for PayPal Product: ${productId}`);
+        const product = await paypalClient.execute({
+            method: 'GET',
+            path: `/v1/catalogs/products/${productId}`
         });
-    } catch (error) {
-        // console.warn("Could not create PayPal product, it might already exist.", error);
-    }
-    
-    try {
-        // 2. Create a Billing Plan
-        const planResponse = await paypalClient.execute({
-            method: 'POST',
-            path: '/v1/billing/plans',
-            body: {
-                product_id: productId,
-                name: 'Standard Monthly Vehicle Fee',
-                description: '3 EUR per month subscription for vehicle access.',
-                status: 'ACTIVE',
-                billing_cycles: [{
-                    frequency: {
-                        interval_unit: 'MONTH',
-                        interval_count: 1,
+        finalProductId = product.id;
+        console.log('Found existing PayPal product.');
+    } catch (error: any) {
+        if (error && error.statusCode === 404) {
+            console.log('PayPal product not found, creating new one.');
+            try {
+                const newProduct = await paypalClient.execute({
+                    method: 'POST',
+                    path: '/v1/catalogs/products',
+                    body: {
+                        id: productId,
+                        name: 'SmartWheels Vehicle Subscription',
+                        description: 'Monthly access fee for using the SmartWheels platform.',
+                        type: 'SERVICE',
+                        category: 'SOFTWARE',
+                        image_url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
+                        home_url: process.env.NEXT_PUBLIC_BASE_URL,
                     },
-                    tenure_type: 'REGULAR',
-                    sequence: 1,
-                    total_cycles: 0, // Infinite
-                    pricing_scheme: {
-                        fixed_price: {
-                            value: '3.00',
-                            currency_code: 'EUR',
+                });
+                finalProductId = newProduct.id;
+                console.log('New PayPal product created.');
+            } catch (createError) {
+                console.error("Failed to create PayPal product:", createError);
+                throw new Error("Could not create a PayPal product.");
+            }
+        } else {
+            console.error("Error fetching PayPal product:", error);
+            throw new Error("Could not fetch PayPal product.");
+        }
+    }
+
+    // 2. Get or Create Plan
+    try {
+        console.log(`Checking for PayPal Plan: ${planId}`);
+        const plan = await paypalClient.execute({
+             method: 'GET',
+             path: `/v1/billing/plans/${planId}`
+        });
+        console.log('Found existing PayPal plan.');
+        return plan.id;
+    } catch (error: any) {
+        if (error && error.statusCode === 404) {
+             console.log('PayPal plan not found, creating new one.');
+             try {
+                const newPlan = await paypalClient.execute({
+                    method: 'POST',
+                    path: '/v1/billing/plans',
+                    body: {
+                        id: planId,
+                        product_id: finalProductId,
+                        name: 'Standard Monthly Vehicle Fee',
+                        description: '3 EUR per month subscription for vehicle access.',
+                        status: 'ACTIVE',
+                        billing_cycles: [{
+                            frequency: {
+                                interval_unit: 'MONTH',
+                                interval_count: 1,
+                            },
+                            tenure_type: 'REGULAR',
+                            sequence: 1,
+                            total_cycles: 0, // Infinite
+                            pricing_scheme: {
+                                fixed_price: {
+                                    value: '3.00',
+                                    currency_code: 'EUR',
+                                },
+                            },
+                        }],
+                        payment_preferences: {
+                            auto_bill_outstanding: true,
+                            setup_fee_failure_action: 'CONTINUE',
+                            payment_failure_threshold: 3,
                         },
                     },
-                }],
-                payment_preferences: {
-                    auto_bill_outstanding: true,
-                    setup_fee_failure_action: 'CONTINUE',
-                    payment_failure_threshold: 3,
-                },
-            },
-            headers: {
-                 'PayPal-Request-Id': planId,
-            }
-        });
-        return planResponse.id;
-    } catch (error) {
-       // It's possible the plan already exists, try to get it
-       try {
-         const plansResponse = await paypalClient.execute({ method: 'GET', path: '/v1/billing/plans' });
-         const existingPlan = plansResponse.plans.find((p: any) => p.name === 'Standard Monthly Vehicle Fee' && p.product_id === productId);
-         if (existingPlan) return existingPlan.id;
-       } catch (getErr) {
-            console.error('Failed to get or create PayPal plan:', getErr);
-            throw getErr;
-       }
+                });
+                console.log('New PayPal plan created.');
+                return newPlan.id;
+             } catch (createError) {
+                console.error("Failed to create PayPal plan:", createError);
+                throw new Error("Could not create a PayPal plan.");
+             }
+        } else {
+             console.error("Error fetching PayPal plan:", error);
+             throw new Error("Could not fetch PayPal plan.");
+        }
     }
-     throw new Error("Could not get or create a PayPal plan.");
 }
 
 
