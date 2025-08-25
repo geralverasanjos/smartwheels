@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,6 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
             await onUpload(docType, file);
             // After successful upload, the parent's `user` state will update,
             // which will re-render this component with the new `fileUrl`.
-            // We can optimisticly update the URL if needed, but for now we rely on parent re-render.
             toast({
                 title: t('toast_doc_uploaded_title'),
                 description: t('toast_doc_uploaded_desc'),
