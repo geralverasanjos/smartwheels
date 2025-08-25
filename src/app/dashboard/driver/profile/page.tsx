@@ -27,10 +27,10 @@ export default function DriverProfilePage() {
         setIsSaving(true);
         try {
             // Merge the form data with the existing user data to ensure nothing is lost.
-            const updatedProfileData = { ...user, ...data };
+            const updatedProfileData: UserProfile = { ...user, ...data };
             await saveUserProfile(updatedProfileData);
             // Update the user in the global context to reflect changes immediately.
-            setUser(updatedProfileData); 
+            setUser(updatedProfileData);
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
@@ -46,28 +46,32 @@ export default function DriverProfilePage() {
             setIsSaving(false);
         }
     };
-    
+
     // This function is passed to the FileUploadCard component.
     // It handles the file upload and then saves the returned URL to the user's profile.
-    const handleSaveDocumentUrl = async (docType: keyof UserProfile, url: string) => {
-        if (!user?.id) return;
-        
+    const handleSaveDocumentUrl = async (docType: keyof UserProfile, file: File) => {
+        if (!user?.id) {
+          throw new Error("User not authenticated for upload.");
+        }
+        const storagePath = `documents/${user.id}/${docType}/${file.name}`;
+        const downloadURL = await uploadProfilePhoto(file, storagePath);
+
         // Create an updated profile object with the new document URL.
         const updatedProfile = {
             ...user,
-            [docType]: url,
+            [docType]: downloadURL,
         };
 
         // Save the updated profile to Firestore.
         await saveUserProfile(updatedProfile);
         // Update the user in the global context.
-        setUser(updatedProfile); 
+        setUser(updatedProfile);
     };
 
     if (loading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
     }
-    
+
     if (!user) {
         // This case should ideally be handled by the layout which redirects unauthenticated users.
         return <div>{t('error_loading_profile')}</div>
@@ -76,7 +80,7 @@ export default function DriverProfilePage() {
     return (
         <div className="space-y-8">
             {/* The main profile form for personal data */}
-            <ProfileForm 
+            <ProfileForm
                 userData={user}
                 onSave={handleSaveProfile}
                 isSaving={isSaving}
@@ -95,18 +99,16 @@ export default function DriverProfilePage() {
                         description={t('identity_document_desc')}
                         icon={FileCheck}
                         fileUrl={user.identityDocumentUrl}
-                        userId={user.id}
+                        onUpload={handleSaveDocumentUrl}
                         docType="identityDocumentUrl"
-                        onSave={handleSaveDocumentUrl}
                     />
                     <FileUploadCard
                         title={t('driver_license_title')}
                         description={t('driver_license_desc')}
                         icon={ShieldCheck}
                         fileUrl={user.driverLicenseUrl}
-                        userId={user.id}
+                        onUpload={handleSaveDocumentUrl}
                         docType="driverLicenseUrl"
-                        onSave={handleSaveDocumentUrl}
                     />
                 </CardContent>
             </Card>
