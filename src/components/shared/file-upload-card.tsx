@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -11,31 +10,32 @@ import type { UserProfile } from '@/types';
 import Link from 'next/link';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
+import { uploadProfilePhoto } from '@/services/profileService';
 
 interface FileUploadCardProps {
     title: string;
     description: string;
     icon: LucideIcon;
     fileUrl?: string | null;
+    userId: string;
     docType: keyof UserProfile;
-    onUpload: (docType: keyof UserProfile, file: File) => Promise<void>;
+    onSave: (docType: keyof UserProfile, url: string) => Promise<void>;
 }
 
-export default function FileUploadCard({ title, description, icon: Icon, fileUrl, docType, onUpload }: FileUploadCardProps) {
+export default function FileUploadCard({ title, description, icon: Icon, fileUrl, userId, docType, onSave }: FileUploadCardProps) {
     const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
-    const [currentFileUrl, setCurrentFileUrl] = useState(fileUrl);
-
+    
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file || !userId) return;
 
         setIsUploading(true);
         try {
-            await onUpload(docType, file);
-            // After successful upload, the parent's `user` state will update,
-            // which will re-render this component with the new `fileUrl`.
+            const storagePath = `documents/${userId}/${docType}/${file.name}`;
+            const downloadURL = await uploadProfilePhoto(file, storagePath);
+            await onSave(docType, downloadURL);
             toast({
                 title: t('toast_doc_uploaded_title'),
                 description: t('toast_doc_uploaded_desc'),
@@ -52,13 +52,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
         }
     };
 
-    // Effect to update local state when prop changes
-    useEffect(() => {
-        setCurrentFileUrl(fileUrl);
-    }, [fileUrl]);
-
-
-    const status = currentFileUrl ? 'approved' : 'pending';
+    const status = fileUrl ? 'approved' : 'pending';
     const statusText = status === 'approved' ? t('status_approved') : t('status_pending');
     const StatusIcon = status === 'approved' ? CheckCircle : AlertCircle;
 
@@ -77,9 +71,9 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                         <StatusIcon className={cn("h-5 w-5", status === 'approved' ? 'text-green-500' : 'text-yellow-500')} />
                         <span className="text-sm font-medium">{statusText}</span>
                     </div>
-                    {currentFileUrl && (
+                    {fileUrl && (
                         <Button variant="link" size="sm" asChild>
-                            <Link href={currentFileUrl} target="_blank" rel="noopener noreferrer" className='flex items-center gap-1'>
+                            <Link href={fileUrl} target="_blank" rel="noopener noreferrer" className='flex items-center gap-1'>
                                 <Eye className="h-4 w-4" />
                                 {t('btn_view_document')}
                             </Link>
@@ -91,7 +85,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                      <Button asChild className="w-full" variant="outline" disabled={isUploading}>
                         <span>
                             {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            {t(currentFileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
+                            {t(fileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
                         </span>
                     </Button>
                     <Input

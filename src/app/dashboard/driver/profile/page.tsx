@@ -1,11 +1,10 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
 import type { UserProfile } from '@/types';
 import { Loader2, FileCheck, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
-import { saveUserProfile, uploadProfilePhoto } from '@/services/profileService';
+import { saveUserProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import FileUploadCard from '@/components/shared/file-upload-card';
@@ -26,10 +25,8 @@ export default function DriverProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            // Merge the form data with the existing user data to ensure nothing is lost.
             const updatedProfileData: UserProfile = { ...user, ...data };
             await saveUserProfile(updatedProfileData);
-            // Update the user in the global context to reflect changes immediately.
             setUser(updatedProfileData);
             toast({
                 title: t('toast_profile_updated_title'),
@@ -47,24 +44,17 @@ export default function DriverProfilePage() {
         }
     };
 
-    // This function is passed to the FileUploadCard component.
-    // It handles the file upload and then saves the returned URL to the user's profile.
-    const handleSaveDocumentUrl = async (docType: keyof UserProfile, file: File) => {
+    const handleSaveDocumentUrl = async (docType: keyof UserProfile, url: string) => {
         if (!user?.id) {
-          throw new Error("User not authenticated for upload.");
+          throw new Error("User not authenticated for document URL save.");
         }
-        const storagePath = `documents/${user.id}/${docType}/${file.name}`;
-        const downloadURL = await uploadProfilePhoto(file, storagePath);
 
-        // Create an updated profile object with the new document URL.
         const updatedProfile = {
             ...user,
-            [docType]: downloadURL,
+            [docType]: url,
         };
 
-        // Save the updated profile to Firestore.
         await saveUserProfile(updatedProfile);
-        // Update the user in the global context.
         setUser(updatedProfile);
     };
 
@@ -73,13 +63,11 @@ export default function DriverProfilePage() {
     }
 
     if (!user) {
-        // This case should ideally be handled by the layout which redirects unauthenticated users.
         return <div>{t('error_loading_profile')}</div>
     }
 
     return (
         <div className="space-y-8">
-            {/* The main profile form for personal data */}
             <ProfileForm
                 userData={user}
                 onSave={handleSaveProfile}
@@ -87,7 +75,6 @@ export default function DriverProfilePage() {
                 titleKey="driver_profile_title"
                 descriptionKey="driver_profile_desc"
             />
-            {/* A separate card for document uploads */}
             <Card>
                 <CardHeader>
                     <CardTitle>{t('driver_docs_title')}</CardTitle>
@@ -99,16 +86,18 @@ export default function DriverProfilePage() {
                         description={t('identity_document_desc')}
                         icon={FileCheck}
                         fileUrl={user.identityDocumentUrl}
-                        onUpload={handleSaveDocumentUrl}
+                        userId={user.id}
                         docType="identityDocumentUrl"
+                        onSave={handleSaveDocumentUrl}
                     />
                     <FileUploadCard
                         title={t('driver_license_title')}
                         description={t('driver_license_desc')}
                         icon={ShieldCheck}
                         fileUrl={user.driverLicenseUrl}
-                        onUpload={handleSaveDocumentUrl}
+                        userId={user.id}
                         docType="driverLicenseUrl"
+                        onSave={handleSaveDocumentUrl}
                     />
                 </CardContent>
             </Card>
