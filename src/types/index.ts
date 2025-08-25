@@ -1,3 +1,4 @@
+
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;

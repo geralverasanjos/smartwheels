@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
@@ -25,12 +26,9 @@ export default function DriverProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const updatedProfile: UserProfile = {
-                ...user,
-                ...data,
-            };
+            const updatedProfile = { ...user, ...data };
             await saveUserProfile(updatedProfile);
-            setUser(updatedProfile);
+            setUser(updatedProfile as UserProfile);
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
@@ -52,7 +50,6 @@ export default function DriverProfilePage() {
     }
     
     if (!user) {
-        // This case should ideally be handled by the layout, but as a fallback:
         return <div>{t('error_loading_profile')}</div>
     }
 
@@ -93,7 +90,7 @@ export default function DriverProfilePage() {
                         title={t('vehicle_doc_photo_label')}
                         description={t('vehicle_doc_photo_desc')}
                         icon={Car}
-                        fileUrl={(user as any).vehicleDocumentUrl} // Assuming this field exists
+                        fileUrl={user.vehicleDocumentUrl}
                         userId={user.id}
                         docType="vehicleDocumentUrl"
                         onSave={handleSaveProfile}

@@ -1,9 +1,10 @@
+
 'use client';
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle, AlertCircle, Eye } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { uploadProfilePhoto } from '@/services/profileService';
@@ -16,7 +17,7 @@ interface FileUploadCardProps {
     icon: LucideIcon;
     fileUrl?: string | null;
     userId: string;
-    docType: keyof UserProfile; // Make it more generic to accept different doc types
+    docType: keyof UserProfile;
     onSave: (data: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -24,6 +25,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
     const { t } = useAppContext();
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
+    const [localFileUrl, setLocalFileUrl] = useState(fileUrl);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -31,14 +33,13 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
 
         setIsUploading(true);
         try {
-            // Use a more specific path for each document type to avoid collisions
             const storagePath = `documents/${userId}/${docType}/${file.name}`;
             const downloadURL = await uploadProfilePhoto(file, storagePath);
             
-            // Create a partial profile update object
             const profileUpdate: Partial<UserProfile> = { [docType]: downloadURL };
 
             await onSave(profileUpdate);
+            setLocalFileUrl(downloadURL); // Update local state to reflect change immediately
 
             toast({
                 title: t('toast_doc_uploaded_title'),
@@ -56,7 +57,7 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
         }
     };
 
-    const status = fileUrl ? 'approved' : 'pending';
+    const status = localFileUrl ? 'approved' : 'pending';
     const statusText = status === 'approved' ? t('status_approved') : t('status_pending');
     const StatusIcon = status === 'approved' ? CheckCircle : AlertCircle;
 
@@ -75,25 +76,27 @@ export default function FileUploadCard({ title, description, icon: Icon, fileUrl
                         <StatusIcon className={status === 'approved' ? 'text-green-500' : 'text-yellow-500'} />
                         <span className="text-sm font-medium">{statusText}</span>
                     </div>
-                    {fileUrl && (
+                    {localFileUrl && (
                         <Button variant="link" size="sm" asChild>
-                            <Link href={fileUrl} target="_blank" rel="noopener noreferrer">
+                            <Link href={localFileUrl} target="_blank" rel="noopener noreferrer" className='flex items-center gap-1'>
+                                <Eye className="h-4 w-4" />
                                 {t('btn_view_document')}
                             </Link>
                         </Button>
                     )}
                 </div>
                 
-                <label htmlFor={docType} className="w-full cursor-pointer">
+                <label htmlFor={docType as string} className="w-full cursor-pointer">
                      <Button asChild className="w-full" variant="outline" disabled={isUploading}>
                         <span>
                             {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            {t(fileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
+                            {t(localFileUrl ? 'btn_upload_new_doc' : 'btn_upload_document')}
                         </span>
                     </Button>
-                    <input id={docType} type="file" className="hidden" accept="image/*,application/pdf" onChange={handleFileChange} disabled={isUploading} />
+                    <input id={docType as string} type="file" className="hidden" accept="image/*,application/pdf" onChange={handleFileChange} disabled={isUploading} />
                 </label>
             </CardContent>
         </Card>
     );
 }
+

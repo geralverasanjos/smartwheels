@@ -19,44 +19,6 @@ export const translations = {
     "id-ID": "Akun Saya",
     "th-TH": "บัญชีของฉัน"
   },
-  "Category_accessible_desc ": {
-    "pt-PT": "Esta categoria inclui veículos com funcionalidades de acessibilidade.",
-    "pt-BR": "Esta categoria inclui veículos com recursos de acessibilidade.",
-    "en-US": "This category includes vehicles with accessibility features.",
-    "es-ES": "Esta categoría incluye vehículos con características de accesibilidad.",
-    "fr-FR": "Cette catégorie inclut les véhicules avec des fonctionnalités d'accessibilité.",
-    "de-DE": "Diese Kategorie umfasst Fahrzeuge mit Barrierefreiheitsfunktionen.",
-    "it-IT": "Questa categoria include veicoli con funzionalità di accessibilità.",
-    "ja-JP": "このカテゴリーには、バリアフリー機能を持つ車両が含まれます。",
-    "zh-CN": "此类车辆具备无障碍功能。",
-    "ru-RU": "В эту категорию входят транспортные средства с функциями доступности.",
-    "ar-SA": "تتضمن هذه الفئة المركبات ذات الميزات المخصصة لذوي الاحتياجات الخاصة.",
-    "hi-IN": "इस श्रेणी में पहुंच-क्षमता सुविधाओं वाले वाहन शामिल हैं।",
-    "ko-KR": "이 카테고리에는 접근성 기능이 있는 차량이 포함됩니다.",
-    "he-IL": "קטגוריה זו כוללת כלי רכב עם תכונות נגישות.",
-    "uk-UA": "Ця категорія включає транспортні засоби з функціями доступності.",
-    "id-ID": "Kategori ini mencakup kendaraan dengan fitur aksesibilitas.",
-    "th-TH": "หมวดหมู่นี้รวมถึงยานพาหนะที่มีคุณสมบัติการเข้าถึงสำหรับผู้พิการ"
-  },
-  "Category_accessible_desc": {
-    "pt-PT": "Esta categoria inclui veículos com funcionalidades de acessibilidade.",
-    "pt-BR": "Esta categoria inclui veículos com recursos de acessibilidade.",
-    "en-US": "This category includes vehicles with accessibility features.",
-    "es-ES": "Esta categoría incluye vehículos con características de accesibilidad.",
-    "fr-FR": "Cette catégorie inclut les véhicules avec des fonctionnalités d'accessibilité.",
-    "de-DE": "Diese Kategorie umfasst Fahrzeuge mit Barrierefreiheitsfunktionen.",
-    "it-IT": "Questa categoria include veicoli con funzionalità di accessibilità.",
-    "ja-JP": "このカテゴリーには、バリアフリー機能を持つ車両が含まれます。",
-    "zh-CN": "此类车辆具备无障碍功能。",
-    "ru-RU": "В эту категорию входят транспортные средства с функциями доступности.",
-    "ar-SA": "تتضمن هذه الفئة المركبات ذات الميزات المخصصة لذوي الاحتياجات الخاصة.",
-    "hi-IN": "इस श्रेणी में पहुंच-क्षमता सुविधाओं वाले वाहन शामिल हैं।",
-    "ko-KR": "이 카테고리에는 접근성 기능이 있는 차량이 포함됩니다.",
-    "he-IL": "קטגוריה זו כוללת כלי רכב עם תכונות נגישות.",
-    "uk-UA": "Ця категорія включає транспортні засоби з функціями доступності.",
-    "id-ID": "Kategori ini mencakup kendaraan dengan fitur aksesibilitas.",
-    "th-TH": "หมวดหมู่นี้รวมถึงยานพาหนะที่มีคุณสมบัติการเข้าถึงสำหรับผู้พิการ"
-  },
   "btn_passenger_title": {
     "pt-PT": "Passageiro",
     "pt-BR": "Passageiro",
@@ -233,7 +195,7 @@ export const translations = {
     "pt-BR": "Motorista / MotoTáxi",
     "en-US": "MotoTaxi / Driver",
     "es-ES": "Conductor / mototaxi",
-    "fr-FR": "Chauffeur / mototaxi",
+    "fr-FR": "Chauffeur  mototaxi",
     "de-DE": "Motorrad-/Taxifahrer",
     "it-IT": "Autista / mototaxi",
     "ja-JP": "バイク/タクシー運転手",
@@ -1288,7 +1250,7 @@ export const translations = {
     "hi-IN": "पहले से ही एक खाता है? लॉग इन करें",
     "ko-KR": "이미 계정이 있으신가요? 로그인",
     "he-IL": "כבר יש לך חשבון? התחבר",
-    "uk-UA": "Вже маєте обліковий запис? Увійдіть",
+    "uk-UA": "Вже маєте облікового запису? Увійдіть",
     "id-ID": "Sudah punya akun? Masuk",
     "th-TH": "มีบัญชีอยู่แล้วใช่ไหม? เข้าสู่ระบบ"
   },
@@ -1487,3 +1449,5 @@ export const languages = [
 export type TranslationKeys = keyof typeof translations;
 
   
+
+    
