@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import ProfileForm from '@/components/shared/ProfileForm';
@@ -26,7 +27,7 @@ export default function DriverProfilePage() {
         setIsSaving(true);
         try {
             const updatedProfileData = { ...user, ...data };
-            await saveUserProfile(updatedUser);
+            await saveUserProfile(updatedProfileData);
             setUser(updatedProfileData);
             toast({
                 title: t('toast_profile_updated_title'),
