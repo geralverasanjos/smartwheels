@@ -94,15 +94,13 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
       setIsOpen(false);
     } catch (error: any) {
       console.error("Signin error:", error);
-      if (error.code === 'auth/email-already-in-use') {
-        setAuthError(t('auth_error_email_in_use'));
-      } else if (error.code === 'auth/weak-password') {
-        setAuthError(t('auth_error_weak_password'));
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setAuthError(t('auth_error_invalid_credentials'));
       } else if (error.code === 'auth/too-many-requests') {
         setAuthError(t('auth_error_too_many_requests'));
       }
       else {
-        setAuthError(t('auth_error_invalid_credentials'));
+        setAuthError(t('auth_error_generic'));
       }
     }
   };
