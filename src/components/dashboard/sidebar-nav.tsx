@@ -1,3 +1,4 @@
+
 'use client';
 import {
     SidebarHeader,
@@ -63,7 +64,6 @@ const driverNav = [
     { href: "/dashboard/driver/chat", icon: MessageSquare, labelKey: "menu_chat" },
     { href: "/dashboard/driver/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/driver/profile", icon: User, labelKey: "menu_profile" },
-    { href: "/dashboard/driver/profile2", icon: User, labelKey: "Perfil 2" as any },
 ];
 
 const fleetManagerNav = [
