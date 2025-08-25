@@ -12,7 +12,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { handleVehicleFee } from '@/lib/payments';
 
-const FileUploadField = ({ label, id, onFileChange }: { label: string, id: string, onFileChange: (fileName: string) => void }) => {
+const FileUploadField = ({ label, id, onFileChange, required = false }: { label: string, id: string, onFileChange: (fileName: string) => void, required?: boolean }) => {
     const { t } = useAppContext();
     const [fileName, setFileName] = useState('');
 
@@ -37,7 +37,7 @@ const FileUploadField = ({ label, id, onFileChange }: { label: string, id: strin
                     <p className="text-xs text-muted-foreground">{fileName || t('no_file_chosen_label')}</p>
                 </div>
             </label>
-            <Input id={id} type="file" className="hidden" onChange={handleFileChange} />
+            <Input id={id} type="file" className="hidden" onChange={handleFileChange} required={required} />
         </div>
     );
 };
@@ -50,44 +50,51 @@ const Step1_VehicleDetails = ({ onNext }: { onNext: () => void }) => {
         setFiles(prev => ({ ...prev, [id]: fileName }));
     };
     
+    const handleFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onNext();
+    }
+    
     return (
-        <div className="space-y-4 animate-in fade-in-0">
-            <CardHeader>
-                <CardTitle>{t('step1_title_car')}</CardTitle>
-                <CardDescription>{t('step1_desc_car')}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2"><Label>{t('vehicle_type_label')}</Label>
-                    <Select name="vehicleType" required>
-                        <SelectTrigger><SelectValue placeholder={t('select_placeholder')} /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="padrão">{t('category_standard_name')}</SelectItem>
-                            <SelectItem value="executivo">{t('category_executive_name')}</SelectItem>
-                            <SelectItem value="xl">{t('category_family_name')}</SelectItem>
-                            <SelectItem value="eco">{t('category_eco_name')}</SelectItem>
-                            <SelectItem value="acessível">{t('vehicle_type_accessible')}</SelectItem>
-                            <SelectItem value="moto_economica">{t('mototaxi_service_economic_title')}</SelectItem>
-                            <SelectItem value="moto_rapida">{t('mototaxi_service_fast_title')}</SelectItem>
-                            <SelectItem value="moto_bau">{t('mototaxi_service_box_title')}</SelectItem>
-                            <SelectItem value="tuk_tuk">{t('mototaxi_service_tuktuk_title')}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2"><Label>{t('vehicle_brand_label')}</Label><Input placeholder={t('brand_placeholder')} /></div>
-                <div className="space-y-2"><Label>{t('vehicle_model_label')}</Label><Input placeholder={t('model_placeholder')} /></div>
-                <div className="space-y-2"><Label>{t('vehicle_year_label')}</Label><Input type="number" placeholder={t('year_placeholder')} /></div>
-                <div className="space-y-2"><Label>{t('vehicle_color_label')}</Label><Input placeholder={t('color_placeholder')} /></div>
-                <div className="space-y-2"><Label>{t('license_plate_label')}</Label><Input placeholder={t('license_plate_placeholder')} /></div>
-                <div className="md:col-span-2 space-y-4">
-                    <FileUploadField id="carPhoto" label={t('vehicle_photo_label')} onFileChange={(fileName) => handleFileChange('carPhoto', fileName)} />
-                    <FileUploadField id="docPhoto" label={t('vehicle_doc_photo_label')} onFileChange={(fileName) => handleFileChange('docPhoto', fileName)} />
-                    <FileUploadField id="permitPhoto" label={t('permit_photo_label')} onFileChange={(fileName) => handleFileChange('permitPhoto', fileName)} />
-                </div>
-            </CardContent>
-            <CardFooter>
-                <Button onClick={onNext} className="w-full">{t('btn_next_step')}</Button>
-            </CardFooter>
-        </div>
+        <form onSubmit={handleFormSubmit}>
+            <div className="space-y-4 animate-in fade-in-0">
+                <CardHeader>
+                    <CardTitle>{t('step1_title_car')}</CardTitle>
+                    <CardDescription>{t('step1_desc_car')}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2"><Label>{t('vehicle_type_label')}</Label>
+                        <Select name="vehicleType" required>
+                            <SelectTrigger><SelectValue placeholder={t('select_placeholder')} /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="padrão">{t('category_standard_name')}</SelectItem>
+                                <SelectItem value="executivo">{t('category_executive_name')}</SelectItem>
+                                <SelectItem value="xl">{t('category_family_name')}</SelectItem>
+                                <SelectItem value="eco">{t('category_eco_name')}</SelectItem>
+                                <SelectItem value="acessível">{t('vehicle_type_accessible')}</SelectItem>
+                                <SelectItem value="moto_economica">{t('mototaxi_service_economic_title')}</SelectItem>
+                                <SelectItem value="moto_rapida">{t('mototaxi_service_fast_title')}</SelectItem>
+                                <SelectItem value="moto_bau">{t('mototaxi_service_box_title')}</SelectItem>
+                                <SelectItem value="tuk_tuk">{t('mototaxi_service_tuktuk_title')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2"><Label>{t('vehicle_brand_label')}</Label><Input placeholder={t('brand_placeholder')} required /></div>
+                    <div className="space-y-2"><Label>{t('vehicle_model_label')}</Label><Input placeholder={t('model_placeholder')} required /></div>
+                    <div className="space-y-2"><Label>{t('vehicle_year_label')}</Label><Input type="number" placeholder={t('year_placeholder')} required /></div>
+                    <div className="space-y-2"><Label>{t('vehicle_color_label')}</Label><Input placeholder={t('color_placeholder')} required /></div>
+                    <div className="space-y-2"><Label>{t('license_plate_label')}</Label><Input placeholder={t('license_plate_placeholder')} required /></div>
+                    <div className="md:col-span-2 space-y-4">
+                        <FileUploadField id="carPhoto" label={t('vehicle_photo_label')} onFileChange={(fileName) => handleFileChange('carPhoto', fileName)} required />
+                        <FileUploadField id="docPhoto" label={t('vehicle_doc_photo_label')} onFileChange={(fileName) => handleFileChange('docPhoto', fileName)} required />
+                        <FileUploadField id="permitPhoto" label={t('permit_photo_label')} onFileChange={(fileName) => handleFileChange('permitPhoto', fileName)} required />
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button type="submit" className="w-full">{t('btn_next_step')}</Button>
+                </CardFooter>
+            </div>
+        </form>
     );
 };
 
