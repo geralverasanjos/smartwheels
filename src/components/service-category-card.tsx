@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
+import { Skeleton } from './ui/skeleton';
 
 interface ServiceCategoryCardProps {
   service: {
@@ -10,14 +11,15 @@ interface ServiceCategoryCardProps {
     icon: LucideIcon;
     title: string;
     description: string;
-    price: number;
+    price: number | null;
     eta: string;
   };
   isSelected: boolean;
   onSelect: () => void;
+  isLoading?: boolean;
 }
 
-export default function ServiceCategoryCard({ service, isSelected, onSelect }: ServiceCategoryCardProps) {
+export default function ServiceCategoryCard({ service, isSelected, onSelect, isLoading }: ServiceCategoryCardProps) {
     const { language } = useAppContext();
     const { formatCurrency } = useCurrency(language.value);
 
@@ -35,7 +37,11 @@ export default function ServiceCategoryCard({ service, isSelected, onSelect }: S
         <p className="text-sm text-muted-foreground">{service.description}</p>
       </div>
       <div className="text-right">
-        <p className="font-bold">{formatCurrency(service.price)}</p>
+        {isLoading ? (
+          <Skeleton className="h-5 w-16" />
+        ) : (
+          <p className="font-bold">{service.price !== null ? formatCurrency(service.price) : 'N/A'}</p>
+        )}
         <p className="text-sm text-muted-foreground">{service.eta}</p>
       </div>
     </div>

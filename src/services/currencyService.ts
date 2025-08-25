@@ -1,69 +1,35 @@
-'use server';
+// src/services/currencyService.ts
+import type { ExchangeRateResponse } from '@/types'; 
+
+const API_BASE_URL = 'https://api.frankfurter.app';
 
 /**
- * @fileoverview Service for handling currency conversions.
- * In a real-world application, this service would fetch real-time exchange rates
- * from a reliable financial API. For this prototype, it will return simulated rates.
+ * @description Busca a taxa de câmbio de uma moeda base para outra.
+ * @param from - A moeda base (ex: 'EUR').
+ * @param to - A moeda de destino (ex: 'BRL').
+ * @returns A taxa de câmbio como um número.
  */
+export async function getExchangeRate(from: string, to: string): Promise<number | null> {
+  if (from === to) return 1;
+  try {
+    const response = await fetch(`${API_BASE_URL}/latest?from=${from}&to=${to}`);
 
-// A simple, simulated exchange rate table relative to a base currency (e.g., EUR).
-const SIMULATED_RATES: Record<string, number> = {
-    'EUR': 1,
-    'USD': 1.08,
-    'BRL': 5.85,
-    'JPY': 169.75,
-    'GBP': 0.85,
-};
-
-interface ExchangeRateParams {
-    fromCurrency: string;
-    toCurrency: string;
-    amount: number;
-}
-
-interface ConversionResult {
-    convertedAmount: number;
-    rate: number;
-}
-
-/**
- * Converts an amount from one currency to another using simulated rates.
- * @param {ExchangeRateParams} params - The currencies and amount to convert.
- * @returns {Promise<ConversionResult>} The converted amount and the rate used.
- */
-export const convertCurrency = async ({ fromCurrency, toCurrency, amount }: ExchangeRateParams): Promise<ConversionResult> => {
-    const rateFrom = SIMULATED_RATES[fromCurrency.toUpperCase()];
-    const rateTo = SIMULATED_RATES[toCurrency.toUpperCase()];
-
-    if (!rateFrom || !rateTo) {
-        throw new Error(`Currency not supported. Supported currencies are: ${Object.keys(SIMULATED_RATES).join(', ')}`);
+    if (!response.ok) {
+      console.error(`Erro ao buscar taxa de câmbio: ${response.status}`);
+      return null;
     }
 
-    // Convert 'from' currency to the base currency (EUR), then from base to 'to' currency.
-    const amountInBase = amount / rateFrom;
-    const convertedAmount = amountInBase * rateTo;
-    const effectiveRate = rateTo / rateFrom;
+    const data: ExchangeRateResponse = await response.json();
+    const rate = data.rates[to];
 
-    return {
-        convertedAmount: parseFloat(convertedAmount.toFixed(2)),
-        rate: parseFloat(effectiveRate.toFixed(4)),
-    };
-};
-
-/**
- * Gets the exchange rate between two currencies.
- * @param fromCurrency The base currency.
- * @param toCurrency The target currency.
- * @returns The exchange rate.
- */
-export const getExchangeRate = async (fromCurrency: string, toCurrency: string): Promise<number> => {
-    const rateFrom = SIMULATED_RATES[fromCurrency.toUpperCase()];
-    const rateTo = SIMULATED_RATES[toCurrency.toUpperCase()];
-
-    if (!rateFrom || !rateTo) {
-        throw new Error(`Currency not supported. Supported currencies are: ${Object.keys(SIMULATED_RATES).join(', ')}`);
+    if (typeof rate !== 'number') {
+      console.error(`Taxa de câmbio inválida para ${to}.`);
+      return null;
     }
 
-    const effectiveRate = rateTo / rateFrom;
-    return parseFloat(effectiveRate.toFixed(4));
+    return rate;
+  } catch (error) {
+    console.error('Falha na requisição da API de câmbio:', error);
+    return null;
+  }
 }

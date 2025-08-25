@@ -128,3 +128,12 @@ export interface PayoutMethod {
         cardCvv?: string;
     };
 }
+
+export interface ExchangeRateResponse {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    [key: string]: number; // Ex: { "BRL": 5.50 }
+  };
+}
