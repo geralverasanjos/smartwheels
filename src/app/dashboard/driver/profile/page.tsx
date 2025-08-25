@@ -26,9 +26,12 @@ export default function DriverProfilePage() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const updatedProfile = { ...user, ...data };
+            const updatedProfile: UserProfile = {
+                ...user,
+                ...data,
+            };
             await saveUserProfile(updatedProfile);
-            setUser(updatedProfile as UserProfile);
+            setUser(updatedProfile);
             toast({
                 title: t('toast_profile_updated_title'),
                 description: t('toast_profile_updated_desc'),
@@ -44,7 +47,7 @@ export default function DriverProfilePage() {
             setIsSaving(false);
         }
     };
-
+    
     if (loading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin"/></div>;
     }
@@ -64,7 +67,7 @@ export default function DriverProfilePage() {
             />
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('vehicle_docs_title')}</CardTitle>
+                    <CardTitle>{t('documents_title')}</CardTitle>
                     <CardDescription>{t('driver_docs_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
@@ -90,7 +93,7 @@ export default function DriverProfilePage() {
                         title={t('vehicle_doc_photo_label')}
                         description={t('vehicle_doc_photo_desc')}
                         icon={Car}
-                        fileUrl={user.vehicleDocumentUrl}
+                        fileUrl={(user as any).vehicleDocumentUrl} 
                         userId={user.id}
                         docType="vehicleDocumentUrl"
                         onSave={handleSaveProfile}
