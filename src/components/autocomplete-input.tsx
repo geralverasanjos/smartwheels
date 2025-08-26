@@ -15,7 +15,7 @@ interface AutocompleteInputProps {
 
 export default function AutocompleteInput({ onPlaceSelect, value, placeholder, onClear }: AutocompleteInputProps) {
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script-autocomplete',
+    id: 'google-map-script', // Use a consistent ID
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries: ['places'],
   });
