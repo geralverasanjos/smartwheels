@@ -582,39 +582,41 @@ export default function RequestMotoTaxiPage() {
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  if (!isLoaded || !apiKey) {
+  if (!apiKey) {
+    return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
+  }
+  
+  if (!isLoaded) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
   }
 
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
-      <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
         <APIProvider apiKey={apiKey}>
-            <Map onMapClick={handleMapClick}>
-                {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
-                {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
-                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                     <AdvancedMarker position={driverPosition}>
-                       <div className="p-1 bg-primary rounded-full shadow-lg">
-                         <Car className="h-6 w-6 text-primary-foreground" />
-                       </div>
-                     </AdvancedMarker>
-                )}
-                 {step === 'driver_arrived' && origin.coords && (
-                     <AdvancedMarker position={origin.coords}>
-                       <div className="p-1 bg-primary rounded-full shadow-lg">
-                         <Car className="h-6 w-6 text-primary-foreground" />
-                       </div>
-                     </AdvancedMarker>
-                )}
-            </Map>
+            <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+                <Map onMapClick={handleMapClick}>
+                    {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
+                    {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
+                    {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                         <AdvancedMarker position={driverPosition}>
+                           <div className="p-1 bg-primary rounded-full shadow-lg">
+                             <Car className="h-6 w-6 text-primary-foreground" />
+                           </div>
+                         </AdvancedMarker>
+                    )}
+                     {step === 'driver_arrived' && origin.coords && (
+                         <AdvancedMarker position={origin.coords}>
+                           <div className="p-1 bg-primary rounded-full shadow-lg">
+                             <Car className="h-6 w-6 text-primary-foreground" />
+                           </div>
+                         </AdvancedMarker>
+                    )}
+                </Map>
+            </div>
+            <div className="md:col-span-1 md:overflow-y-auto">
+                {renderContent()}
+            </div>
         </APIProvider>
-      </div>
-      <div className="md:col-span-1 md:overflow-y-auto">
-        {renderContent()}
-      </div>
     </div>
   );
 }
-
-    
