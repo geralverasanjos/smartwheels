@@ -11,8 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Car, Package, Loader2, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
-import { HeatmapLayer } from '@react-google-maps/api';
-import { AdvancedMarker, APIProvider } from '@vis.gl/react-google-maps';
+import { HeatmapLayer, MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -66,42 +65,16 @@ export default function DriverDashboardPage() {
     setServices(prev => ({ ...prev, [service]: checked }));
   };
 
-  const VehicleMarker = ({ isSelf = false }: { isSelf?: boolean }) => {
-    const color = isSelf ? 'hsl(var(--primary))' : 'hsl(var(--secondary-foreground))';
-    const scale = isSelf ? 1.2 : 1.0;
-    return (
-        <div style={{ transform: `scale(${scale})` }}>
-            <Car style={{ color: color, filter: `drop-shadow(0 0 3px ${isSelf ? 'hsl(var(--primary))' : 'black'})` }} />
-        </div>
-    );
-  };
-
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  if (!apiKey) {
-    return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
-  }
-
-
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
-            <APIProvider apiKey={apiKey}>
-              <Map>
+            <Map>
                 {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
                 {isOnline && nearbyDriversData.map((driver, index) => (
-                  <AdvancedMarker key={`driver-${index}`} position={driver}>
-                      <VehicleMarker />
-                  </AdvancedMarker>
+                  <MarkerF key={`driver-${index}`} position={driver} icon={{ url: '/car.svg', scaledSize: new google.maps.Size(30, 30) }} />
                 ))}
-
-                {<AdvancedMarker position={vehiclePosition}>
-                      <VehicleMarker isSelf={true} />
-                  </AdvancedMarker>
-                }
-                
-              </Map>
-            </APIProvider>
+                <MarkerF position={vehiclePosition} icon={{ url: '/car-primary.svg', scaledSize: new google.maps.Size(40, 40) }} />
+            </Map>
         </div>
         <div className="md:col-span-1 flex flex-col gap-6 overflow-y-auto">
             

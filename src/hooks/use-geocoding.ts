@@ -1,10 +1,15 @@
+
 'use client';
 
 import { useCallback } from 'react';
-import { useGoogleMaps } from './use-google-maps';
+import { useJsApiLoader } from '@react-google-maps/api';
 
 export const useGeocoding = () => {
-  const { isLoaded } = useGoogleMaps();
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+        libraries: ['places'],
+    });
 
   const geocode = useCallback(
     (address: string): Promise<google.maps.LatLngLiteral> => {

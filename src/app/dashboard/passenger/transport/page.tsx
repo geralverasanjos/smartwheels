@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -10,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { APIProvider, Map } from '@vis.gl/react-google-maps';
+import { Map } from '@/components/map';
 import {
   ArrowRight,
   Briefcase,
@@ -35,7 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { MarkerF } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -149,6 +150,7 @@ export default function RequestTransportPage() {
   const { formatCurrency } = useCurrency(language.value);
   const { geocode, reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
@@ -273,9 +275,9 @@ export default function RequestTransportPage() {
       }
   }
 
-  const handleMapClick = useCallback(async (e: any) => {
-    if (selectingField && e.detail.latLng) {
-        const coords = { lat: e.detail.latLng.lat, lng: e.detail.latLng.lng };
+  const handleMapClick = useCallback(async (e: google.maps.MapMouseEvent) => {
+    if (selectingField && e.latLng) {
+        const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         const address = await reverseGeocode(coords);
         if(selectingField === 'origin') dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
         else if (selectingField === 'destination') dispatch({ type: 'SET_DESTINATION', payload: { text: address, coords } });
@@ -636,44 +638,27 @@ export default function RequestTransportPage() {
       }
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  if (!apiKey) {
-    return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
-  }
-  
   if (!isLoaded) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
   }
 
-
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
-        <APIProvider apiKey={apiKey}>
-            <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-                <Map onMapClick={handleMapClick}>
-                    {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
-                    {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
-                    {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                         <AdvancedMarker position={driverPosition}>
-                           <div className="p-1 bg-primary rounded-full shadow-lg">
-                             <Car className="h-6 w-6 text-primary-foreground" />
-                           </div>
-                         </AdvancedMarker>
-                    )}
-                     {step === 'driver_arrived' && origin.coords && (
-                         <AdvancedMarker position={origin.coords}>
-                           <div className="p-1 bg-primary rounded-full shadow-lg">
-                             <Car className="h-6 w-6 text-primary-foreground" />
-                           </div>
-                         </AdvancedMarker>
-                    )}
-                </Map>
-            </div>
-            <div className="md:col-span-1 md:overflow-y-auto">
-                {renderContent()}
-            </div>
-        </APIProvider>
+        <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
+             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+                {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} />}
+                {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} />}
+                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                     <MarkerF position={driverPosition} icon={{ url: '/car.svg' }} />
+                )}
+                 {step === 'driver_arrived' && origin.coords && (
+                     <MarkerF position={origin.coords} icon={{ url: '/car.svg' }} />
+                )}
+            </Map>
+        </div>
+        <div className="md:col-span-1 md:overflow-y-auto">
+            {renderContent()}
+        </div>
     </div>
   );
 }

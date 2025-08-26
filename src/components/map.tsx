@@ -1,6 +1,6 @@
 
 'use client';
-import { Map as GoogleMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
+import { GoogleMap, type GoogleMapProps } from '@react-google-maps/api';
 import { ReactNode } from 'react';
 
 const containerStyle = {
@@ -17,7 +17,8 @@ interface MapProps {
   children?: ReactNode;
   center?: { lat: number; lng: number };
   zoom?: number;
-  onMapClick?: (e: MapCameraChangedEvent) => void;
+  onMapClick?: (e: google.maps.MapMouseEvent) => void;
+  onMapLoad?: (map: google.maps.Map) => void;
 }
 
 export function Map({
@@ -25,17 +26,21 @@ export function Map({
   center = defaultCenter,
   zoom = 13,
   onMapClick,
+  onMapLoad,
 }: MapProps) {
 
   return (
     <GoogleMap
-      mapId={'f913f0d1a4623e64'}
-      style={containerStyle}
-      defaultCenter={center}
-      defaultZoom={zoom}
-      gestureHandling={'greedy'}
-      disableDefaultUI={true}
-      onCameraChanged={onMapClick}
+      mapContainerStyle={containerStyle}
+      center={center}
+      zoom={zoom}
+      options={{
+        mapId: 'f913f0d1a4623e64',
+        gestureHandling: 'greedy',
+        disableDefaultUI: true,
+      }}
+      onLoad={onMapLoad}
+      onClick={onMapClick}
     >
       {children}
     </GoogleMap>

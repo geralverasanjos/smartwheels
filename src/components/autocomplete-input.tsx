@@ -1,10 +1,10 @@
 
 'use client';
 import { useRef, useEffect } from 'react';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { Input } from './ui/input';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 interface AutocompleteInputProps {
   onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
@@ -14,32 +14,33 @@ interface AutocompleteInputProps {
 }
 
 export default function AutocompleteInput({ onPlaceSelect, value, placeholder, onClear }: AutocompleteInputProps) {
-  const { isLoaded } = useGoogleMaps();
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script-autocomplete',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: ['places'],
+  });
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
-    if (!isLoaded || typeof window.google === 'undefined' || !inputRef.current) return;
+    if (!isLoaded || !inputRef.current) return;
     if (autocompleteRef.current) return; // Prevent re-initialization
 
-    const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
-        inputElement: inputRef.current,
+    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'pt' },
     });
-    autocompleteRef.current = autocompleteElement;
+    autocompleteRef.current = autocomplete;
     
-    const listener = autocompleteElement.addEventListener('gmp-placeselect', (event) => {
-        const place = (event as CustomEvent).detail.place;
-        if (place) {
-            onPlaceSelect(place as google.maps.places.PlaceResult);
+    const listener = autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.geometry) {
+            onPlaceSelect(place);
         }
     });
 
     return () => {
-        if (listener) {
-          // The event listener on the custom element doesn't have a remove method, so we handle it this way
-        }
+        if(listener) google.maps.event.removeListener(listener);
     }
   }, [isLoaded, onPlaceSelect]);
   

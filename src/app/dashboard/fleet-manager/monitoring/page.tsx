@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { AdvancedMarker, APIProvider } from '@vis.gl/react-google-maps';
+import { MarkerF } from '@react-google-maps/api';
 import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
@@ -13,21 +13,6 @@ import type { UserProfile } from '@/types';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 
-const VehicleMarker = ({ isSelected, status }: { isSelected: boolean, status: string }) => {
-    let fillColor = 'hsl(var(--primary))';
-    switch (status) {
-        case 'em_viagem': fillColor = 'hsl(var(--secondary-foreground))'; break;
-        case 'em_manutencao': fillColor = '#f59e0b'; break;
-        case 'inativo': fillColor = '#ef4444'; break;
-    }
-    const scale = isSelected ? 1.5 : 1;
-
-    return (
-        <div className="p-1 bg-background rounded-full shadow-lg" style={{ transform: `scale(${scale})` }}>
-            <Car style={{ color: fillColor, filter: `drop-shadow(0 0 3px ${fillColor})`}} />
-        </div>
-    );
-};
 
 export default function FleetMonitoringPage() {
     const { t, user } = useAppContext();
@@ -85,34 +70,26 @@ export default function FleetMonitoringPage() {
         setSelectedVehicle(vehicle);
     }, []);
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
     if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
     
-    if (!apiKey) {
-      return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
-    }
-
-
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
             <div className="md:col-span-2 h-[50vh] md:h-full w-full">
-                 <APIProvider apiKey={apiKey}>
-                    <Map>
-                        {vehicles.map(vehicle => (
-                            <AdvancedMarker
-                                key={vehicle.id}
-                                position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
-                                onClick={() => handleSelectOnMap(vehicle)}
-                            >
-                            <VehicleMarker 
-                                    isSelected={selectedVehicle?.id === vehicle.id} 
-                                    status={vehicle.vehicleStatus.state}
-                            />
-                            </AdvancedMarker>
-                        ))}
-                    </Map>
-                </APIProvider>
+                <Map>
+                    {vehicles.map(vehicle => (
+                        <MarkerF
+                            key={vehicle.id}
+                            position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
+                            onClick={() => handleSelectOnMap(vehicle)}
+                            icon={{
+                                url: `/car.svg`,
+                                scaledSize: selectedVehicle?.id === vehicle.id ? new google.maps.Size(40, 40) : new google.maps.Size(30, 30),
+                                anchor: new google.maps.Point(15, 15)
+                            }}
+                        />
+                    ))}
+                </Map>
             </div>
 
             <div className="md:col-span-1 flex flex-col h-full">
