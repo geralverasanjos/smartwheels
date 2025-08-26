@@ -5,7 +5,7 @@ import { DollarSign, ArrowDown, Banknote, Loader2 } from "lucide-react";
 import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import React, { useState, useEffect } from 'react';
-import { getFleetTripHistory } from "@/services/historyService";
+import { getDriverTripHistory } from "@/services/historyService";
 import type { Trip } from "@/types";
 import { useCurrency } from "@/lib/currency";
 import Link from "next/link";
@@ -29,7 +29,7 @@ export default function FleetEarningsPage() {
             };
             setLoading(true);
             try {
-                const trips = await getFleetTripHistory(user.id);
+                const trips = await getDriverTripHistory(user.id);
                 const today = new Date();
                 const startOfWeek = new Date(today);
                 startOfWeek.setDate(today.getDate() - today.getDay());
@@ -38,7 +38,7 @@ export default function FleetEarningsPage() {
                 let todayEarnings = 0;
                 let weekEarnings = 0;
                 
-                const dayNames = [t('day_sun'), t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat')];
+                const dayNames = [t('day_sunday'), t('day_monday'), t('day_tuesday'), t('day_wednesday'), t('day_thursday'), t('day_friday'), t('day_saturday')];
                 const weeklyPerformanceMap = new Map<string, number>();
                 dayNames.forEach(day => weeklyPerformanceMap.set(day, 0));
 
@@ -147,7 +147,7 @@ export default function FleetEarningsPage() {
       
       <div className="flex justify-end">
         <Button size="lg" asChild>
-            <Link href="/dashboard/fleet-manager/wallet/withdraw">
+            <Link href="/dashboard/driver/wallet/withdraw">
                 <ArrowDown className="mr-2 h-4 w-4" /> {t('btn_withdraw_funds')}
             </Link>
         </Button>

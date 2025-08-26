@@ -38,7 +38,7 @@ export default function FleetEarningsPage() {
                 let todayEarnings = 0;
                 let weekEarnings = 0;
                 
-                const dayNames = [t('day_sun'), t('day_mon'), t('day_tue'), t('day_wed'), t('day_thu'), t('day_fri'), t('day_sat')];
+                const dayNames = [t('day_sunday'), t('day_monday'), t('day_tuesday'), t('day_wednesday'), t('day_thursday'), t('day_friday'), t('day_saturday')];
                 const weeklyPerformanceMap = new Map<string, number>();
                 dayNames.forEach(day => weeklyPerformanceMap.set(day, 0));
 
