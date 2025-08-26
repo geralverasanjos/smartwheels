@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer, APIProvider } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -51,14 +51,6 @@ import { getVehicleById } from '@/services/vehicleService';
 import { sendMessage } from '@/services/chatService';
 
 import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
-
-const paymentMethods = [
-    {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: '€ 37,50'},
-    {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
-    {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
-    {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
-    {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-];
 
 type Address = {
     text: string;
@@ -152,6 +144,14 @@ export default function RequestDeliveryPage() {
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
   const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
+
+  const paymentMethods = [
+    {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
+    {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
+    {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
+    {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
+    {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
+];
 
   const serviceCategories = [
     { id: 'delivery_moto', icon: Box, title: t('delivery_service_moto_title'), description: t('delivery_service_moto_desc'), price: 5.00, eta: t('eta_10min') },
@@ -294,6 +294,23 @@ export default function RequestDeliveryPage() {
         toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
     }
   };
+
+    const handleUseCurrentLocation = useCallback(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+                const address = await reverseGeocode(coords);
+                dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
+            })
+        }
+    }, [reverseGeocode]);
+
+    useEffect(() => {
+        if (isLoaded && !origin.text) {
+            handleUseCurrentLocation();
+        }
+    }, [isLoaded, origin.text, handleUseCurrentLocation]);
+
 
   useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {
