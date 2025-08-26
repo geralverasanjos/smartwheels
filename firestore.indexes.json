@@ -1,4 +1,3 @@
-
 {
   "indexes": [
     {
@@ -13,45 +12,8 @@
           "fieldPath": "timestamp",
           "order": "ASCENDING"
         }
-      ]
-    },
-    {
-      "collectionGroup": "payoutMethods",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "trips",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "driverId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "date",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "trips",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "passengerId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "date",
-          "order": "DESCENDING"
-        }
-      ]
+      ],
+      "density": "SPARSE_ALL"
     },
     {
       "collectionGroup": "transactions",
@@ -65,31 +27,23 @@
           "fieldPath": "timestamp",
           "order": "DESCENDING"
         }
-      ]
+      ],
+      "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "drivers",
+      "collectionGroup": "trips",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "fleetManagerId",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-     {
-      "collectionGroup": "rideRequests",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "status",
+          "fieldPath": "driverId",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "timestamp",
-          "order": "ASCENDING"
+          "fieldPath": "date",
+          "order": "DESCENDING"
         }
-      ]
+      ],
+      "density": "SPARSE_ALL"
     }
   ],
   "fieldOverrides": []

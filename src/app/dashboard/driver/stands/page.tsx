@@ -11,7 +11,7 @@ import { MapPin, PlusCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { Map } from '@/components/map';
 import { Label } from '@/components/ui/label';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
-import { MarkerF } from '@react-google-maps/api';
+import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -112,20 +112,6 @@ export default function TaxiStandsPage() {
     
     if (loadError) return <div>{t('map_load_error')}</div>;
 
-    const getNewStandMarkerIcon = () => {
-        if (typeof window !== 'undefined' && window.google) {
-            return {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: "hsl(var(--primary))",
-                fillOpacity: 0.8,
-                strokeColor: "white",
-                strokeWeight: 2,
-            };
-        }
-        return undefined;
-    }
-
     return (
         <div className="space-y-8">
             <div>
@@ -181,19 +167,22 @@ export default function TaxiStandsPage() {
                         onMapClick={handleMapClick}
                     >
                        {stands.map(stand => (
-                            <MarkerF
+                            <AdvancedMarker
                                 key={stand.id}
                                 position={stand.location}
                                 title={stand.name}
                             />
                         ))}
                         {isDialogOpen && standData?.location && (
-                            <MarkerF
+                             <AdvancedMarker
                                 position={standData.location}
                                 draggable={true}
                                 onDragEnd={(e) => e.latLng && setStandData({...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() }})}
-                                icon={getNewStandMarkerIcon()}
-                            />
+                            >
+                               <div className="p-2 bg-primary rounded-full border-2 border-white shadow-lg">
+                                  <MapPin className="h-6 w-6 text-primary-foreground" />
+                               </div>
+                            </AdvancedMarker>
                         )}
                     </Map>
                  )}

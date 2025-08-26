@@ -1,3 +1,4 @@
+
 'use client';
 import { useRef, useEffect } from 'react';
 import { Input } from './ui/input';
@@ -15,30 +16,35 @@ interface AutocompleteInputProps {
 export default function AutocompleteInput({ onPlaceSelect, value, placeholder, onClear }: AutocompleteInputProps) {
   const { isLoaded } = useGoogleMaps();
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
 
   useEffect(() => {
     if (!isLoaded || typeof window.google === 'undefined' || !inputRef.current) return;
+    if (autocompleteRef.current) return; // Prevent re-initialization
 
-    if (!autocompleteRef.current) {
-        autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+    const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
+        inputElement: inputRef.current,
+        options: {
             types: ['address'],
-            componentRestrictions: { country: 'pt' }, // Restrict to Portugal for now
-        });
-    }
-
-    const listener = autocompleteRef.current.addListener('place_changed', () => {
-      const place = autocompleteRef.current?.getPlace();
-      if (place) {
-        onPlaceSelect(place);
-      }
+            componentRestrictions: { country: 'pt' },
+        }
+    });
+    autocompleteRef.current = autocompleteElement;
+    
+    const listener = autocompleteElement.addEventListener('gmp-placeselect', (event) => {
+        const place = event.place;
+        if (place) {
+            onPlaceSelect(place as google.maps.places.PlaceResult);
+        }
     });
 
     return () => {
-        if(listener) listener.remove();
+        if (listener) {
+          // The event listener on the custom element doesn't have a remove method, so we handle it this way
+        }
     }
   }, [isLoaded, onPlaceSelect]);
-
+  
   return (
     <div className="relative w-full">
       <Input ref={inputRef} defaultValue={value} placeholder={placeholder} disabled={!isLoaded} />

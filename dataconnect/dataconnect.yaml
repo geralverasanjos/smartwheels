@@ -1,6 +1,6 @@
 specVersion: "v1"
 serviceId: "studio"
-location: "us-central1"
+location: "europe-west1"
 schema:
   source: "./schema"
   datasource:
@@ -9,4 +9,4 @@ schema:
       cloudSql:
         instanceId: "studio-fdc"
       # schemaValidation: "COMPATIBLE"
-connectorDirs: ["./connector"]
+connectorDirs: ["./example"]
