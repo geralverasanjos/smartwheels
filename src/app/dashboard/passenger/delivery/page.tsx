@@ -49,6 +49,7 @@ import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/fir
 import { getProfileByIdAndRole } from '@/services/profileService';
 import { getVehicleById } from '@/services/vehicleService';
 import { sendMessage } from '@/services/chatService';
+import { getExchangeRate } from '@/services/currencyService';
 
 import type { UserProfile, Message, RideRequest, Vehicle } from '@/types';
 
@@ -145,7 +146,10 @@ export default function RequestDeliveryPage() {
   const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
-    const paymentMethods = useMemo(() => [
+  const [convertedPrices, setConvertedPrices] = useState<Record<string, number | null>>({});
+  const [isPriceLoading, setIsPriceLoading] = useState(true);
+
+  const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
     {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
@@ -158,6 +162,35 @@ export default function RequestDeliveryPage() {
     { id: 'delivery_car', icon: Car, title: t('delivery_service_car_title'), description: t('delivery_service_car_desc'), price: 8.00, eta: t('eta_15min') },
     { id: 'delivery_van', icon: Users, title: t('delivery_service_van_title'), description: t('delivery_service_van_desc'), price: 15.00, eta: t('eta_20min') },
   ], [t]);
+
+  useEffect(() => {
+    async function fetchConvertedPrices() {
+        setIsPriceLoading(true);
+        const userCurrency = language.currency.code;
+        const baseCurrency = 'EUR'; // Assuming all base prices are in EUR
+
+        if (userCurrency === baseCurrency) {
+            const prices = Object.fromEntries(serviceCategories.map(s => [s.id, s.price]));
+            setConvertedPrices(prices);
+            setIsPriceLoading(false);
+            return;
+        }
+
+        const rate = await getExchangeRate(baseCurrency, userCurrency);
+        if (rate) {
+            const prices = Object.fromEntries(
+                serviceCategories.map(s => [s.id, s.price * rate])
+            );
+            setConvertedPrices(prices);
+        } else {
+            const prices = Object.fromEntries(serviceCategories.map(s => [s.id, null]));
+            setConvertedPrices(prices);
+            toast({ title: "Erro de Conversão", description: "Não foi possível obter as taxas de câmbio.", variant: "destructive" });
+        }
+        setIsPriceLoading(false);
+    }
+    fetchConvertedPrices();
+  }, [language.currency.code, serviceCategories, t, toast]);
 
     useEffect(() => {
         if (!activeRideId) return;
@@ -320,7 +353,7 @@ export default function RequestDeliveryPage() {
     }
   }, [step, origin.coords, destination.coords, driverPosition, handleDirections]);
   
-  const servicePrice = serviceCategories.find(s => s.id === selectedService)?.price || 0;
+  const servicePrice = convertedPrices[selectedService] ?? 0;
   
   const renderContent = () => {
       switch(step) {
@@ -375,9 +408,10 @@ export default function RequestDeliveryPage() {
                   {serviceCategories.map((service) => (
                     <ServiceCategoryCard
                         key={service.id}
-                        service={service}
+                        service={{...service, price: convertedPrices[service.id] ?? service.price }}
                         isSelected={selectedService === service.id}
                         onSelect={() => dispatch({ type: 'SELECT_SERVICE', payload: service.id })}
+                        isLoading={isPriceLoading}
                     />
                   ))}
                 </CardContent>
@@ -422,9 +456,9 @@ export default function RequestDeliveryPage() {
                         <Separator className="mb-4" />
                         <div className="w-full flex justify-between text-lg font-bold">
                             <span>{t('total_label')}:</span>
-                            <span>{formatCurrency(servicePrice)}</span>
+                            <span>{isPriceLoading ? <Loader2 className="h-5 w-5 animate-spin"/> : formatCurrency(servicePrice)}</span>
                         </div>
-                        <Button size="lg" className="w-full text-lg mt-4" onClick={handleConfirm}>
+                        <Button size="lg" className="w-full text-lg mt-4" onClick={handleConfirm} disabled={isPriceLoading}>
                             {t('confirm_ride_button')}
                         </Button>
                         <Button variant="ghost" className="w-full" onClick={() => dispatch({ type: 'SET_STEP', payload: 'service' })}>
