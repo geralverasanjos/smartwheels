@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback, useReducer, useEffect } from 'react';
+import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { MarkerF, DirectionsRenderer, APIProvider } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -145,19 +145,19 @@ export default function RequestDeliveryPage() {
   const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
-  const paymentMethods = [
+    const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
     {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
     {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
     {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-];
+  ], [user?.balance, formatCurrency, t]);
 
-  const serviceCategories = [
+  const serviceCategories = useMemo(() => [
     { id: 'delivery_moto', icon: Box, title: t('delivery_service_moto_title'), description: t('delivery_service_moto_desc'), price: 5.00, eta: t('eta_10min') },
     { id: 'delivery_car', icon: Car, title: t('delivery_service_car_title'), description: t('delivery_service_car_desc'), price: 8.00, eta: t('eta_15min') },
     { id: 'delivery_van', icon: Users, title: t('delivery_service_van_title'), description: t('delivery_service_van_desc'), price: 15.00, eta: t('eta_20min') },
-  ];
+  ], [t]);
 
     useEffect(() => {
         if (!activeRideId) return;

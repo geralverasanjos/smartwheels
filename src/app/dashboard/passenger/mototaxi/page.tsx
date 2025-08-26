@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback, useReducer, useEffect } from 'react';
+import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { MarkerF, DirectionsRenderer, APIProvider } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -143,20 +143,20 @@ export default function RequestMotoTaxiPage() {
   const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
   const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
 
-  const paymentMethods = [
+  const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
     {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
     {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
     {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-];
+  ], [user?.balance, formatCurrency, t]);
 
-  const serviceCategories = [
+  const serviceCategories = useMemo(() => [
     { id: 'moto_economica', icon: Car, title: t('mototaxi_service_economic_title'), description: t('mototaxi_service_economic_desc'), price: 3.50, eta: t('eta_5min') },
     { id: 'moto_rapida', icon: Car, title: t('mototaxi_service_fast_title'), description: t('mototaxi_service_fast_desc'), price: 5.00, eta: t('eta_4min') },
     { id: 'moto_bau', icon: Car, title: t('mototaxi_service_box_title'), description: t('mototaxi_service_box_desc'), price: 6.00, eta: t('eta_6min') },
     { id: 'tuk_tuk', icon: Car, title: t('mototaxi_service_tuktuk_title'), description: t('mototaxi_service_tuktuk_desc'), price: 10.00, eta: t('eta_8min') },
-  ];
+  ], [t]);
 
     useEffect(() => {
         if (!activeRideId) return;

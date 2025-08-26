@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback, useReducer, useEffect } from 'react';
+import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -22,7 +22,6 @@ import {
   Wallet,
   Landmark,
   MapPin,
-  LocateFixed,
   Loader2, Send,
   CheckCircle,
   Phone,
@@ -36,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { MarkerF, DirectionsRenderer, APIProvider } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -140,7 +139,7 @@ export default function RequestTransportPage() {
   const { toast } = useToast();
   const { language, t, user } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
-  const { geocode, reverseGeocode, isLoaded } = useGeocoding();
+  const { reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -152,21 +151,21 @@ export default function RequestTransportPage() {
   const [convertedPrices, setConvertedPrices] = useState<Record<string, number | null>>({});
   const [isPriceLoading, setIsPriceLoading] = useState(true);
 
-  const paymentMethods = [
+  const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
     {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
     {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
     {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-];
+  ], [user?.balance, formatCurrency, t]);
 
-  const serviceCategories = [
+  const serviceCategories = useMemo(() => [
     { id: 'economico', icon: Car, title: t('transport_service_economic_title'), description: t('transport_service_economic_desc'), price: 6.50, eta: t('eta_5min') },
     { id: 'smart', icon: Car, title: t('transport_service_smart_title'), description: t('transport_service_smart_desc'), price: 8.00, eta: t('eta_5min') },
     { id: 'executivo', icon: Briefcase, title: t('transport_service_executive_title'), description: t('transport_service_executive_desc'), price: 15.00, eta: t('eta_4min') },
     { id: 'van', icon: Users, title: t('transport_service_van_title'), description: t('transport_service_van_desc'), price: 18.00, eta: t('eta_8min') },
     { id: 'pet', icon: Dog, title: t('transport_service_pet_title'), description: t('transport_service_pet_desc'), price: 10.00, eta: t('eta_6min') }
-  ];
+  ], [t]);
 
   useEffect(() => {
     async function fetchConvertedPrices() {
@@ -285,15 +284,15 @@ export default function RequestTransportPage() {
     }
   }, [selectingField, reverseGeocode]);
 
-  const handleUseCurrentLocation = useCallback(() => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-            const address = await reverseGeocode(coords);
-            dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-        })
-    }
-  }, [reverseGeocode]);
+    const handleUseCurrentLocation = useCallback(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+                const address = await reverseGeocode(coords);
+                dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
+            })
+        }
+    }, [reverseGeocode]);
 
     useEffect(() => {
         if (isLoaded && !origin.text) {
