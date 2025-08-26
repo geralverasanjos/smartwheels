@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { MapPin, PlusCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { Map } from '@/components/map';
 import { Label } from '@/components/ui/label';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
@@ -21,7 +20,6 @@ const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 export default function TaxiStandsPage() {
     const { t } = useAppContext();
     const { toast } = useToast();
-    const { isLoaded, loadError } = useGoogleMaps();
 
     const [stands, setStands] = useState<TaxiStand[]>([]);
     const [loading, setLoading] = useState(true);
@@ -45,18 +43,12 @@ export default function TaxiStandsPage() {
     }, [t, toast]);
 
     useEffect(() => {
-        if (isLoaded) {
-            fetchStands();
-        }
-    }, [isLoaded, fetchStands]);
+        fetchStands();
+    }, [fetchStands]);
 
-    const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
-        setMap(mapInstance);
-    }, []);
-
-    const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-        if (e.latLng && isDialogOpen && standData) {
-            setStandData({ ...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() } });
+    const handleMapClick = useCallback((e: any) => {
+        if (e.detail.latLng && isDialogOpen && standData) {
+            setStandData({ ...standData, location: { lat: e.detail.latLng.lat(), lng: e.detail.latLng.lng() } });
         }
     }, [isDialogOpen, standData]);
 
@@ -110,8 +102,6 @@ export default function TaxiStandsPage() {
         }
     }
     
-    if (loadError) return <div>{t('map_load_error')}</div>;
-
     return (
         <div className="space-y-8">
             <div>
@@ -155,7 +145,7 @@ export default function TaxiStandsPage() {
             </Dialog>
 
             <Card className="h-[400px] md:h-[500px] w-full">
-                 {!isLoaded ? (
+                 {loading ? (
                     <div className="flex h-full items-center justify-center bg-muted">
                         <Loader2 className="h-16 w-16 animate-spin" />
                     </div>
@@ -163,7 +153,6 @@ export default function TaxiStandsPage() {
                     <Map
                         center={LISBON_CENTER}
                         zoom={12}
-                        onMapLoad={onMapLoad}
                         onMapClick={handleMapClick}
                     >
                        {stands.map(stand => (

@@ -1,8 +1,6 @@
 'use client';
-import { GoogleMap } from '@react-google-maps/api';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
+import { APIProvider, Map as GoogleMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
 import { ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
 
 const containerStyle = {
   width: '100%',
@@ -16,39 +14,40 @@ const defaultCenter = {
 
 interface MapProps {
   children?: ReactNode;
-  onMapLoad?: (map: google.maps.Map) => void;
-  onMapClick?: (e: google.maps.MapMouseEvent) => void;
+  center?: { lat: number; lng: number };
+  zoom?: number;
+  onMapClick?: (e: MapCameraChangedEvent) => void;
 }
 
-export function Map({ children, onMapLoad, onMapClick }: MapProps) {
-  const { isLoaded, loadError } = useGoogleMaps();
+export function Map({
+  children,
+  center = defaultCenter,
+  zoom = 13,
+  onMapClick,
+}: MapProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  if (loadError) {
-    return <div>Error loading maps</div>;
-  }
-
-  if (!isLoaded) {
+  if (!apiKey) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <div className="flex h-full w-full items-center justify-center bg-destructive text-destructive-foreground">
+        Google Maps API Key is missing.
       </div>
     );
   }
 
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={defaultCenter}
-      zoom={13}
-      options={{
-        disableDefaultUI: true,
-        zoomControl: true,
-        gestureHandling: 'cooperative',
-      }}
-      onLoad={onMapLoad}
-      onClick={onMapClick}
-    >
-      {children}
-    </GoogleMap>
+    <APIProvider apiKey={apiKey}>
+      <GoogleMap
+        mapId={'f913f0d1a4623e64'}
+        style={containerStyle}
+        defaultCenter={center}
+        defaultZoom={zoom}
+        gestureHandling={'greedy'}
+        disableDefaultUI={true}
+        onCameraChanged={onMapClick}
+      >
+        {children}
+      </GoogleMap>
+    </APIProvider>
   );
 }

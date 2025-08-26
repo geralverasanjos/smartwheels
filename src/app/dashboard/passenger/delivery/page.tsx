@@ -34,7 +34,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { DirectionsRenderer } from '@react-google-maps/api';
 import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
@@ -43,7 +42,6 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 import { createRideRequest, updateRideStatus } from '@/services/rideService';
 import { db } from '@/lib/firebase';
@@ -147,7 +145,6 @@ export default function RequestDeliveryPage() {
   const { language, t, user } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
   const { reverseGeocode } = useGeocoding();
-  const { isLoaded } = useGoogleMaps();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [state, dispatch] = useReducer(reducer, initialState);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -237,9 +234,9 @@ export default function RequestDeliveryPage() {
       }
   }
 
-  const handleMapClick = useCallback(async (e: google.maps.MapMouseEvent) => {
-    if (selectingField && e.latLng) {
-        const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+  const handleMapClick = useCallback(async (e: any) => {
+    if (selectingField && e.detail.latLng) {
+        const coords = { lat: e.detail.latLng.lat, lng: e.detail.latLng.lng };
         const address = await reverseGeocode(coords);
         if(selectingField === 'origin') dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
         else if (selectingField === 'destination') dispatch({ type: 'SET_DESTINATION', payload: { text: address, coords } });
@@ -574,38 +571,27 @@ export default function RequestDeliveryPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
       <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-        {isLoaded ? (
-            <Map onMapLoad={setMap} onMapClick={handleMapClick}>
-                {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
-                {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
-                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                     <AdvancedMarker position={driverPosition}>
-                       <div className="p-1 bg-primary rounded-full shadow-lg">
-                         <Car className="h-6 w-6 text-primary-foreground" />
-                       </div>
-                     </AdvancedMarker>
-                )}
-                 {step === 'driver_arrived' && origin.coords && (
-                     <AdvancedMarker position={origin.coords}>
-                       <div className="p-1 bg-primary rounded-full shadow-lg">
-                         <Car className="h-6 w-6 text-primary-foreground" />
-                       </div>
-                     </AdvancedMarker>
-                )}
-                {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, polylineOptions: { strokeColor: 'hsl(var(--primary))', strokeWeight: 6 } }} />}
-            </Map>
-        ) : (
-            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
-        )}
+        <Map onMapClick={handleMapClick}>
+            {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
+            {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
+            {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                 <AdvancedMarker position={driverPosition}>
+                   <div className="p-1 bg-primary rounded-full shadow-lg">
+                     <Car className="h-6 w-6 text-primary-foreground" />
+                   </div>
+                 </AdvancedMarker>
+            )}
+             {step === 'driver_arrived' && origin.coords && (
+                 <AdvancedMarker position={origin.coords}>
+                   <div className="p-1 bg-primary rounded-full shadow-lg">
+                     <Car className="h-6 w-6 text-primary-foreground" />
+                   </div>
+                 </AdvancedMarker>
+            )}
+        </Map>
       </div>
       <div className="md:col-span-1 md:overflow-y-auto">
-        {isLoaded ? renderContent() : (
-            <Card className="h-full flex flex-col items-center justify-center">
-                <CardContent>
-                    <Loader2 className="h-12 w-12 animate-spin text-primary"/>
-                </CardContent>
-            </Card>
-        )}
+        {renderContent()}
       </div>
     </div>
   );

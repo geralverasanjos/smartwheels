@@ -8,13 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, Loader2 } from 'lucide-react';
+import { Car, Package, Loader2, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { HeatmapLayer } from '@react-google-maps/api';
 import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import { useAppContext } from '@/contexts/app-context';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
 
@@ -30,7 +29,6 @@ const nearbyDriversData = [
 
 export default function DriverDashboardPage() {
   const { t } = useAppContext();
-  const { isLoaded } = useGoogleMaps();
   
   const [isOnline, setIsOnline] = useState(false);
   const [vehiclePosition, setVehiclePosition] = useState(DRIVER_INITIAL_POSITION);
@@ -45,7 +43,7 @@ export default function DriverDashboardPage() {
 
   // Initialize heatmap data once Google Maps is loaded
   useEffect(() => {
-    if (isLoaded && typeof window.google !== 'undefined') {
+    if (typeof window.google !== 'undefined') {
         setHeatmapData([
             new google.maps.LatLng(38.71, -9.14),
             new google.maps.LatLng(38.712, -9.142),
@@ -58,7 +56,7 @@ export default function DriverDashboardPage() {
         // Fetch taxi stands
         getStands().then(setTaxiStands).catch(console.error);
     }
-  }, [isLoaded]);
+  }, []);
 
   useEffect(() => {
     setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
@@ -83,14 +81,14 @@ export default function DriverDashboardPage() {
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
             <Map>
-              {isLoaded && isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
-              {isLoaded && isOnline && nearbyDriversData.map((driver, index) => (
+              {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
+              {isOnline && nearbyDriversData.map((driver, index) => (
                 <AdvancedMarker key={`driver-${index}`} position={driver}>
                     <VehicleMarker />
                 </AdvancedMarker>
               ))}
 
-              {isLoaded && <AdvancedMarker position={vehiclePosition}>
+              {<AdvancedMarker position={vehiclePosition}>
                     <VehicleMarker isSelf={true} />
                 </AdvancedMarker>
               }

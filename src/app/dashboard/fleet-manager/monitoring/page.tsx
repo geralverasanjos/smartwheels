@@ -7,7 +7,6 @@ import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
 import { Loader2, Car } from 'lucide-react';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { useAppContext } from '@/contexts/app-context';
 import { getDriversByFleetManager } from '@/services/profileService';
 import type { UserProfile } from '@/types';
@@ -31,7 +30,6 @@ const VehicleMarker = ({ isSelected, status }: { isSelected: boolean, status: st
 };
 
 export default function FleetMonitoringPage() {
-    const { isLoaded, loadError } = useGoogleMaps();
     const { t, user } = useAppContext();
     
     const [vehicles, setVehicles] = useState<UserProfile[]>([]);
@@ -87,8 +85,7 @@ export default function FleetMonitoringPage() {
         setSelectedVehicle(vehicle);
     }, []);
 
-    if (loadError) return <div>{t('map_load_error')}</div>;
-    if (!isLoaded || loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
 
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
@@ -99,7 +96,6 @@ export default function FleetMonitoringPage() {
                             key={vehicle.id}
                             position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
                             onClick={() => handleSelectOnMap(vehicle)}
-                            zIndex={selectedVehicle?.id === vehicle.id ? 10 : 1}
                         >
                            <VehicleMarker 
                                 isSelected={selectedVehicle?.id === vehicle.id} 
