@@ -24,15 +24,13 @@ export default function AutocompleteInput({ onPlaceSelect, value, placeholder, o
 
     const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
         inputElement: inputRef.current,
-        options: {
-            types: ['address'],
-            componentRestrictions: { country: 'pt' },
-        }
+        types: ['address'],
+        componentRestrictions: { country: 'pt' },
     });
     autocompleteRef.current = autocompleteElement;
     
     const listener = autocompleteElement.addEventListener('gmp-placeselect', (event) => {
-        const place = event.place;
+        const place = (event as CustomEvent).detail.place;
         if (place) {
             onPlaceSelect(place as google.maps.places.PlaceResult);
         }
