@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { AdvancedMarker, APIProvider } from '@vis.gl/react-google-maps';
 import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
@@ -85,25 +85,34 @@ export default function FleetMonitoringPage() {
         setSelectedVehicle(vehicle);
     }, []);
 
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
     if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
+    
+    if (!apiKey) {
+      return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
+    }
+
 
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
             <div className="md:col-span-2 h-[50vh] md:h-full w-full">
-                 <Map>
-                    {vehicles.map(vehicle => (
-                        <AdvancedMarker
-                            key={vehicle.id}
-                            position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
-                            onClick={() => handleSelectOnMap(vehicle)}
-                        >
-                           <VehicleMarker 
-                                isSelected={selectedVehicle?.id === vehicle.id} 
-                                status={vehicle.vehicleStatus.state}
-                           />
-                        </AdvancedMarker>
-                    ))}
-                </Map>
+                 <APIProvider apiKey={apiKey}>
+                    <Map>
+                        {vehicles.map(vehicle => (
+                            <AdvancedMarker
+                                key={vehicle.id}
+                                position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
+                                onClick={() => handleSelectOnMap(vehicle)}
+                            >
+                            <VehicleMarker 
+                                    isSelected={selectedVehicle?.id === vehicle.id} 
+                                    status={vehicle.vehicleStatus.state}
+                            />
+                            </AdvancedMarker>
+                        ))}
+                    </Map>
+                </APIProvider>
             </div>
 
             <div className="md:col-span-1 flex flex-col h-full">

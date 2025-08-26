@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Map } from '@/components/map';
+import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import {
   ArrowRight,
   Briefcase,
@@ -148,9 +148,7 @@ export default function RequestTransportPage() {
   const { toast } = useToast();
   const { language, t, user } = useAppContext();
   const { formatCurrency } = useCurrency(language.value);
-  const { geocode, reverseGeocode } = useGeocoding();
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-
+  const { geocode, reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
@@ -273,7 +271,6 @@ export default function RequestTransportPage() {
         if(field === 'origin') dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
         if(field === 'destination') dispatch({ type: 'SET_DESTINATION', payload: { text: address, coords } });
         dispatch({ type: 'SET_SELECTING_FIELD', payload: null });
-        if(map) map.panTo(coords);
       }
   }
 
@@ -293,16 +290,15 @@ export default function RequestTransportPage() {
             const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
             const address = await reverseGeocode(coords);
             dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
-            if(map) map.panTo(coords);
         })
     }
-}, [reverseGeocode, map]);
+}, [reverseGeocode]);
 
   useEffect(() => {
-    if (!origin.text) {
+    if (isLoaded && !origin.text) {
         handleUseCurrentLocation();
     }
-  }, [origin.text, handleUseCurrentLocation]);
+  }, [origin.text, handleUseCurrentLocation, isLoaded]);
 
 
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
@@ -546,12 +542,12 @@ export default function RequestTransportPage() {
                                     const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
                                     const isCurrentUser = msg.senderId === user?.id;
                                     return (
-                                        <div key={msg.id} className={`flex items-start gap-2 ${isCurrentUser ? 'flex-row-reverse' : ''}`}>
+                                        <div key={msg.id} className={cn('flex items-start gap-2', isCurrentUser ? 'flex-row-reverse' : '')}>
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={senderProfile?.avatarUrl} />
                                                 <AvatarFallback>{senderProfile?.name?.substring(0, 2)}</AvatarFallback>
                                             </Avatar>
-                                            <div className={`rounded-lg p-2 max-w-[80%] ${isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-accent'}`}>
+                                            <div className={cn('rounded-lg p-2 max-w-[80%]', isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-accent')}>
                                                 <p className="text-sm">{msg.text}</p>
                                             </div>
                                         </div>
@@ -641,27 +637,35 @@ export default function RequestTransportPage() {
       }
   }
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  if (!isLoaded || !apiKey) {
+    return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
+  }
+
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
       <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-        <Map onMapClick={handleMapClick}>
-            {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
-            {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
-            {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
-                 <AdvancedMarker position={driverPosition}>
-                   <div className="p-1 bg-primary rounded-full shadow-lg">
-                     <Car className="h-6 w-6 text-primary-foreground" />
-                   </div>
-                 </AdvancedMarker>
-            )}
-             {step === 'driver_arrived' && origin.coords && (
-                 <AdvancedMarker position={origin.coords}>
-                   <div className="p-1 bg-primary rounded-full shadow-lg">
-                     <Car className="h-6 w-6 text-primary-foreground" />
-                   </div>
-                 </AdvancedMarker>
-            )}
-        </Map>
+        <APIProvider apiKey={apiKey}>
+            <Map onMapClick={handleMapClick}>
+                {origin.coords && step !== 'rating' && <AdvancedMarker position={origin.coords}><MapPin className="text-red-500 h-8 w-8" /></AdvancedMarker>}
+                {destination.coords && step !== 'rating' && <AdvancedMarker position={destination.coords}><MapPin className="text-blue-500 h-8 w-8" /></AdvancedMarker>}
+                {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
+                     <AdvancedMarker position={driverPosition}>
+                       <div className="p-1 bg-primary rounded-full shadow-lg">
+                         <Car className="h-6 w-6 text-primary-foreground" />
+                       </div>
+                     </AdvancedMarker>
+                )}
+                 {step === 'driver_arrived' && origin.coords && (
+                     <AdvancedMarker position={origin.coords}>
+                       <div className="p-1 bg-primary rounded-full shadow-lg">
+                         <Car className="h-6 w-6 text-primary-foreground" />
+                       </div>
+                     </AdvancedMarker>
+                )}
+            </Map>
+        </APIProvider>
       </div>
       <div className="md:col-span-1 md:overflow-y-auto">
         {renderContent()}
@@ -669,3 +673,5 @@ export default function RequestTransportPage() {
     </div>
   );
 }
+
+    

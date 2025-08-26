@@ -1,5 +1,6 @@
+
 'use client';
-import { APIProvider, Map as GoogleMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
+import { Map as GoogleMap, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
 import { ReactNode } from 'react';
 
 const containerStyle = {
@@ -25,29 +26,18 @@ export function Map({
   zoom = 13,
   onMapClick,
 }: MapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  if (!apiKey) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-destructive text-destructive-foreground">
-        Google Maps API Key is missing.
-      </div>
-    );
-  }
 
   return (
-    <APIProvider apiKey={apiKey}>
-      <GoogleMap
-        mapId={'f913f0d1a4623e64'}
-        style={containerStyle}
-        defaultCenter={center}
-        defaultZoom={zoom}
-        gestureHandling={'greedy'}
-        disableDefaultUI={true}
-        onCameraChanged={onMapClick}
-      >
-        {children}
-      </GoogleMap>
-    </APIProvider>
+    <GoogleMap
+      mapId={'f913f0d1a4623e64'}
+      style={containerStyle}
+      defaultCenter={center}
+      defaultZoom={zoom}
+      gestureHandling={'greedy'}
+      disableDefaultUI={true}
+      onCameraChanged={onMapClick}
+    >
+      {children}
+    </GoogleMap>
   );
 }

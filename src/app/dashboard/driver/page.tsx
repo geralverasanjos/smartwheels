@@ -12,7 +12,7 @@ import { Car, Package, Loader2, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { HeatmapLayer } from '@react-google-maps/api';
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { AdvancedMarker, APIProvider } from '@vis.gl/react-google-maps';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -76,24 +76,32 @@ export default function DriverDashboardPage() {
     );
   };
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
+  }
+
 
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
-            <Map>
-              {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
-              {isOnline && nearbyDriversData.map((driver, index) => (
-                <AdvancedMarker key={`driver-${index}`} position={driver}>
-                    <VehicleMarker />
-                </AdvancedMarker>
-              ))}
+            <APIProvider apiKey={apiKey}>
+              <Map>
+                {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
+                {isOnline && nearbyDriversData.map((driver, index) => (
+                  <AdvancedMarker key={`driver-${index}`} position={driver}>
+                      <VehicleMarker />
+                  </AdvancedMarker>
+                ))}
 
-              {<AdvancedMarker position={vehiclePosition}>
-                    <VehicleMarker isSelf={true} />
-                </AdvancedMarker>
-              }
-              
-            </Map>
+                {<AdvancedMarker position={vehiclePosition}>
+                      <VehicleMarker isSelf={true} />
+                  </AdvancedMarker>
+                }
+                
+              </Map>
+            </APIProvider>
         </div>
         <div className="md:col-span-1 flex flex-col gap-6 overflow-y-auto">
             

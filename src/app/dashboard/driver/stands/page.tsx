@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MapPin, PlusCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { Map } from '@/components/map';
 import { Label } from '@/components/ui/label';
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { AdvancedMarker, APIProvider } from '@vis.gl/react-google-maps';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -102,6 +102,12 @@ export default function TaxiStandsPage() {
         }
     }
     
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+    if (!apiKey) {
+      return <div className="flex h-full w-full items-center justify-center">API Key is missing.</div>;
+    }
+
     return (
         <div className="space-y-8">
             <div>
@@ -150,30 +156,32 @@ export default function TaxiStandsPage() {
                         <Loader2 className="h-16 w-16 animate-spin" />
                     </div>
                  ) : (
-                    <Map
-                        center={LISBON_CENTER}
-                        zoom={12}
-                        onMapClick={handleMapClick}
-                    >
-                       {stands.map(stand => (
-                            <AdvancedMarker
-                                key={stand.id}
-                                position={stand.location}
-                                title={stand.name}
-                            />
-                        ))}
-                        {isDialogOpen && standData?.location && (
-                             <AdvancedMarker
-                                position={standData.location}
-                                draggable={true}
-                                onDragEnd={(e) => e.latLng && setStandData({...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() }})}
-                            >
-                               <div className="p-2 bg-primary rounded-full border-2 border-white shadow-lg">
-                                  <MapPin className="h-6 w-6 text-primary-foreground" />
-                               </div>
-                            </AdvancedMarker>
-                        )}
-                    </Map>
+                    <APIProvider apiKey={apiKey}>
+                        <Map
+                            center={LISBON_CENTER}
+                            zoom={12}
+                            onMapClick={handleMapClick}
+                        >
+                        {stands.map(stand => (
+                                <AdvancedMarker
+                                    key={stand.id}
+                                    position={stand.location}
+                                    title={stand.name}
+                                />
+                            ))}
+                            {isDialogOpen && standData?.location && (
+                                <AdvancedMarker
+                                    position={standData.location}
+                                    draggable={true}
+                                    onDragEnd={(e) => e.latLng && setStandData({...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() }})}
+                                >
+                                <div className="p-2 bg-primary rounded-full border-2 border-white shadow-lg">
+                                    <MapPin className="h-6 w-6 text-primary-foreground" />
+                                </div>
+                                </AdvancedMarker>
+                            )}
+                        </Map>
+                    </APIProvider>
                  )}
             </Card>
 
