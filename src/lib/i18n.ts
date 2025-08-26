@@ -361,6 +361,25 @@ export const Translations = {
     "id-ID": "Di sini Anda dapat memeriksa semua promosi dan hadiah yang tersedia.",
     "th-TH": "คุณสามารถตรวจสอบโปรโมชั่นและรางวัลที่มีทั้งหมดได้ที่นี่"
   },
+  "payment_title": {
+    "pt-PT": "Pagamentos",
+    "pt-BR": "Pagamentos",
+    "en-US": "Payments",
+    "es-ES": "Pagos",
+    "fr-FR": "Paiements",
+    "de-DE": "Zahlungen",
+    "it-IT": "Pagamenti",
+    "ja-JP": "支払い",
+    "zh-CN": "付款",
+    "ru-RU": "Платежи",
+    "ar-SA": "المدفوعات",
+    "hi-IN": "भुगतान",
+    "ko-KR": "결제",
+    "he-IL": "תשלומים",
+    "uk-UA": "Платежі",
+    "id-ID": "Pembayaran",
+    "th-TH": "การชำระเงิน"
+  },
   "promotions_my_promos_desc": {
     "pt-PT": "Veja as suas promoções ativas e as que já foram utilizadas.",
     "pt-BR": "Veja suas promoções ativas e as que já foram utilizadas.",

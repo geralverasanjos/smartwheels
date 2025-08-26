@@ -1,7 +1,8 @@
 // src/services/currencyService.ts
 import type { ExchangeRateResponse } from '@/types'; 
 
-const API_BASE_URL = 'https://api.frankfurter.app';
+// Updated API endpoint
+const API_BASE_URL = 'https://api.exchangerate-api.com/v4/latest/';
 
 /**
  * @description Busca a taxa de câmbio de uma moeda base para outra.
@@ -12,7 +13,7 @@ const API_BASE_URL = 'https://api.frankfurter.app';
 export async function getExchangeRate(from: string, to: string): Promise<number | null> {
   if (from === to) return 1;
   try {
-    const response = await fetch(`${API_BASE_URL}/latest?from=${from}&to=${to}`);
+    const response = await fetch(`${API_BASE_URL}${from}`);
 
     if (!response.ok) {
       console.error(`Erro ao buscar taxa de câmbio: ${response.status}`);
