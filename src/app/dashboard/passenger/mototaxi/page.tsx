@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -260,7 +259,7 @@ export default function RequestMotoTaxiPage() {
     if (isLoaded && !origin.text) {
         handleUseCurrentLocation();
     }
-  }, [origin.text, handleUseCurrentLocation, isLoaded]);
+  }, [isLoaded, origin.text, handleUseCurrentLocation]);
 
 
   const handleDirections = useCallback((origin: google.maps.LatLngLiteral, destination: google.maps.LatLngLiteral) => {
@@ -287,7 +286,7 @@ export default function RequestMotoTaxiPage() {
     setAssignedVehicle(null);
     setMessages([]);
   }
-
+  
   const handleCancelRide = async () => {
     if (!activeRideId) return;
     await updateRideStatus(activeRideId, 'cancelled');
@@ -307,6 +306,7 @@ export default function RequestMotoTaxiPage() {
         toast({ title: t('error_title'), description: t('error_sending_message'), variant: "destructive" });
     }
   };
+
 
   useEffect(() => {
     if (step === 'driver_enroute' && origin.coords) {

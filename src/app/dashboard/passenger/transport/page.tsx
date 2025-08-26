@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useReducer, useEffect } from 'react';
@@ -298,7 +297,7 @@ export default function RequestTransportPage() {
     if (isLoaded && !origin.text) {
         handleUseCurrentLocation();
     }
-  }, [origin.text, handleUseCurrentLocation, isLoaded]);
+  }, [isLoaded, origin.text, handleUseCurrentLocation]);
 
 
   const handleSelectOnMap = (field: 'origin' | 'destination') => {
