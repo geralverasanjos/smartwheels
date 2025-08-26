@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { useCurrency } from '@/lib/currency';
 import ServiceCategoryCard from '@/components/service-category-card';
-import { MarkerF } from '@react-google-maps/api';
+import { MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import AutocompleteInput from '@/components/autocomplete-input';
 import { useGeocoding } from '@/hooks/use-geocoding';
 import { Separator } from '@/components/ui/separator';
@@ -248,14 +248,14 @@ export default function RequestMotoTaxiPage() {
   }
 
   const handleUseCurrentLocation = useCallback(() => {
-    if(navigator.geolocation){
+    if(isLoaded && navigator.geolocation){
         navigator.geolocation.getCurrentPosition(async (position) => {
             const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
             const address = await reverseGeocode(coords);
             dispatch({ type: 'SET_ORIGIN', payload: { text: address, coords } });
         })
     }
-}, [reverseGeocode]);
+  }, [isLoaded, reverseGeocode]);
 
   useEffect(() => {
     if (isLoaded && !origin.text) {
@@ -597,6 +597,18 @@ export default function RequestMotoTaxiPage() {
                 )}
                  {step === 'driver_arrived' && origin.coords && (
                      <MarkerF position={origin.coords} icon={{ url: '/car.svg' }} />
+                )}
+                {directions && (
+                    <DirectionsRenderer
+                        directions={directions}
+                        options={{
+                            suppressMarkers: true,
+                            polylineOptions: {
+                                strokeColor: 'hsl(var(--primary))',
+                                strokeWeight: 4,
+                            },
+                        }}
+                    />
                 )}
             </Map>
         </div>
