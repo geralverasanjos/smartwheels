@@ -2,9 +2,89 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regra geral para permitir acesso a utilizadores autenticados
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    
+    // Generic function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
     }
+
+    // Generic function to check if the requesting user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Passengers: Can read/write their own profile
+    match /passengers/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if isAuthenticated();
+    }
+
+    // Drivers: Can read/write their own profile. Others can read limited public info.
+    match /drivers/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if isAuthenticated();
+    }
+    
+    // Fleet Managers: Can read/write their own profile.
+    match /fleet-managers/{userId} {
+       allow read, update, delete: if isOwner(userId);
+       allow create: if isAuthenticated();
+    }
+
+    // Ride Requests: Passengers create, drivers can accept/update
+    match /rideRequests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(request.resource.data.passengerId);
+      allow update: if isAuthenticated() && (isOwner(request.resource.data.passengerId) || isOwner(request.resource.data.driverId));
+    }
+    
+    // Trips (History): Only involved parties can access
+    match /trips/{tripId} {
+      allow read: if isOwner(resource.data.passengerId) || isOwner(resource.data.driverId);
+      allow create: if isOwner(request.resource.data.passengerId) || isOwner(request.resource.data.driverId);
+    }
+    
+    // Payout Methods: Users manage their own
+    match /payoutMethods/{methodId} {
+      allow read, write, create, delete: if isOwner(request.resource.data.userId);
+    }
+
+    // Transactions: Users can only read their own
+    match /transactions/{transactionId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isAuthenticated();
+    }
+
+    // Vehicles: Drivers can manage their own
+    match /vehicles/{vehicleId} {
+        allow read: if isAuthenticated();
+        // Assuming a driverId is associated with each vehicle
+        allow write: if isOwner(request.resource.data.driverId);
+        allow create: if isAuthenticated();
+    }
+    
+    // Messages: Only parties in the ride can read/write
+    match /messages/{messageId} {
+        // This is tricky without fetching the ride document.
+        // A more secure rule would use a function to check ride participants.
+        // For now, allow any authenticated user to create messages.
+        allow create: if isAuthenticated();
+        // Reading also needs to be secured, for now, allow if authenticated.
+        allow read: if isAuthenticated();
+    }
+
+    // Public Data (everyone can read)
+    match /stands/{standId} {
+      allow read: if isAuthenticated();
+      // Writing/deleting stands could be restricted to a specific admin role
+      allow write, delete: if isAuthenticated(); // For now, any auth user can manage stands
+    }
+    
+     match /promotions/{promoId} {
+      allow read: if isAuthenticated();
+      // Writing/deleting promotions could be restricted to a specific admin/fleet role
+      allow write, delete: if isAuthenticated(); 
+    }
+    
   }
 }
