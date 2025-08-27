@@ -32,6 +32,12 @@ export default function LandingPage() {
         { href: '/dashboard/driver', icon: Car, titleKey: 'btn_driver_mototaxi_title', descriptionKey: 'btn_driver_desc' },
         { href: '/dashboard/fleet-manager', icon: Users, titleKey: 'btn_fleet_manager_title', descriptionKey: 'btn_fleet_manager_desc' },
     ];
+    
+    const businessModelSteps = [
+        { titleKey: 'business_model_step1_title', descriptionKey: 'business_model_step1_desc'},
+        { titleKey: 'business_model_step2_alt_title', descriptionKey: 'business_model_step2_alt_desc'},
+        { titleKey: 'business_model_step3_alt_title', descriptionKey: 'business_model_step3_alt_desc'},
+    ]
 
     return (
         <>
@@ -110,18 +116,12 @@ export default function LandingPage() {
                       <div className="content-container">
                         <div className="flow-container">
                             <h3>{t('business_model_flow_title')}</h3>
-                            <div className="flow-card">
-                                <h4>{t('business_model_step1_title')}</h4>
-                                <p>{t('business_model_step1_desc')}</p>
-                            </div>
-                            <div className="flow-card">
-                                <h4>{t('business_model_step2_title')}</h4>
-                                <p>{t('business_model_step2_desc')}</p>
-                            </div>
-                             <div className="flow-card">
-                                <h4>{t('business_model_step3_title')}</h4>
-                                <p>{t('business_model_step3_desc')}</p>
-                            </div>
+                            {businessModelSteps.map((step, index) => (
+                                 <div className="flow-card" key={index}>
+                                    <h4>{t(step.titleKey as any)}</h4>
+                                    <p>{t(step.descriptionKey as any)}</p>
+                                </div>
+                            ))}
                         </div>
                       </div>
                     </section>
