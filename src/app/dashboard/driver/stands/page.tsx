@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MapPin, PlusCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { Map } from '@/components/map';
 import { Label } from '@/components/ui/label';
-import { MarkerF } from '@react-google-maps/api';
+import { MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -28,6 +28,11 @@ export default function TaxiStandsPage() {
     
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [standData, setStandData] = useState<Partial<TaxiStand> | null>(null);
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+      });
     
     const fetchStands = useCallback(async () => {
         setLoading(true);
@@ -146,7 +151,7 @@ export default function TaxiStandsPage() {
             </Dialog>
 
             <Card className="h-[400px] md:h-[500px] w-full">
-                 {loading ? (
+                 {(loading || !isLoaded) ? (
                     <div className="flex h-full items-center justify-center bg-muted">
                         <Loader2 className="h-16 w-16 animate-spin" />
                     </div>

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MarkerF } from '@react-google-maps/api';
+import { MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
@@ -21,6 +21,11 @@ export default function FleetMonitoringPage() {
     const [loading, setLoading] = useState(true);
     const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+      });
     
     useEffect(() => {
         if (user?.id) {
@@ -71,7 +76,7 @@ export default function FleetMonitoringPage() {
     }, []);
 
 
-    if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
+    if (loading || !isLoaded) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
     
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">

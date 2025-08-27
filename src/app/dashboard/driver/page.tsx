@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Car, Package, Loader2, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
-import { HeatmapLayer, MarkerF } from '@react-google-maps/api';
+import { HeatmapLayer, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
@@ -38,11 +38,16 @@ export default function DriverDashboardPage() {
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
   const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
   const [taxiStands, setTaxiStands] = useState<TaxiStand[]>([]);
+  
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+  });
 
 
   // Initialize heatmap data once Google Maps is loaded
   useEffect(() => {
-    if (typeof window.google !== 'undefined') {
+    if (isLoaded) {
         setHeatmapData([
             new google.maps.LatLng(38.71, -9.14),
             new google.maps.LatLng(38.712, -9.142),
@@ -55,7 +60,7 @@ export default function DriverDashboardPage() {
         // Fetch taxi stands
         getStands().then(setTaxiStands).catch(console.error);
     }
-  }, []);
+  }, [isLoaded]);
 
   useEffect(() => {
     setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
@@ -68,13 +73,15 @@ export default function DriverDashboardPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
-            <Map>
-                {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
-                {isOnline && nearbyDriversData.map((driver, index) => (
-                  <MarkerF key={`driver-${index}`} position={driver} icon={{ url: '/car.svg', scaledSize: new google.maps.Size(30, 30) }} />
-                ))}
-                <MarkerF position={vehiclePosition} icon={{ url: '/car-primary.svg', scaledSize: new google.maps.Size(40, 40) }} />
-            </Map>
+            {isLoaded ? (
+                <Map>
+                    {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
+                    {isOnline && nearbyDriversData.map((driver, index) => (
+                      <MarkerF key={`driver-${index}`} position={driver} icon={{ url: '/car.svg', scaledSize: new google.maps.Size(30, 30) }} />
+                    ))}
+                    <MarkerF position={vehiclePosition} icon={{ url: '/car-primary.svg', scaledSize: new google.maps.Size(40, 40) }} />
+                </Map>
+            ) : <Loader2 className="h-16 w-16 animate-spin" />}
         </div>
         <div className="md:col-span-1 flex flex-col gap-6 overflow-y-auto">
             
