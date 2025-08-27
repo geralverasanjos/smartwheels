@@ -1,7 +1,7 @@
 'use client';
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { functions, httpsCallable } from '@/lib/firebase';
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
@@ -109,24 +109,37 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
 };
 
 /**
- * Uploads a profile photo or document to Firebase Storage and returns the download URL.
+ * Uploads a profile photo or document to Firebase Storage via a Cloud Function.
  * @param file The file to upload.
  * @param path The full path in Firebase Storage where the file will be saved.
  * @returns A promise that resolves to the public URL of the uploaded file.
  */
 export const uploadProfilePhoto = async (file: File, path: string): Promise<string> => {
-    if (!file) throw new Error("No file provided for upload.");
-    if (!path) throw new Error("A storage path is required for file upload.");
+  if (!file) throw new Error("No file provided for upload.");
+  if (!path) throw new Error("A storage path is required for file upload.");
 
-    const storage = getStorage();
-    const storageRef = ref(storage, path);
+  const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = error => reject(error);
+  });
 
-    try {
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error) {
-        console.error("Error uploading file:", error);
-        throw new Error("Failed to upload file.");
-    }
+  try {
+    const base64File = await toBase64(file);
+    const uploadFileCallable = httpsCallable(functions, 'uploadFile');
+    
+    const result = await uploadFileCallable({ 
+        file: base64File, 
+        path: path,
+        contentType: file.type
+    });
+    
+    const data = result.data as { downloadURL: string };
+    return data.downloadURL;
+
+  } catch (error) {
+    console.error("Error calling uploadFile function:", error);
+    throw new Error("Failed to upload file.");
+  }
 };
