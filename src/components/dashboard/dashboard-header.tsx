@@ -9,7 +9,7 @@ import { useAppContext } from '@/contexts/app-context';
 import { usePathname } from 'next/navigation';
 
 export function DashboardHeader() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const pathname = usePathname();
 
     const getProfileLink = () => {
@@ -17,6 +17,10 @@ export function DashboardHeader() {
         if (pathname.includes('/dashboard/driver')) return '/dashboard/driver/profile';
         if (pathname.includes('/dashboard/fleet-manager')) return '/dashboard/fleet-manager/profile';
         return '#';
+    }
+
+    const getInitials = (name: string = '') => {
+        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
     return (
@@ -28,8 +32,8 @@ export function DashboardHeader() {
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
                          <Avatar>
-                            <AvatarImage src="https://placehold.co/40x40/FFFFFF/000000?text=U" alt="User" />
-                            <AvatarFallback>U</AvatarFallback>
+                            <AvatarImage src={user?.avatarUrl} alt={user?.name} data-ai-hint="person face" />
+                            <AvatarFallback>{user ? getInitials(user.name) : 'U'}</AvatarFallback>
                         </Avatar>
                     </Button>
                 </DropdownMenuTrigger>
@@ -37,7 +41,7 @@ export function DashboardHeader() {
                     <DropdownMenuLabel>{t('my_account')}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem><Link href={getProfileLink()}>{t('menu_profile')}</Link></DropdownMenuItem>
-                    <DropdownMenuItem><Link href="/dashboard/settings">{t('menu_settings')}</Link></DropdownMenuItem>
+                    <DropdownMenuItem><Link href={`/dashboard/settings?from=${pathname}`}>{t('menu_settings')}</Link></DropdownMenuItem>
                     <DropdownMenuItem><Link href={`/dashboard/support?from=${pathname}`}>{t('menu_support')}</Link></DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem><Link href="/">{t('logout')}</Link></DropdownMenuItem>
