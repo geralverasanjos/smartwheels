@@ -26,6 +26,8 @@ export const uploadFile = functions.https.onCall(async (data, context) => {
 
     const bucket = storage.bucket(); // Use the default bucket
     const fileRef = bucket.file(filePath);
+    
+    // Correctly handle the base64 string by converting it to a Buffer
     const fileBuffer = Buffer.from(file, 'base64');
 
     // 3. Upload to Storage
@@ -47,6 +49,7 @@ export const uploadFile = functions.https.onCall(async (data, context) => {
 
     } catch (error) {
         console.error('Error uploading file to Firebase Storage:', error);
-        throw new functions.https.HttpsError('internal', 'Unable to upload file. Please check server logs.');
+        // Throw a specific error to help with debugging on the client
+        throw new functions.https.HttpsError('internal', 'Unable to upload file. Please check server logs.', error);
     }
 });
