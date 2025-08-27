@@ -11,7 +11,6 @@ try {
 }
 
 const storage = admin.storage();
-const bucket = storage.bucket();
 
 export const uploadFile = functions.https.onCall(async (data, context) => {
     // 1. Authentication Check
@@ -25,6 +24,7 @@ export const uploadFile = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'The function must be called with file (base64 string), path, and contentType.');
     }
 
+    const bucket = storage.bucket(); // Use the default bucket
     const fileRef = bucket.file(filePath);
     const fileBuffer = Buffer.from(file, 'base64');
 
