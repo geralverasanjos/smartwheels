@@ -1,6 +1,7 @@
 'use client';
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app, db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
@@ -117,31 +118,40 @@ export const getDriversByFleetManager = async (fleetManagerId: string): Promise<
  * @returns A promise that resolves to the public URL of the uploaded file.
  */
 export const uploadProfilePhoto = async (file: File, path: string): Promise<string> => {
-  if (!file) throw new Error("No file provided for upload.");
-  if (!path) throw new Error("A storage path is required for file upload.");
+    const auth = getAuth(app);
+    const user = auth.currentUser;
 
-  const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve((reader.result as string).split(',')[1]);
-      reader.onerror = error => reject(error);
-  });
+    // Security check: ensure the user is authenticated before attempting an upload.
+    if (!user) {
+        console.error("Error: User not authenticated. Upload will not be performed.");
+        throw new Error("User is not authenticated.");
+    }
+  
+    if (!file) throw new Error("No file provided for upload.");
+    if (!path) throw new Error("A storage path is required for file upload.");
 
-  try {
-    const base64File = await toBase64(file);
-    const uploadFileCallable = httpsCallable(functions, 'uploadFile');
-    
-    const result = await uploadFileCallable({ 
-        file: base64File, 
-        path: path,
-        contentType: file.type
+    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = error => reject(error);
     });
-    
-    const data = result.data as { downloadURL: string };
-    return data.downloadURL;
 
-  } catch (error) {
-    console.error("Error calling uploadFile function:", error);
-    throw new Error("Failed to upload file.");
-  }
+    try {
+        const base64File = await toBase64(file);
+        const uploadFileCallable = httpsCallable(functions, 'uploadFile');
+        
+        const result = await uploadFileCallable({ 
+            file: base64File, 
+            path: path,
+            contentType: file.type
+        });
+        
+        const data = result.data as { downloadURL: string };
+        return data.downloadURL;
+
+    } catch (error) {
+        console.error("Error calling uploadFile function:", error);
+        throw new Error("Failed to upload file.");
+    }
 };
