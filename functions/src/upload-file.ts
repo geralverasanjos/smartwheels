@@ -14,7 +14,7 @@ const storage = admin.storage();
 
 export const uploadFile = functions.https.onCall(async (data, context) => {
     // 1. Authentication Check
-    if (!context.auth) {
+    if (!context || !context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
 
