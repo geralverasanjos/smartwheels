@@ -1,9 +1,11 @@
 'use client';
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
-import { functions, httpsCallable } from '@/lib/firebase';
-import { db } from '@/lib/firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app, db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
+
+const functions = getFunctions(app);
 
 /**
  * Fetches a user's profile from a specific collection.
