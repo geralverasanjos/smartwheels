@@ -33,12 +33,6 @@ export default function LandingPage() {
         { href: '/dashboard/fleet-manager', icon: Users, titleKey: 'btn_fleet_manager_title', descriptionKey: 'btn_fleet_manager_desc' },
     ];
     
-    const businessModelSteps = [
-        { titleKey: 'business_model_step1_title', descriptionKey: 'business_model_step1_desc'},
-        { titleKey: 'business_model_step2_alt_title', descriptionKey: 'business_model_step2_alt_desc'},
-        { titleKey: 'business_model_step3_alt_title', descriptionKey: 'business_model_step3_alt_desc'},
-    ]
-
     return (
         <>
             <AuthDialog 
@@ -106,24 +100,6 @@ export default function LandingPage() {
                                 </button>
                             ))}
                         </div>
-                    </section>
-
-                    <section className="business-model-section">
-                      <div className="text-container">
-                        <h2 className="title-glow">{t('business_model_title')}</h2>
-                        <p className="subtitle">{t('business_model_subtitle')}</p>
-                      </div>
-                      <div className="content-container">
-                        <div className="flow-container">
-                            <h3>{t('business_model_flow_title')}</h3>
-                            {businessModelSteps.map((step, index) => (
-                                 <div className="flow-card" key={index}>
-                                    <h4>{t(step.titleKey as any)}</h4>
-                                    <p>{t(step.descriptionKey as any)}</p>
-                                </div>
-                            ))}
-                        </div>
-                      </div>
                     </section>
 
                     <Footer />
