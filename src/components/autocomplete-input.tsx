@@ -1,10 +1,10 @@
 
 'use client';
 import { useRef, useEffect } from 'react';
-import { useJsApiLoader } from '@react-google-maps/api';
 import { Input } from './ui/input';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 interface AutocompleteInputProps {
   onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
@@ -14,11 +14,7 @@ interface AutocompleteInputProps {
 }
 
 export default function AutocompleteInput({ onPlaceSelect, value, placeholder, onClear }: AutocompleteInputProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script', // Use a consistent ID
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries: ['places'],
-  });
+  const { isLoaded } = useGoogleMaps();
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 

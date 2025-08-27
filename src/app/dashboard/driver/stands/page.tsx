@@ -10,10 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 import { MapPin, PlusCircle, Trash2, Loader2, Edit } from 'lucide-react';
 import { Map } from '@/components/map';
 import { Label } from '@/components/ui/label';
-import { MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import { MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 
@@ -29,10 +30,7 @@ export default function TaxiStandsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [standData, setStandData] = useState<Partial<TaxiStand> | null>(null);
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-      });
+    const { isLoaded } = useGoogleMaps();
     
     const fetchStands = useCallback(async () => {
         setLoading(true);

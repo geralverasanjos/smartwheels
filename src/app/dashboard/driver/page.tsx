@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Car, Package, Loader2, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
-import { HeatmapLayer, MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import { HeatmapLayer, MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 
@@ -39,10 +40,7 @@ export default function DriverDashboardPage() {
   const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
   const [taxiStands, setTaxiStands] = useState<TaxiStand[]>([]);
   
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  });
+  const { isLoaded } = useGoogleMaps();
 
 
   // Initialize heatmap data once Google Maps is loaded

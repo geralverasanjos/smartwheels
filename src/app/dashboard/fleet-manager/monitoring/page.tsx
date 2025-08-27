@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import { MarkerF } from '@react-google-maps/api';
 import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
@@ -10,6 +10,7 @@ import { Loader2, Car } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { getDriversByFleetManager } from '@/services/profileService';
 import type { UserProfile } from '@/types';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 
@@ -22,10 +23,7 @@ export default function FleetMonitoringPage() {
     const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-      });
+    const { isLoaded } = useGoogleMaps();
     
     useEffect(() => {
         if (user?.id) {
