@@ -11,6 +11,7 @@ try {
 }
 
 const storage = admin.storage();
+const bucket = storage.bucket();
 
 export const uploadFile = functions.https.onCall(async (data, context) => {
     // 1. Authentication Check
@@ -24,32 +25,25 @@ export const uploadFile = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'The function must be called with file (base64 string), path, and contentType.');
     }
 
-    const bucket = storage.bucket();
     const fileRef = bucket.file(filePath);
     const fileBuffer = Buffer.from(file, 'base64');
 
     // 3. Upload to Storage
     try {
-        // We pipe the buffer to the file in Storage
-        await new Promise((resolve, reject) => {
-            const stream = fileRef.createWriteStream({
-                metadata: {
-                    contentType: contentType,
-                    cacheControl: 'public, max-age=31536000',
-                },
-            });
-            stream.on('error', (err) => reject(err));
-            stream.on('finish', () => resolve(true));
-            stream.end(fileBuffer);
+        await fileRef.save(fileBuffer, {
+            metadata: {
+                contentType: contentType,
+                cacheControl: 'public, max-age=31536000', // Cache for 1 year
+            },
         });
 
-        // 4. Get a public URL (or a signed URL if you prefer more security)
-        const [url] = await fileRef.getSignedUrl({
-            action: 'read',
-            expires: '03-09-2491', // A very far-future date for a "public" URL
-        });
+        // 4. Make the file public
+        await fileRef.makePublic();
 
-        return { downloadURL: url };
+        // 5. Return the public URL
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        
+        return { downloadURL: publicUrl };
 
     } catch (error) {
         console.error('Error uploading file to Firebase Storage:', error);
