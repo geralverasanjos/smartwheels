@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthError } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; 
 import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
@@ -21,6 +21,11 @@ interface AuthDialogProps {
   role: string;
   onSuccess: (user: UserProfile) => void;
   isPage?: boolean;
+}
+
+// Helper to check if an error is an AuthError
+function isAuthError(error: unknown): error is AuthError {
+    return typeof error === 'object' && error !== null && 'code' in error;
 }
 
 export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage = false }: AuthDialogProps) {
@@ -68,14 +73,18 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
           onSuccess(profileData);
       }
       setIsOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
-      if (error.code === 'auth/email-already-in-use') {
-        setAuthError(t('auth_error_email_in_use'));
-      } else if (error.code === 'auth/weak-password') {
-        setAuthError(t('auth_error_weak_password'));
+      if (isAuthError(error)) {
+        if (error.code === 'auth/email-already-in-use') {
+            setAuthError(t('auth_error_email_in_use'));
+        } else if (error.code === 'auth/weak-password') {
+            setAuthError(t('auth_error_weak_password'));
+        } else {
+            setAuthError(t('auth_error_generic'));
+        }
       } else {
-        setAuthError(t('auth_error_generic'));
+         setAuthError(t('auth_error_generic'));
       }
     }
   };
@@ -93,15 +102,18 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
         setAuthError(t('auth_error_no_profile'));
       }
       setIsOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signin error:", error);
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        setAuthError(t('auth_error_invalid_credentials'));
-      } else if (error.code === 'auth/too-many-requests') {
-        setAuthError(t('auth_error_too_many_requests'));
-      }
-      else {
-        setAuthError(t('auth_error_generic'));
+      if (isAuthError(error)) {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            setAuthError(t('auth_error_invalid_credentials'));
+        } else if (error.code === 'auth/too-many-requests') {
+            setAuthError(t('auth_error_too_many_requests'));
+        } else {
+            setAuthError(t('auth_error_generic'));
+        }
+      } else {
+         setAuthError(t('auth_error_generic'));
       }
     }
   };
