@@ -40,7 +40,7 @@ export default function PassengerChatPage() {
             try {
                 const trips = await getUserTripHistory(user.id, 'passenger');
                 const uniqueDrivers: { [key: string]: Trip } = {};
-                trips.forEach(trip => {
+                trips.forEach((trip: Trip) => {
                     if (trip.driverId && !uniqueDrivers[trip.driverId]) {
                         uniqueDrivers[trip.driverId] = trip;
                     }
@@ -159,7 +159,7 @@ export default function PassengerChatPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow p-6 space-y-4 overflow-y-auto">
-                            {messages.map((msg:any) => (
+                            {messages.map((msg:Message) => (
                                 <div key={msg.id} className={cn("flex items-end gap-2", msg.senderId === user?.id ? "justify-end" : "justify-start")}>
                                      {msg.senderId !== user?.id && (
                                          <Avatar className="h-8 w-8">
