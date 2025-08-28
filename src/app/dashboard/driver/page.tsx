@@ -16,6 +16,16 @@ import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 
@@ -39,6 +49,9 @@ export default function DriverDashboardPage() {
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
   const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
   const [taxiStands, setTaxiStands] = useState<TaxiStand[]>([]);
+  
+  const [showStandAlert, setShowStandAlert] = useState(false);
+  const [approachedStand, setApproachedStand] = useState<TaxiStand | null>(null);
   
   const { isLoaded } = useGoogleMaps();
 
@@ -64,9 +77,52 @@ export default function DriverDashboardPage() {
     setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
   }, [isOnline, t]);
   
+  // Simulate driver moving and check proximity to stands
+  useEffect(() => {
+    if (isOnline && taxiStands.length > 0) {
+      const interval = setInterval(() => {
+        // Simulate vehicle position update
+        const newLat = vehiclePosition.lat + (Math.random() - 0.5) * 0.001;
+        const newLng = vehiclePosition.lng + (Math.random() - 0.5) * 0.001;
+        const newPosition = { lat: newLat, lng: newLng };
+        setVehiclePosition(newPosition);
+
+        // Check for nearby stands
+        for (const stand of taxiStands) {
+          const distance = google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(newPosition),
+            new google.maps.LatLng(stand.location)
+          );
+          
+          if (distance < 200 && !approachedStand) { // 200 meters threshold
+             setApproachedStand(stand);
+             setShowStandAlert(true);
+             break;
+          }
+        }
+      }, 5000); // Check every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [isOnline, taxiStands, vehiclePosition, approachedStand]);
+
+
   const handleServiceChange = (service: keyof typeof services, checked: boolean) => {
     setServices(prev => ({ ...prev, [service]: checked }));
   };
+
+  const handleJoinQueue = () => {
+      console.log(`Joining queue for ${approachedStand?.name}`);
+      // TODO: Implement logic to join the queue
+      setShowStandAlert(false);
+      setApproachedStand(null);
+  }
+
+  const handleIgnoreQueue = () => {
+      console.log(`Ignoring queue for ${approachedStand?.name}`);
+      setShowStandAlert(false);
+      setApproachedStand(null);
+  }
 
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
@@ -187,6 +243,20 @@ export default function DriverDashboardPage() {
                 )}
             </Card>
 
+            <AlertDialog open={showStandAlert} onOpenChange={setShowStandAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>{t('dialog_approach_stand_title')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {t('dialog_approach_stand_desc', { standName: approachedStand?.name || '' })}
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel onClick={handleIgnoreQueue}>{t('btn_ignore')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleJoinQueue}>{t('btn_join_queue')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     </div>
   );

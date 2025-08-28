@@ -25,9 +25,9 @@ export default function TaxiStandsPage() {
     const [stands, setStands] = useState<TaxiStand[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [map, setMap] = useState<google.maps.Map | null>(null);
     
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isAddingMode, setIsAddingMode] = useState(false);
     const [standData, setStandData] = useState<Partial<TaxiStand> | null>(null);
 
     const { isLoaded } = useGoogleMaps();
@@ -50,18 +50,20 @@ export default function TaxiStandsPage() {
     }, [fetchStands]);
 
     const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-        if (e.latLng && isDialogOpen && standData) {
-            setStandData({ ...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() } });
+        if (isAddingMode && e.latLng) {
+            setStandData({ name: '', location: { lat: e.latLng.lat(), lng: e.latLng.lng() } });
+            setIsDialogOpen(true);
+            setIsAddingMode(false); // Exit adding mode after selecting a point
         }
-    }, [isDialogOpen, standData]);
+    }, [isAddingMode]);
     
 
-    const handleOpenAddDialog = () => {
-        if (map) {
-            const center = map.getCenter();
-            setStandData({ name: '', location: { lat: center?.lat() || LISBON_CENTER.lat, lng: center?.lng() || LISBON_CENTER.lng } });
-            setIsDialogOpen(true);
-        }
+    const handleOpenAddMode = () => {
+        setIsAddingMode(true);
+        toast({
+            title: t('stands_add_mode_title'),
+            description: t('stands_add_mode_desc'),
+        });
     }
 
     const handleOpenEditDialog = (stand: TaxiStand) => {
@@ -78,7 +80,7 @@ export default function TaxiStandsPage() {
                 title: standData.id ? t('toast_stand_updated_title') : t('toast_stand_added_title'), 
                 description: standData.id ? t('toast_stand_updated_desc', { standName: standData.name }) : t('toast_stand_added_desc', { standName: standData.name })
             });
-            fetchStands(); // Refresh list from DB
+            fetchStands();
             setIsDialogOpen(false);
             setStandData(null);
         } catch (error) {
@@ -98,7 +100,7 @@ export default function TaxiStandsPage() {
                     title: t('toast_stand_deleted_title'),
                     description: t('toast_stand_deleted_desc', { standName: standToDelete.name }),
                 });
-                fetchStands(); // Refresh list from DB
+                fetchStands();
             } catch (error) {
                  console.error(error);
                  toast({ title: t('error_title'), description: "Failed to delete stand.", variant: "destructive" });
@@ -117,6 +119,7 @@ export default function TaxiStandsPage() {
                 if (!open) {
                     setIsDialogOpen(false);
                     setStandData(null);
+                    setIsAddingMode(false);
                 } else {
                     setIsDialogOpen(true);
                 }
@@ -158,7 +161,6 @@ export default function TaxiStandsPage() {
                         center={LISBON_CENTER}
                         zoom={12}
                         onMapClick={handleMapClick}
-                        onMapLoad={setMap}
                     >
                     {stands.map(stand => (
                             <MarkerF
@@ -167,21 +169,6 @@ export default function TaxiStandsPage() {
                                 title={stand.name}
                             />
                         ))}
-                        {isDialogOpen && standData?.location && (
-                            <MarkerF
-                                position={standData.location}
-                                draggable={true}
-                                onDragEnd={(e) => e.latLng && setStandData({...standData, location: { lat: e.latLng.lat(), lng: e.latLng.lng() }})}
-                                icon={{
-                                  path: google.maps.SymbolPath.CIRCLE,
-                                  scale: 10,
-                                  fillColor: 'hsl(var(--primary))',
-                                  fillOpacity: 1,
-                                  strokeWeight: 2,
-                                  strokeColor: 'hsl(var(--primary-foreground))',
-                                }}
-                            />
-                        )}
                     </Map>
                  )}
             </Card>
@@ -192,7 +179,7 @@ export default function TaxiStandsPage() {
                         <CardTitle>{t('stands_list_title')}</CardTitle>
                         <CardDescription>{t('stands_list_desc')}</CardDescription>
                     </div>
-                     <Button onClick={handleOpenAddDialog}><PlusCircle className="h-4 w-4 mr-2"/>{t('btn_add_stand')}</Button>
+                     <Button onClick={handleOpenAddMode}><PlusCircle className="h-4 w-4 mr-2"/>{t('btn_add_stand')}</Button>
                 </CardHeader>
                 <CardContent>
                     {loading ? (
