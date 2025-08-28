@@ -1,8 +1,34 @@
-
 'use server';
 
 // In a real application, you would install the PayPal SDK. For this prototype, we'll use fetch.
 // This file is now updated to handle recurring subscriptions.
+
+
+interface PayPalError extends Error {
+    statusCode?: number;
+    details?: any;
+}
+
+
+interface PayPalTokenResponse {
+    access_token: string;
+}
+
+interface PayPalProduct {
+    id: string;
+    // Add other product fields if needed
+}
+
+interface PayPalPlan {
+    id: string;
+    // Add other plan fields if needed
+}
+
+interface PayPalSubscription {
+    links: { href: string; rel: string; method: string }[];
+    // Add other subscription fields if needed
+}
+
 
 /**
  * Sets up the PayPal environment.
@@ -20,7 +46,7 @@ function getPayPalClient() {
 
   const baseUrl = mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
-  const getAccessToken = async () => {
+  const getAccessToken = async (): Promise<string> => {
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
     const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: 'POST',
@@ -30,7 +56,7 @@ function getPayPalClient() {
       },
       body: 'grant_type=client_credentials',
     });
-    const data: { access_token: string } = await response.json();
+    const data: PayPalTokenResponse = await response.json();
     return data.access_token;
   };
 
@@ -56,11 +82,10 @@ function getPayPalClient() {
 
         if (!response.ok) {
             console.error('PayPal API Error:', JSON.stringify(jsonResponse, null, 2));
-            throw {
-                ...new Error(`PayPal API request failed: ${jsonResponse.message || response.statusText}`),
-                statusCode: response.status,
-                details: jsonResponse.details,
-            };
+            const error: PayPalError = new Error(`PayPal API request failed: ${jsonResponse.message || response.statusText}`);
+            error.statusCode = response.status;
+            error.details = jsonResponse.details;
+            throw error;
         }
         
         return jsonResponse;
@@ -74,7 +99,7 @@ function getPayPalClient() {
  * @param paypalClient The PayPal client.
  * @returns The ID of the billing plan.
  */
-async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalClient>) {
+async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalClient>): Promise<string> {
     const productId = `SMARTWHEELS-PRODUCT-${process.env.NODE_ENV}`;
     const planId = `SMARTWHEELS-PLAN-${process.env.NODE_ENV}`;
     let finalProductId = '';
@@ -82,17 +107,18 @@ async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalC
     // 1. Get or Create Product
     try {
         console.log(`Checking for PayPal Product: ${productId}`);
-        const product: { id: string } = await paypalClient.execute({
+        const product: PayPalProduct = await paypalClient.execute({
             method: 'GET',
             path: `/v1/catalogs/products/${productId}`
         });
         finalProductId = product.id;
         console.log('Found existing PayPal product.');
-    } catch (error: any) {
-        if (error && error.statusCode === 404) {
+    } catch (error: unknown) {
+        const paypalError = error as PayPalError;
+        if (paypalError && paypalError.statusCode === 404) {
             console.log('PayPal product not found, creating new one.');
             try {
-                const newProduct: { id: string } = await paypalClient.execute({
+                const newProduct: PayPalProduct = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/catalogs/products',
                     body: {
@@ -120,17 +146,18 @@ async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalC
     // 2. Get or Create Plan
     try {
         console.log(`Checking for PayPal Plan: ${planId}`);
-        const plan: { id: string } = await paypalClient.execute({
+        const plan: PayPalPlan = await paypalClient.execute({
              method: 'GET',
              path: `/v1/billing/plans/${planId}`
         });
         console.log('Found existing PayPal plan.');
         return plan.id;
-    } catch (error: any) {
-        if (error && error.statusCode === 404) {
+    } catch (error: unknown) {
+        const paypalError = error as PayPalError;
+        if (paypalError && paypalError.statusCode === 404) {
              console.log('PayPal plan not found, creating new one.');
              try {
-                const newPlan: { id: string } = await paypalClient.execute({
+                const newPlan: PayPalPlan = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/billing/plans',
                     body: {
@@ -180,7 +207,7 @@ async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalC
  * @param vehicleId The unique ID of the vehicle being registered.
  * @returns The PayPal subscription object, including the approval link.
  */
-export async function handleVehicleFee(vehicleId: string) {
+export async function handleVehicleFee(vehicleId: string): Promise<{ approvalUrl: string }> {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     if (!baseUrl) {
@@ -207,7 +234,7 @@ export async function handleVehicleFee(vehicleId: string) {
     };
 
     try {
-        const subscription: { links: { rel: string; href: string }[] } = await paypalClient.execute(request);
+        const subscription: PayPalSubscription = await paypalClient.execute(request);
         const approvalLink = subscription.links.find((link) => link.rel === 'approve');
         
         if (approvalLink) {
