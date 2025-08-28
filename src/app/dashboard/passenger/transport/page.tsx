@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
@@ -24,7 +25,6 @@ import {
   Loader2, Send,
   CheckCircle,
   Phone,
-  MessageSquare,
   X,
   Star,
   PlayCircle,
@@ -45,8 +45,8 @@ import { Label } from '@/components/ui/label';
 
 import { createRideRequest, updateRideStatus } from '@/services/rideService';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
-import { getUserProfileByAuthId, getProfileByIdAndRole } from '@/services/profileService';
+import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { getProfileByIdAndRole } from '@/services/profileService';
 import { sendMessage } from '@/services/chatService';
 import { getVehicleById } from '@/services/vehicleService';
 import { getExchangeRate } from '@/services/currencyService';
@@ -140,7 +140,6 @@ export default function RequestTransportPage() {
   const { formatCurrency } = useCurrency(language.value);
   const { reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
@@ -156,7 +155,7 @@ export default function RequestTransportPage() {
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
     {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
     {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-  ], [user?.balance, formatCurrency, t]);
+  ], [user?.balance, formatCurrency]);
 
   const serviceCategories = useMemo(() => [
     { id: 'economico', icon: Car, title: t('transport_service_economic_title'), description: t('transport_service_economic_desc'), price: 6.50, eta: t('eta_5min') },
@@ -193,7 +192,7 @@ export default function RequestTransportPage() {
         setIsPriceLoading(false);
     }
     fetchConvertedPrices();
-  }, [language.currency.code, serviceCategories, t, toast]);
+  }, [language.currency.code, serviceCategories, toast]);
 
 
   useEffect(() => {
@@ -251,7 +250,7 @@ export default function RequestTransportPage() {
         return;
     }
     try {
-        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        const docRef = await createRideRequest(user.id, origin, destination, selectedService as any);
         dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
         toast({
             title: t('searching_driver_title'),
@@ -263,7 +262,7 @@ export default function RequestTransportPage() {
     }
   };
 
-  const handlePlaceSelect = async (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
+  const handlePlaceSelect = (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
       if(place.geometry?.location){
         const coords = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
         const address = place.formatted_address || place.name || '';
@@ -342,7 +341,8 @@ export default function RequestTransportPage() {
     setMessages([]);
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!currentMessage.trim() || !activeRideId || !user?.id) return;
     try {
         await sendMessage(activeRideId, user.id, currentMessage);
@@ -537,7 +537,7 @@ export default function RequestTransportPage() {
                             {messages.length === 0 ? (
                                 <p className="text-center text-muted-foreground text-sm py-4">{t('chat_no_messages')}</p>
                             ) : (
-                                messages.map((msg) => {
+                                messages.map((msg: Message) => {
                                     const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
                                     const isCurrentUser = msg.senderId === user?.id;
                                     return (
@@ -554,13 +554,13 @@ export default function RequestTransportPage() {
                                 })
                             )}
                         </div>
-                        <div className="mt-2 space-y-2">
+                        <form onSubmit={handleSendMessage} className="mt-2 space-y-2">
                             <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
                             <div className="flex gap-2">
                                 <Textarea id="chat-input" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
-                                <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}><Send /></Button>
+                                <Button type="submit" disabled={!currentMessage.trim()}><Send /></Button>
                             </div>
-                        </div>
+                        </form>
 
                     </CardContent>
                     <CardFooter>
@@ -643,7 +643,7 @@ export default function RequestTransportPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+             <Map onMapLoad={() => {}} onMapClick={handleMapClick}>
                 {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} />}
                 {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} />}
                 {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
