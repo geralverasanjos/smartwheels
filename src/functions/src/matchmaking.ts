@@ -2,9 +2,16 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as geofire from 'geofire-common';
-import { getVehicleById } from '../../services/vehicleService';
+import type { GeoPoint } from 'firebase-admin/firestore';
 
 const db = admin.firestore();
+
+interface DriverLocationDoc {
+    id: string;
+    geopoint: GeoPoint;
+    distance: number;
+    // include other fields from driverLocations if necessary
+}
 
 /**
  * Finds the nearest available driver for a new ride request.
@@ -30,11 +37,8 @@ export const findDriverForRide = functions.firestore
     const center = [origin.coords.lat, origin.coords.lng];
     const radiusInM = 50 * 1000; // 50km search radius
 
-    // 1. Get all online drivers' locations
+    // 1. Find drivers within the radius
     const driversLocationCollection = db.collection('driverLocations');
-    const allDriverLocations = (await driversLocationCollection.get()).docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    // 2. Find drivers within the radius
     const bounds = geofire.geohashQueryBounds(center, radiusInM);
     const promises = [];
     for (const b of bounds) {
@@ -43,14 +47,17 @@ export const findDriverForRide = functions.firestore
     }
 
     const snapshots = await Promise.all(promises);
-    const nearbyDriverDocs: any[] = [];
+    const nearbyDriverDocs: DriverLocationDoc[] = [];
     snapshots.forEach(snap => {
       snap.docs.forEach(doc => {
-        const { lat, lng } = doc.data().geopoint;
+        const data = doc.data();
+        const lat = data.geopoint.latitude;
+        const lng = data.geopoint.longitude;
+        
         const distanceInKm = geofire.distanceBetween([lat, lng], center);
         const distanceInM = distanceInKm * 1000;
         if (distanceInM <= radiusInM) {
-          nearbyDriverDocs.push({ id: doc.id, ...doc.data(), distance: distanceInM });
+          nearbyDriverDocs.push({ id: doc.id, ...data, distance: distanceInM } as DriverLocationDoc);
         }
       });
     });
@@ -97,4 +104,3 @@ export const findDriverForRide = functions.firestore
     await db.doc(`rideRequests/${requestId}`).update({ status: 'no_drivers_found' });
     return null;
 });
-
