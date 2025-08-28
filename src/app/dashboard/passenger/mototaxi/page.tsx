@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
@@ -243,7 +244,7 @@ export default function RequestMotoTaxiPage() {
         return;
     }
     try {
-        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        const docRef = await createRideRequest(user.id, origin, destination, selectedService as any);
         dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
         toast({ title: t('searching_driver_title'), description: t('searching_driver_desc') });
     } catch(error) {
@@ -377,7 +378,7 @@ export default function RequestMotoTaxiPage() {
                         <Label htmlFor="destination">{t('destination_label')}</Label>
                         <div className="flex gap-2">
                             <AutocompleteInput 
-                                onPlaceSelect={(place) => handlePlaceSelect(place, 'destination')}
+                                onPlaceSelect={(place: google.maps.places.PlaceResult) => handlePlaceSelect(place, 'destination')}
                                 value={destination.text}
                                 placeholder={t('destination_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_DESTINATION', payload: { text: '', coords: null } })}

@@ -380,7 +380,7 @@ export default function RequestDeliveryPage() {
                         <Label htmlFor="destination">{t('destination_label')}</Label>
                         <div className="flex gap-2">
                             <AutocompleteInput 
-                                onPlaceSelect={(place) => handlePlaceSelect(place, 'destination')}
+                                onPlaceSelect={(place: google.maps.places.PlaceResult) => handlePlaceSelect(place, 'destination')}
                                 value={destination.text}
                                 placeholder={t('destination_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_DESTINATION', payload: { text: '', coords: null } })}
@@ -653,6 +653,3 @@ export default function RequestDeliveryPage() {
     </div>
   );
 }
-
-    
-    
