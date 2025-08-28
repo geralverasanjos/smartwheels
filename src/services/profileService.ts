@@ -3,7 +3,7 @@
 // src/services/profileService.ts
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getFunctions, httpsCallable, HttpsCallableResult } from 'firebase/functions';
 import { app, db } from '@/lib/firebase';
 import type { UserProfile } from '@/types';
 
@@ -142,13 +142,13 @@ export const uploadProfilePhoto = async (file: File, path: string): Promise<stri
         const base64File = await toBase64(file);
         const uploadFileCallable = httpsCallable(functions, 'uploadFile');
         
-        const result: any = await uploadFileCallable({ 
+        const result: HttpsCallableResult<{ downloadURL: string }> = await uploadFileCallable({ 
             file: base64File, 
             path: path,
             contentType: file.type
         });
         
-        const data = result.data as { downloadURL: string };
+        const data = result.data;
         return data.downloadURL;
 
     } catch (error) {
