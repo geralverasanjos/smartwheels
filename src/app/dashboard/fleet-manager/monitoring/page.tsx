@@ -6,45 +6,48 @@ import { MarkerF } from '@react-google-maps/api';
 import { Map } from '@/components/map';
 import VehicleList from '@/components/fleet/vehicle-list';
 import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
-import { Loader2, Car } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
-import { getDriversByFleetManager } from '@/services/profileService';
+import { getDriversByFleetManager, saveUserProfile } from '@/services/profileService';
 import type { UserProfile } from '@/types';
-import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 
 
 export default function FleetMonitoringPage() {
-    const { t, user } = useAppContext();
+    const { user } = useAppContext();
     
     const [vehicles, setVehicles] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<UserProfile | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { isLoaded } = useGoogleMaps();
     
-    useEffect(() => {
+    const fetchVehicles = useCallback(async () => {
         if (user?.id) {
             getDriversByFleetManager(user.id).then(drivers => {
                 const vehiclesWithLocation = drivers.map(driver => ({
                     ...driver,
                     lat: LISBON_CENTER.lat + (Math.random() - 0.5) * 0.1,
                     lng: LISBON_CENTER.lng + (Math.random() - 0.5) * 0.1,
-                    vehicleStatus: { state: (driver as any).status || 'disponivel' }
                 }));
                 setVehicles(vehiclesWithLocation);
             }).finally(() => setLoading(false));
         }
-    }, [user]);
+    }, [user?.id]);
+    
+    useEffect(() => {
+        fetchVehicles();
+    }, [fetchVehicles]);
 
     const handleOpenAddModal = () => {
         setSelectedVehicle(null);
         setIsModalOpen(true);
     };
 
-    const handleOpenEditModal = (vehicle: any) => {
+    const handleOpenEditModal = (vehicle: UserProfile) => {
         setSelectedVehicle(vehicle); 
         setIsModalOpen(true);
     };
@@ -54,22 +57,20 @@ export default function FleetMonitoringPage() {
         setSelectedVehicle(null);
     };
 
-    const handleSaveVehicle = (formData: any) => {
-        if (formData.id) {
-            setVehicles(vehicles.map(v => v.id === formData.id ? { ...v, ...formData } : v));
-        } else { 
-            const newVehicle = { ...formData, id: `driver_${Date.now()}`, lat: 38.73, lng: -9.14 };
-            setVehicles([...vehicles, newVehicle]);
-        }
+    const handleSaveVehicle = async (formData: Partial<UserProfile>) => {
+        await saveUserProfile(formData);
+        fetchVehicles(); // Re-fetch to get updated data
         handleCloseModal();
     };
 
-    const handleDeleteVehicle = (vehicleId: string) => {
+    const handleDeleteVehicle = async (vehicleId: string) => {
+        // This would typically involve a "delete" or "archive" call to your service
+        await saveUserProfile({id: vehicleId, role: 'driver', fleetManagerId: ''});
         setVehicles(vehicles.filter(v => v.id !== vehicleId));
         handleCloseModal();
     };
     
-    const handleSelectOnMap = useCallback((vehicle: any) => {
+    const handleSelectOnMap = useCallback((vehicle: UserProfile) => {
         setSelectedVehicle(vehicle);
     }, []);
 

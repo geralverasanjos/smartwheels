@@ -24,11 +24,9 @@ import {
     LifeBuoy,
     LogOut,
     Users,
-    ClipboardList,
     AreaChart,
     Tv,
     FileText,
-    Building2,
     MapPin,
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
@@ -113,10 +111,10 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                 <SidebarMenu>
                     {navItems.map((item) => (
                          <SidebarMenuItem key={item.href} onClick={handleLinkClick}>
-                            <Link href={item.href.startsWith('/dashboard/payments') ? `${item.href}?from=${pathname}` : item.href}>
-                                <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey as any)}>
+                            <Link href={item.href}>
+                                <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey)}>
                                     <item.icon />
-                                    <span>{t(item.labelKey as any)}</span>
+                                    <span>{t(item.labelKey)}</span>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>

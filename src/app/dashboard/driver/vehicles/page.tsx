@@ -2,19 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Upload, Pencil, PlusCircle, Loader2, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Pencil, PlusCircle, Loader2, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { TranslationKeys } from '@/lib/i18n';
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import VehicleFormDialog from '@/components/driver/vehicle-form-dialog';
 import { getVehiclesByDriver, saveVehicle } from '@/services/vehicleService';
 import type { Vehicle } from '@/types';
+import { saveUserProfile } from '@/services/profileService';
 
 
 export default function VehiclesPage() {
@@ -63,7 +61,7 @@ export default function VehiclesPage() {
     const handleSave = async (data: Partial<Vehicle>) => {
         try {
             await saveVehicle(data);
-            setVehicles(vehicles.map(v => v.id === data.id ? {...v, ...data} : v));
+            setVehicles(vehicles.map(v => v.id === data.id ? {...v, ...data} as Vehicle : v));
             toast({
                 title: t('toast_vehicle_updated_title'),
                 description: t('toast_vehicle_updated_desc'),
@@ -78,9 +76,7 @@ export default function VehiclesPage() {
         if (!user) return;
         try {
             const updatedProfile = { ...user, activeVehicleId: vehicleId };
-            // We need a way to save the user's main profile, not just the vehicle
-            // Let's assume a saveUserProfile function exists.
-            // await saveUserProfile(updatedProfile);
+            await saveUserProfile(updatedProfile);
             setUser(updatedProfile); // Update context
             toast({ title: "Veículo Ativo", description: "Veículo definido como ativo com sucesso."});
         } catch(error) {

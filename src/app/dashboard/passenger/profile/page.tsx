@@ -5,8 +5,6 @@ import ProfileForm from '@/components/shared/ProfileForm';
 import { useToast } from '@/hooks/use-toast';
 import { saveUserProfile } from '@/services/profileService';
 import type { UserProfile } from '@/types';
-import FileUploadCard from '@/components/shared/file-upload-card';
-import { FileText } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

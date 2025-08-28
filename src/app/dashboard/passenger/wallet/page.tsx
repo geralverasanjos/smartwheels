@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wallet, Landmark, ArrowUpRight, ArrowDownLeft, PlusCircle, ArrowDown, ArrowUp, Send, QrCode, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, PlusCircle, ArrowDown, Send, QrCode, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { Separator } from '@/components/ui/separator';
 import React, { useEffect, useState } from 'react';

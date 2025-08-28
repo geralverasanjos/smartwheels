@@ -61,7 +61,7 @@ export default function VehiclesPage() {
     const handleSave = async (data: Partial<Vehicle>) => {
         try {
             await saveVehicle(data);
-            setVehicles(vehicles.map(v => v.id === data.id ? {...v, ...data} : v));
+            setVehicles(vehicles.map(v => v.id === data.id ? {...v, ...data} as Vehicle: v));
             toast({
                 title: t('toast_vehicle_updated_title'),
                 description: t('toast_vehicle_updated_desc'),

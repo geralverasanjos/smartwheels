@@ -50,8 +50,8 @@ export default function FleetManagerDashboard() {
         const avgRating = drivers.length > 0 ? totalRatings / drivers.length : 0;
         
         // Simulating status for chart - in a real app, this would come from live location data
-        const onlineCount = drivers.filter(d => (d as any).status === 'online').length || Math.floor(drivers.length / 2);
-        const inTripCount = drivers.filter(d => (d as any).status === 'in_trip').length || Math.floor(drivers.length / 4);
+        const onlineCount = drivers.filter(d => d.status === 'online').length || Math.floor(drivers.length / 2);
+        const inTripCount = drivers.filter(d => d.status === 'in_trip').length || Math.floor(drivers.length / 4);
         const offlineCount = drivers.length - onlineCount - inTripCount;
         
         return {

@@ -8,7 +8,7 @@ import type { UserProfile } from '@/types';
 import FileUploadCard from '@/components/shared/file-upload-card';
 import { FileText, Building2, Loader2 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Users, Car } from 'lucide-react';

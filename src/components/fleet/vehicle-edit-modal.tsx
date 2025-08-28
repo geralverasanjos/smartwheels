@@ -14,12 +14,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm, Controller } from 'react-hook-form';
 import { useAppContext } from '@/contexts/app-context';
+import type { UserProfile, Vehicle } from '@/types';
 
 interface VehicleEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  vehicle: any | null;
-  onSave: (data: any) => void;
+  vehicle: (UserProfile & { vehicleDetails?: Partial<Vehicle>, vehicleStatus?: {state: string} }) | null;
+  onSave: (data: Partial<UserProfile>) => void;
   onDelete: (id: string) => void;
 }
 
@@ -32,16 +33,16 @@ export default function VehicleEditModal({
 }: VehicleEditModalProps) {
   const { t } = useAppContext();
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
-    defaultValues: vehicle || { name: '', email: '', vehicleDetails: { model: '' }, vehicleStatus: { state: 'disponivel' } }
+    defaultValues: vehicle || { name: '', email: '', activeVehicleId: '', status: 'disponivel' }
   });
 
   React.useEffect(() => {
     if (isOpen) {
-      reset(vehicle || { name: '', email: '', vehicleDetails: { model: '' }, vehicleStatus: { state: 'disponivel' } });
+      reset(vehicle || { name: '', email: '', activeVehicleId: '', status: 'disponivel' });
     }
   }, [isOpen, vehicle, reset]);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: Partial<UserProfile>) => {
     onSave({ ...vehicle, ...data });
   };
 
@@ -67,15 +68,10 @@ export default function VehicleEditModal({
             <Input id="email" type="email" {...register('email', { required: true })} />
              {errors.email && <p className="text-destructive text-xs">{t('field_required')}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="vehicle-model">{t('vehicle_model_label')}</Label>
-            <Input id="vehicle-model" {...register('vehicleDetails.model', { required: true })} />
-             {errors.vehicleDetails?.model && <p className="text-destructive text-xs">{t('field_required')}</p>}
-          </div>
-          <div className="space-y-2">
+           <div className="space-y-2">
             <Label htmlFor="vehicle-status">{t('vehicle_status_label')}</Label>
             <Controller
-                name="vehicleStatus.state"
+                name="status"
                 control={control}
                 render={({ field }) => (
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -83,10 +79,9 @@ export default function VehicleEditModal({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="disponivel">{t('vehicle_status_available')}</SelectItem>
-                            <SelectItem value="em_viagem">{t('vehicle_status_in_trip')}</SelectItem>
-                            <SelectItem value="em_manutencao">{t('vehicle_status_maintenance')}</SelectItem>
-                            <SelectItem value="inativo">{t('vehicle_status_inactive')}</SelectItem>
+                            <SelectItem value="online">{t('status_online')}</SelectItem>
+                            <SelectItem value="in_trip">{t('status_in_trip')}</SelectItem>
+                            <SelectItem value="offline">{t('status_offline')}</SelectItem>
                         </SelectContent>
                     </Select>
                 )}

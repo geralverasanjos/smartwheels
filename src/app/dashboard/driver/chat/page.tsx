@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { getDriverTripHistory } from '@/services/historyService';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { sendMessage } from '@/services/chatService';
 import type { Trip, Message, UserProfile } from '@/types';
 
@@ -18,7 +18,7 @@ interface Conversation {
     id: string; // rideId acts as conversation ID
     participant: UserProfile;
     lastMessage: string;
-    lastMessageTimestamp: any;
+    lastMessageTimestamp: Timestamp;
 }
 
 
@@ -51,7 +51,7 @@ export default function DriverChatPage() {
                     id: trip.id,
                     participant: trip.passenger!,
                     lastMessage: '...', 
-                    lastMessageTimestamp: trip.date,
+                    lastMessageTimestamp: trip.date as Timestamp,
                 }));
                 
                 setConversations(convos);
@@ -160,7 +160,7 @@ export default function DriverChatPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow p-6 space-y-4 overflow-y-auto">
-                            {messages.map((msg:any) => (
+                            {messages.map((msg:Message) => (
                                 <div key={msg.id} className={cn("flex items-end gap-2", msg.senderId === user?.id ? "justify-end" : "justify-start")}>
                                      {msg.senderId !== user?.id && (
                                          <Avatar className="h-8 w-8">

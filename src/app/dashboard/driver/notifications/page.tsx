@@ -5,10 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Bell, Car, FileCheck, Tag, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import type { TranslationKeys } from '@/lib/i18n';
 import { getNotifications, markNotificationAsRead } from '@/services/notificationService';
 import type { AppNotification } from '@/types';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const iconMap: { [key: string]: LucideIcon } = {

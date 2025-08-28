@@ -172,7 +172,7 @@ export default function FleetDriversPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusVariant((driver as any).status)}>{t(`status_${(driver as any).status}` as TranslationKeys) || (driver as any).status}</Badge>
+                                            <Badge variant={getStatusVariant(driver.status)}>{t(`status_${driver.status}` as TranslationKeys) || driver.status}</Badge>
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className="flex items-center justify-center gap-1">

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import type { UserRole } from '@/components/dashboard/dashboard-layout';
 import { useCurrency } from '@/lib/currency';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { AddEditPaymentMethodForm } from '@/components/shared/wallet/payout-form';
+import { PayoutMethod } from '@/types';
 
 const savedAccounts = [
     { id: 'bank1', type: 'bank', name: 'Conta Principal', details: '**** 1234' },
@@ -43,7 +44,7 @@ export default function WithdrawPageContents({ role }: { role: UserRole }) {
         }
     }
 
-    const handleAddAccount = (values: any) => {
+    const handleAddAccount = (values: Partial<PayoutMethod>) => {
         // Logic to add the new account
         console.log("New account to add:", values);
         setIsAddAccountOpen(false);

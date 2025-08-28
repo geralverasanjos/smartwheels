@@ -12,7 +12,7 @@ export default function AuthPage() {
     const searchParams = useSearchParams();
     
     const initialRole = searchParams.get('role') || 'passenger';
-    const [role, setRole] = useState(initialRole);
+    const [role] = useState(initialRole);
 
     // This effect handles redirection after a successful login
     useEffect(() => {

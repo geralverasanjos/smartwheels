@@ -4,18 +4,19 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Dot } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { UserProfile } from '@/types';
+import type { TranslationKeys } from '@/lib/i18n';
 
 interface VehicleListProps {
-  vehicles: any[];
-  onVehicleClick: (vehicle: any) => void;
+  vehicles: UserProfile[];
+  onVehicleClick: (vehicle: UserProfile) => void;
   onAddClick: () => void;
 }
 
-const statusConfig: Record<string, { labelKey: any; colorClass: string }> = {
-    disponivel: { labelKey: 'vehicle_status_available', colorClass: 'text-green-500' },
-    em_viagem: { labelKey: 'vehicle_status_in_trip', colorClass: 'text-blue-500' },
-    em_manutencao: { labelKey: 'vehicle_status_maintenance', colorClass: 'text-yellow-500' },
-    inativo: { labelKey: 'vehicle_status_inactive', colorClass: 'text-red-500' },
+const statusConfig: Record<string, { labelKey: TranslationKeys; colorClass: string }> = {
+    online: { labelKey: 'status_online', colorClass: 'text-green-500' },
+    in_trip: { labelKey: 'status_in_trip', colorClass: 'text-blue-500' },
+    offline: { labelKey: 'status_offline', colorClass: 'text-red-500' },
 };
 
 export default function VehicleList({ vehicles, onVehicleClick, onAddClick }: VehicleListProps) {
@@ -30,13 +31,13 @@ export default function VehicleList({ vehicles, onVehicleClick, onAddClick }: Ve
         <div className="p-6 pt-0">
              <Button onClick={onAddClick} className="w-full">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                {t('btn_add_vehicle')}
+                {t('btn_add_driver')}
             </Button>
         </div>
         <ScrollArea className="flex-grow">
             <div className="space-y-2 p-6 pt-0">
             {vehicles.map((vehicle) => {
-                const status = statusConfig[vehicle.vehicleStatus.state] || { labelKey: 'unknown_status', colorClass: 'text-gray-500'};
+                const status = statusConfig[vehicle.status || 'offline'] || { labelKey: 'status_offline' as TranslationKeys, colorClass: 'text-gray-500'};
                 return (
                     <div
                     key={vehicle.id}
@@ -44,7 +45,7 @@ export default function VehicleList({ vehicles, onVehicleClick, onAddClick }: Ve
                     className="p-3 rounded-lg border hover:bg-accent cursor-pointer"
                     >
                     <p className="font-semibold">{vehicle.name}</p>
-                    <p className="text-sm text-muted-foreground">{vehicle.vehicleDetails.model}</p>
+                    <p className="text-sm text-muted-foreground">{vehicle.activeVehicleId || "N/A"}</p>
                     <div className="flex items-center text-sm">
                         <Dot className={`mr-1 h-6 w-6 ${status.colorClass}`} />
                         <span>{t(status.labelKey)}</span>

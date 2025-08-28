@@ -1,4 +1,5 @@
 import type { TranslationKeys } from "@/lib/i18n";
+import { Timestamp } from "firebase/firestore";
 
 export interface Promotion {
     id: string; // Firestore IDs are strings
@@ -21,7 +22,7 @@ export interface UserProfile {
     avatarUrl?: string;
     balance?: number; 
     role: 'passenger' | 'driver' | 'fleet-manager';
-    status?: 'active' | 'pending' | 'inactive' | 'online' | 'in_trip';
+    status?: 'active' | 'pending' | 'inactive' | 'online' | 'in_trip' | 'offline';
     rating?: number;
     activeVehicleId?: string; // Optional, only for drivers
     fleetManagerId?: string; // Optional, only for drivers in a fleet
@@ -42,7 +43,7 @@ export interface Trip {
     id: string; // Firestore document ID
     type: 'trip' | 'delivery';
     passengerName: string;
-    date: string; // ISO 8601 format
+    date: Timestamp; // ISO 8601 format
     value: number;
     earnings?: number; // Optional, can be calculated
     status: 'completed' | 'cancelled';
@@ -63,22 +64,20 @@ export interface Message {
     rideId: string;
     senderId: string;
     text: string;
-    timestamp: any; // Use any for firebase.firestore.FieldValue or Date for now
+    timestamp: Timestamp;
 }
-
 
 export interface RideRequest {
  id: string;
  passengerId: string;
- origin: any; 
- destination: any;
+ origin: { text: string; coords: { lat: number; lng: number } | null }; 
+ destination: { text: string; coords: { lat: number; lng: number } | null };
  serviceType: 'economico' | 'smart' | 'executivo' | 'van' | 'pet' | 'delivery_moto' | 'delivery_car' | 'delivery_van' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk';
  status: 'pending' | 'searching' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled' | 'no_drivers_found';
- timestamp: any; 
+ timestamp: Timestamp; 
  driverId?: string;
  vehicleId?: string;
 }
-
 
 export interface Vehicle {
     id: string;
@@ -94,7 +93,7 @@ export interface Vehicle {
     imageUrl?: string;
     aiHint?: string;
     allowedServices: ('passengers' | 'deliveries')[];
-    createdAt?: any;
+    createdAt?: Timestamp;
 }
 
 export interface Transaction {
@@ -104,7 +103,7 @@ export interface Transaction {
     amount: number; // Positive for income, negative for expenses
     description: string;
     status: 'completed' | 'pending' | 'failed';
-    timestamp: any; // Firestore Server Timestamp
+    timestamp: Timestamp;
     relatedUserId?: string; // e.g., for transfers
 }
 
@@ -150,7 +149,7 @@ export interface AppNotification {
     titleKey: TranslationKeys;
     descriptionKey: TranslationKeys;
     descriptionParams?: { [key: string]: string | number };
-    timestamp: any;
+    timestamp: Timestamp;
     isRead: boolean;
     link?: string;
 }

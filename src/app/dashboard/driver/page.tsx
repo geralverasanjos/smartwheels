@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Package, Loader2, MapPin } from 'lucide-react';
+import { Car, Package, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Map } from '@/components/map';
 import { HeatmapLayer, MarkerF } from '@react-google-maps/api';
@@ -51,7 +51,7 @@ export default function DriverDashboardPage() {
   const [services, setServices] = useState({ passengers: true, deliveries: true });
   const [queueMode, setQueueMode] = useState('global');
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
-  const [queuePosition, setQueuePosition] = useState({ position: 0, total: 0 });
+  const [queuePosition] = useState({ position: 0, total: 0 });
   const [taxiStands, setTaxiStands] = useState<TaxiStand[]>([]);
   
   const [showStandAlert, setShowStandAlert] = useState(false);
@@ -77,7 +77,7 @@ export default function DriverDashboardPage() {
     }
   }, [isLoaded]);
 
-  useEffect(() => {
+    useEffect(() => {
     setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
 
     if (isOnline && user?.id) {
@@ -114,7 +114,7 @@ export default function DriverDashboardPage() {
             navigator.geolocation.clearWatch(locationWatcher.current);
         }
     };
-  }, [isOnline, user, toast]);
+  }, [isOnline, user, toast, t]);
   
   // Check proximity to stands
   useEffect(() => {

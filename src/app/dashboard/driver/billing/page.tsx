@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useAppContext } from '@/contexts/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { Banknote, CreditCard, Landmark, Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getPayoutMethods, savePayoutMethod, deletePayoutMethod } from '@/services/payoutService';
 import type { PayoutMethod } from '@/types';
 import { PayPalIcon, MBWayIcon } from '@/components/ui/icons';
@@ -19,15 +19,7 @@ export default function DriverBillingPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingMethod, setEditingMethod] = useState<PayoutMethod | null>(null);
 
-    useEffect(() => {
-        if (!user?.id) {
-            setLoading(false);
-            return;
-        }
-        fetchMethods(user.id);
-    }, [user?.id]);
-
-    const fetchMethods = async (userId: string) => {
+    const fetchMethods = useCallback(async (userId: string) => {
         setLoading(true);
         try {
             const methods = await getPayoutMethods(userId);
@@ -37,7 +29,16 @@ export default function DriverBillingPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t, toast]);
+
+    useEffect(() => {
+        if (!user?.id) {
+            setLoading(false);
+            return;
+        }
+        fetchMethods(user.id);
+    }, [user?.id, fetchMethods]);
+
 
     const handleSave = async (values: Partial<PayoutMethod>) => {
         if (!user?.id) return;
@@ -94,7 +95,7 @@ export default function DriverBillingPage() {
             return method.details.email;
         }
         if (method.type === 'pix') {
-            return `${t(method.details.keyType as any) || ''}: ${method.details.key}`;
+            return `${t(method.details.keyType as 'email_label' | 'payment_method_pix_phone' | 'payment_method_pix_cpf' | 'payment_method_pix_random') || ''}: ${method.details.key}`;
         }
         if (method.type === 'mbway') {
             return `+${method.details.phone}`;

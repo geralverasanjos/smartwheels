@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import { getDriverPromotions, savePromotion, deletePromotion } from '@/services/promotionService';
 import type { Promotion } from '@/types';
+import type { TranslationKeys } from '@/lib/i18n';
 
 export default function DriverPromotionsPage() {
     const { t } = useAppContext();
@@ -24,7 +25,7 @@ export default function DriverPromotionsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState<Partial<Promotion> | null>(null);
 
-    const fetchPromotions = async () => {
+    const fetchPromotions = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getDriverPromotions();
@@ -35,11 +36,11 @@ export default function DriverPromotionsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t, toast]);
 
     useEffect(() => {
         fetchPromotions();
-    }, []);
+    }, [fetchPromotions]);
 
     const handleCreate = () => {
         setEditingPromotion({});
@@ -52,8 +53,8 @@ export default function DriverPromotionsPage() {
     };
 
     const handleDuplicate = (promo: Promotion) => {
-        const { id, ...promoCopy } = promo;
-        setEditingPromotion({ ...promoCopy, title: `${promo.title} (${t('promo_copy_suffix')})` });
+        const { ...promoCopy } = promo;
+        setEditingPromotion({ ...promoCopy, id: undefined, title: `${promo.title} (${t('promo_copy_suffix')})` });
         setIsDialogOpen(true);
     };
 
@@ -190,7 +191,7 @@ export default function DriverPromotionsPage() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
                                            <p className="font-semibold">{promo.title}</p>
-                                           <Badge variant={promo.status === 'Ativa' ? 'default' : 'secondary'}>{t(`promo_status_${promo.status.toLowerCase()}` as any)}</Badge>
+                                           <Badge variant={promo.status === 'Ativa' ? 'default' : 'secondary'}>{t(`promo_status_${promo.status.toLowerCase()}` as TranslationKeys)}</Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                                             <Calendar className="h-3 w-3" /> {t('promo_validity_text', { startDate: promo.startDate, endDate: promo.endDate })}

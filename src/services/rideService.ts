@@ -6,9 +6,9 @@ import type { RideRequest } from '@/types';
 
 export const createRideRequest = async (
     passengerId: string,
-    origin: any,
-    destination: any,
-    serviceType: 'taxi' | 'delivery' | 'mototaxi' | 'executivo' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk'
+    origin: { text: string; coords: { lat: number; lng: number } | null },
+    destination: { text: string; coords: { lat: number; lng: number } | null },
+    serviceType: 'economico' | 'smart' | 'executivo' | 'van' | 'pet' | 'delivery_moto' | 'delivery_car' | 'delivery_van' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk'
 ): Promise<DocumentReference<DocumentData, DocumentData>> => {
     try {
         const rideRequestsCollection = collection(db, 'rideRequests');
@@ -44,9 +44,9 @@ export const getPendingRideRequests = async (): Promise<RideRequest[]> => {
         }));
 
         return requests;
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error fetching pending ride requests:', error);
-        throw new Error('Failed to fetch pending ride requests: ' + error.message);
+        throw new Error('Failed to fetch pending ride requests: ' + (error as Error).message);
     }
 };
 
@@ -58,9 +58,9 @@ export const acceptRideRequest = async (requestId: string, driverId: string, veh
             driverId,
             vehicleId,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error(`Error accepting ride request ${requestId}:`, error);
-        throw new Error(`Failed to accept ride request ${requestId}: ` + error.message);
+        throw new Error(`Failed to accept ride request ${requestId}: ` + (error as Error).message);
     }
 };
 
@@ -70,8 +70,8 @@ export const updateRideStatus = async (requestId: string, newStatus: RideRequest
         await updateDoc(rideRequestRef, {
             status: newStatus,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error(`Error updating ride status for request ${requestId} to ${newStatus}:`, error);
-        throw new Error(`Failed to update ride status for request ${requestId}: ` + error.message);
+        throw new Error(`Failed to update ride status for request ${requestId}: ` + (error as Error).message);
     }
 };
