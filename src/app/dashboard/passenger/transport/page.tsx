@@ -148,6 +148,7 @@ export default function RequestTransportPage() {
 
   const [convertedPrices, setConvertedPrices] = useState<Record<string, number | null>>({});
   const [isPriceLoading, setIsPriceLoading] = useState(true);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
 
   const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
@@ -643,7 +644,7 @@ export default function RequestTransportPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-             <Map onMapLoad={() => {}} onMapClick={handleMapClick}>
+             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
                 {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} />}
                 {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} />}
                 {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
