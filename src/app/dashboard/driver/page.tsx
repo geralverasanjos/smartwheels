@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -25,7 +25,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { updateDriverLocation } from '@/services/locationService';
+import { useToast } from '@/hooks/use-toast';
+
 
 const DRIVER_INITIAL_POSITION = { lat: 38.72, lng: -9.15 };
 
@@ -38,7 +41,8 @@ const nearbyDriversData = [
 
 
 export default function DriverDashboardPage() {
-  const { t } = useAppContext();
+  const { t, user } = useAppContext();
+  const { toast } = useToast();
   
   const [isOnline, setIsOnline] = useState(false);
   const [vehiclePosition, setVehiclePosition] = useState(DRIVER_INITIAL_POSITION);
@@ -54,6 +58,7 @@ export default function DriverDashboardPage() {
   const [approachedStand, setApproachedStand] = useState<TaxiStand | null>(null);
   
   const { isLoaded } = useGoogleMaps();
+  const locationWatcher = useRef<number | null>(null);
 
 
   // Initialize heatmap data once Google Maps is loaded
@@ -68,41 +73,64 @@ export default function DriverDashboardPage() {
             new google.maps.LatLng(38.714, -9.145),
         ]);
         
-        // Fetch taxi stands
         getStands().then(setTaxiStands).catch(console.error);
     }
   }, [isLoaded]);
 
   useEffect(() => {
     setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
-  }, [isOnline, t]);
-  
-  // Simulate driver moving and check proximity to stands
-  useEffect(() => {
-    if (isOnline && taxiStands.length > 0 && isLoaded) {
-      const interval = setInterval(() => {
-        // Simulate vehicle position update
-        const newLat = vehiclePosition.lat + (Math.random() - 0.5) * 0.001;
-        const newLng = vehiclePosition.lng + (Math.random() - 0.5) * 0.001;
-        const newPosition = { lat: newLat, lng: newLng };
-        setVehiclePosition(newPosition);
 
-        // Check for nearby stands
+    if (isOnline && user?.id) {
+        if (!navigator.geolocation) {
+            toast({ title: "Geolocation não suportada", description: "O seu browser não suporta geolocalização.", variant: "destructive"});
+            setIsOnline(false);
+            return;
+        }
+
+        locationWatcher.current = navigator.geolocation.watchPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newPosition = { lat: latitude, lng: longitude };
+                setVehiclePosition(newPosition);
+                updateDriverLocation(user.id, latitude, longitude);
+            },
+            (error) => {
+                console.error("Error watching position:", error);
+                toast({ title: "Erro de Localização", description: "Não foi possível obter a sua localização.", variant: "destructive"});
+                setIsOnline(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+
+    } else {
+        if (locationWatcher.current !== null) {
+            navigator.geolocation.clearWatch(locationWatcher.current);
+            locationWatcher.current = null;
+        }
+    }
+
+    return () => {
+        if (locationWatcher.current !== null) {
+            navigator.geolocation.clearWatch(locationWatcher.current);
+        }
+    };
+  }, [isOnline, user, toast]);
+  
+  // Check proximity to stands
+  useEffect(() => {
+    if (isOnline && taxiStands.length > 0 && isLoaded && vehiclePosition !== DRIVER_INITIAL_POSITION) {
         for (const stand of taxiStands) {
           const distance = google.maps.geometry.spherical.computeDistanceBetween(
-            new google.maps.LatLng(newPosition),
+            new google.maps.LatLng(vehiclePosition),
             new google.maps.LatLng(stand.location)
           );
           
-          if (distance < 200 && !approachedStand) { // 200 meters threshold
+          if (distance < 200 && !approachedStand) { 
              setApproachedStand(stand);
              setShowStandAlert(true);
              break;
           }
         }
-      }, 5000); // Check every 5 seconds
-
-      return () => clearInterval(interval);
     }
   }, [isOnline, taxiStands, vehiclePosition, approachedStand, isLoaded]);
 

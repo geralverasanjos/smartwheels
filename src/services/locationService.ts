@@ -1,7 +1,5 @@
-allow read: if request.auth != null &&
-               get(/databases/$(database)/documents/drivers/$(driverId)).data.isOnline == true;
 // src/services/locationService.ts
-import { doc, setDoc, GeoPoint, FieldValue } from 'firebase/firestore';
+import { doc, setDoc, GeoPoint, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase'; // Assuming db is exported from your firebase config file
 
 export const updateDriverLocation = async (
@@ -12,13 +10,15 @@ export const updateDriverLocation = async (
   const locationDocRef = doc(db, 'driverLocations', driverId);
 
   try {
+    // geohash can be added here for more complex geo queries
     await setDoc(locationDocRef, {
       geopoint: new GeoPoint(latitude, longitude),
-      timestamp: FieldValue.serverTimestamp(),
+      timestamp: serverTimestamp(),
     }, { merge: true });
-    console.log(`Driver ${driverId} location updated.`);
   } catch (error) {
     console.error(`Error updating driver location for ${driverId}:`, error);
-    throw error; // Re-throw the error for handling in the component
+    // In a real app, you might want to handle this more gracefully
+    // For now, we'll let the caller handle it.
+    throw error;
   }
 };
