@@ -14,22 +14,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "@/contexts/app-context";
-import type { Vehicle } from "@/app/dashboard/driver/vehicles/page";
+import type { Vehicle } from "@/types";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface VehicleFormDialogProps {
   children: React.ReactNode;
   vehicle?: Vehicle | null;
-  onSave: (data: any) => void;
+  onSave: (data: Partial<Vehicle>) => Promise<void>;
 }
 
 export default function VehicleFormDialog({ children, vehicle, onSave }: VehicleFormDialogProps) {
     const { t } = useAppContext();
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const [isSaving, setIsSaving] = useState(false);
+    const { register, handleSubmit, formState: { errors } } = useForm<Vehicle>({
         defaultValues: vehicle || {}
     });
 
-    const onSubmit = (data: any) => {
-        onSave(data);
+    const onSubmit = async (data: Vehicle) => {
+        setIsSaving(true);
+        const dataToSave = { ...vehicle, ...data };
+        await onSave(dataToSave);
+        setIsSaving(false);
     };
 
     return (
@@ -67,8 +73,12 @@ export default function VehicleFormDialog({ children, vehicle, onSave }: Vehicle
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button type="submit">{t('save_button')}</Button>
+                            <Button variant="ghost">{t('btn_cancel')}</Button>
                         </DialogClose>
+                        <Button type="submit" disabled={isSaving}>
+                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {t('save_button')}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

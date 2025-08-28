@@ -83,12 +83,13 @@ export interface RideRequest {
 export interface Vehicle {
     id: string;
     driverId?: string;
+    type: string;
     make: string;
     model: string;
     year: string;
     color: string;
     plate: string;
-    status: 'active' | 'pending' | 'rejected' | 'maintenance' | 'inactive';
+    status: 'active' | 'pending_payment' | 'pending_approval' | 'rejected' | 'maintenance' | 'inactive';
     imageUrl?: string;
     aiHint?: string;
     allowedServices: ('passengers' | 'deliveries')[];
