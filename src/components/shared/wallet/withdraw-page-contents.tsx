@@ -16,7 +16,14 @@ import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { AddEditPaymentMethodForm } from '@/components/shared/wallet/payout-form';
 import { PayoutMethod } from '@/types';
 
-const savedAccounts = [
+interface SavedAccount {
+    id: string;
+    type: string;
+    name: string;
+    details: string;
+}
+
+const savedAccounts: SavedAccount[] = [
     { id: 'bank1', type: 'bank', name: 'Conta Principal', details: '**** 1234' },
     { id: 'paypal1', type: 'paypal', name: 'PayPal Pessoal', details: 'eu@email.com' },
 ];

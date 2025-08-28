@@ -37,7 +37,7 @@ export default function VehicleList({ vehicles, onVehicleClick, onAddClick }: Ve
         <ScrollArea className="flex-grow">
             <div className="space-y-2 p-6 pt-0">
             {vehicles.map((vehicle) => {
-                const status = statusConfig[vehicle.status || 'offline'] || { labelKey: 'status_offline' as TranslationKeys, colorClass: 'text-gray-500'};
+                const status = statusConfig[vehicle.status || 'offline'] || { labelKey: 'status_offline', colorClass: 'text-gray-500'};
                 return (
                     <div
                     key={vehicle.id}

@@ -85,10 +85,10 @@ export default function PassengerWalletPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap justify-center gap-2">
-                    <Button asChild><Link href="/dashboard/passenger/wallet/add-funds"><PlusCircle /> {t('btn_add_funds')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/withdraw"><ArrowDown /> {t('btn_withdraw')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/transfer"><Send /> {t('btn_transfer')}</Link></Button>
-                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/receive"><QrCode /> {t('btn_receive')}</Link></Button>
+                    <Button asChild><Link href="/dashboard/passenger/wallet/add-funds"><PlusCircle className="mr-2 h-4 w-4" /> {t('btn_add_funds')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/withdraw"><ArrowDown className="mr-2 h-4 w-4" /> {t('btn_withdraw')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/transfer"><Send className="mr-2 h-4 w-4" /> {t('btn_transfer')}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/dashboard/passenger/wallet/receive"><QrCode className="mr-2 h-4 w-4" /> {t('btn_receive')}</Link></Button>
                 </CardContent>
             </Card>
 

@@ -1,6 +1,5 @@
 'use client';
 import { useAppContext } from '@/contexts/app-context';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import ActionCard from '@/components/action-card';
 import { Car, Truck, History, Wallet, Loader2 } from 'lucide-react';
@@ -11,7 +10,6 @@ import { useCurrency } from '@/lib/currency';
 export default function PassengerDashboard() {
   const { t, user } = useAppContext();
   const { formatCurrency } = useCurrency();
-  const router = useRouter();
 
   return (
     <div className="flex flex-col gap-8">

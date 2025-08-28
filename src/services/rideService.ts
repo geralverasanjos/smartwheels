@@ -1,5 +1,5 @@
 
-import { collection, query, where, orderBy, getDocs, doc, updateDoc, addDoc, serverTimestamp, DocumentReference, DocumentData } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, doc, updateDoc, addDoc, serverTimestamp, DocumentReference, DocumentData, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { RideRequest } from '@/types';
 
@@ -14,11 +14,11 @@ export const createRideRequest = async (
         const rideRequestsCollection = collection(db, 'rideRequests');
         const newRequest: Omit<RideRequest, 'id'> = {
             passengerId,
-            origin,
-            destination,
+            origin: origin as RideRequest['origin'],
+            destination: destination as RideRequest['destination'],
             serviceType,
             status: 'pending',
-            timestamp: serverTimestamp(),
+            timestamp: serverTimestamp() as Timestamp,
         };
         const docRef = await addDoc(rideRequestsCollection, newRequest);
         return docRef;

@@ -44,6 +44,7 @@ const passengerNav = [
     { href: "/dashboard/passenger/history", icon: History, labelKey: "menu_history" },
     { href: "/dashboard/passenger/wallet", icon: Wallet, labelKey: "menu_wallet" },
     { href: "/dashboard/passenger/payments", icon: CreditCard, labelKey: "menu_payments" },
+    { href: "/dashboard/passenger/chat", icon: MessageSquare, labelKey: "menu_chat" },
     { href: "/dashboard/passenger/notifications", icon: Bell, labelKey: "menu_notifications" },
     { href: "/dashboard/passenger/profile", icon: User, labelKey: "menu_profile" },
     { href: "/dashboard/passenger/refer", icon: Award, labelKey: "menu_refer" },

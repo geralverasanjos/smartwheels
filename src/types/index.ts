@@ -43,7 +43,7 @@ export interface Trip {
     id: string; // Firestore document ID
     type: 'trip' | 'delivery';
     passengerName: string;
-    date: Timestamp; // ISO 8601 format
+    date: Date;
     value: number;
     earnings?: number; // Optional, can be calculated
     status: 'completed' | 'cancelled';
@@ -70,8 +70,8 @@ export interface Message {
 export interface RideRequest {
  id: string;
  passengerId: string;
- origin: { text: string; coords: { lat: number; lng: number } | null }; 
- destination: { text: string; coords: { lat: number; lng: number } | null };
+ origin: { text: string; coords: { lat: number; lng: number } }; 
+ destination: { text: string; coords: { lat: number; lng: number } };
  serviceType: 'economico' | 'smart' | 'executivo' | 'van' | 'pet' | 'delivery_moto' | 'delivery_car' | 'delivery_van' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk';
  status: 'pending' | 'searching' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled' | 'no_drivers_found';
  timestamp: Timestamp; 
@@ -123,7 +123,7 @@ export interface PayoutMethod {
         bankName?: string;
         iban?: string;
         email?: string;
-        keyType?: string;
+        keyType?: 'email' | 'phone' | 'cpf' | 'random';
         key?: string;
         phone?: string;
         cardholderName?: string;

@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, UploadCloud, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAppContext } from '@/contexts/app-context';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { handleVehicleFee } from '@/lib/payments';
 import { serviceCategories } from '@/data/categories';
@@ -17,44 +17,12 @@ import { useToast } from '@/hooks/use-toast';
 import { saveVehicle } from '@/services/vehicleService';
 import type { Vehicle } from '@/types';
 
-// This component is currently a placeholder as file uploads are handled in other sections.
-// A full implementation would use a file upload service.
-const FileUploadField = ({ label, id, onFileChange, required = false }: { label: string, id: string, onFileChange: (fileName: string) => void, required?: boolean }) => {
-    const { t } = useAppContext();
-    const [fileName, setFileName] = useState('');
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files && event.target.files[0];
-        if (file) {
-            setFileName(file.name);
-            onFileChange(file.name);
-        } else {
-            setFileName('');
-            onFileChange('');
-        }
-    };
-
-    return (
-        <div className="space-y-2">
-            <Label>{label}</Label>
-            <label htmlFor={id} className="flex items-center gap-4 px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                <UploadCloud className="h-8 w-8 text-muted-foreground"/>
-                <div>
-                    <span className="font-semibold text-primary">{t('btn_choose_files')}</span>
-                    <p className="text-xs text-muted-foreground">{fileName || t('no_file_chosen_label')}</p>
-                </div>
-            </label>
-            <Input id={id} type="file" className="hidden" onChange={handleFileChange} required={required} />
-        </div>
-    );
-};
-
-const Step1_VehicleDetails = ({ onNext, setFormData }: { onNext: () => void, setFormData: (data: any) => void }) => {
+const Step1_VehicleDetails = ({ onNext, setFormData }: { onNext: () => void, setFormData: (data: Partial<Vehicle>) => void }) => {
     const { t } = useAppContext();
     const methods = useForm({ mode: 'onChange' });
     const { register, handleSubmit, control, formState: { errors, isValid } } = methods;
 
-    const handleFormSubmit = (data: any) => {
+    const handleFormSubmit = (data: Partial<Vehicle>) => {
         setFormData(data);
         onNext();
     }
@@ -112,9 +80,8 @@ const Step1_VehicleDetails = ({ onNext, setFormData }: { onNext: () => void, set
     );
 };
 
-const Step2_Subscription = ({ onBack, formData }: { onBack: () => void, formData: any }) => {
+const Step2_Subscription = ({ onBack, formData }: { onBack: () => void, formData: Partial<Vehicle> }) => {
     const { t, user } = useAppContext();
-    const router = useRouter();
     const pathname = usePathname();
     const { toast } = useToast();
     const [termsAccepted, setTermsAccepted] = useState(false);
@@ -127,7 +94,7 @@ const Step2_Subscription = ({ onBack, formData }: { onBack: () => void, formData
         }
         setIsProcessing(true);
         
-        const newVehicleData: Omit<Vehicle, 'id'> = {
+        const newVehicleData: Partial<Vehicle> = {
             ...formData,
             fleetManagerId: user.id, // Assign to the current fleet manager
             status: 'pending_payment',
@@ -184,7 +151,7 @@ const Step2_Subscription = ({ onBack, formData }: { onBack: () => void, formData
 export default function AddVehiclePage() {
     const { t } = useAppContext();
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState<Partial<Vehicle>>({});
 
     return (
         <div className="flex flex-col gap-8">

@@ -97,7 +97,7 @@ const Step2_Subscription = ({ onBack, formData }: { onBack: () => void, formData
         }
         setIsProcessing(true);
         
-        const newVehicleData: Omit<Vehicle, 'id'> = {
+        const newVehicleData: Partial<Vehicle> = {
             ...formData,
             driverId: user.id,
             status: 'pending_payment',
