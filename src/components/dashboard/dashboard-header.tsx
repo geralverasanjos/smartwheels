@@ -7,6 +7,7 @@ import { LanguageSelector } from '../landing/language-selector';
 import Link from 'next/link';
 import { useAppContext } from '@/contexts/app-context';
 import { usePathname } from 'next/navigation';
+import { ThemeSelector } from '../shared/theme-selector';
 
 export function DashboardHeader() {
     const { t, user } = useAppContext();
@@ -27,6 +28,7 @@ export function DashboardHeader() {
         <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger className="md:hidden"/>
             <div className="flex-1" />
+            <ThemeSelector />
             <LanguageSelector />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { LanguageSelector } from './language-selector';
+import { ThemeSelector } from '../shared/theme-selector';
 
 export function LandingHeader() {
   return (
@@ -14,6 +15,7 @@ export function LandingHeader() {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
+          <ThemeSelector />
           <LanguageSelector />
         </div>
       </div>
