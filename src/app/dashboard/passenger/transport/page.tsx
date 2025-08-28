@@ -148,8 +148,7 @@ export default function RequestTransportPage() {
 
   const [convertedPrices, setConvertedPrices] = useState<Record<string, number | null>>({});
   const [isPriceLoading, setIsPriceLoading] = useState(true);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-
+  
   const paymentMethods = useMemo(() => [
     {id: 'wallet', icon: Wallet, label: 'payment_wallet', value: formatCurrency(user?.balance || 0)},
     {id: 'card', icon: CreditCard, label: 'payment_card', value: 'credit_card_value'},
@@ -393,7 +392,7 @@ export default function RequestTransportPage() {
                         <Label htmlFor="destination">{t('destination_label')}</Label>
                         <div className="flex gap-2">
                             <AutocompleteInput 
-                                onPlaceSelect={(place) => handlePlaceSelect(place, 'destination')}
+                                onPlaceSelect={(place: google.maps.places.PlaceResult) => handlePlaceSelect(place, 'destination')}
                                 value={destination.text}
                                 placeholder={t('destination_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_DESTINATION', payload: { text: '', coords: null } })}
@@ -644,7 +643,7 @@ export default function RequestTransportPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+             <Map onMapLoad={() => {}} onMapClick={handleMapClick}>
                 {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} />}
                 {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} />}
                 {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
@@ -673,3 +672,4 @@ export default function RequestTransportPage() {
     </div>
   );
 }
+
