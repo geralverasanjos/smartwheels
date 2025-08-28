@@ -9,7 +9,7 @@ import VehicleEditModal from '@/components/fleet/vehicle-edit-modal';
 import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { getDriversByFleetManager, saveUserProfile } from '@/services/profileService';
-import type { UserProfile } from '@/types';
+import type { UserProfile, VehicleWithLocation } from '@/types';
 import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
@@ -18,9 +18,9 @@ const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 export default function FleetMonitoringPage() {
     const { user } = useAppContext();
     
-    const [vehicles, setVehicles] = useState<UserProfile[]>([]);
+    const [vehicles, setVehicles] = useState<VehicleWithLocation[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedVehicle, setSelectedVehicle] = useState<UserProfile | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithLocation | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { isLoaded } = useGoogleMaps();
@@ -28,7 +28,7 @@ export default function FleetMonitoringPage() {
     const fetchVehicles = useCallback(async () => {
         if (user?.id) {
             getDriversByFleetManager(user.id).then(drivers => {
-                const vehiclesWithLocation = drivers.map(driver => ({
+                const vehiclesWithLocation: VehicleWithLocation[] = drivers.map(driver => ({
                     ...driver,
                     lat: LISBON_CENTER.lat + (Math.random() - 0.5) * 0.1,
                     lng: LISBON_CENTER.lng + (Math.random() - 0.5) * 0.1,
@@ -47,7 +47,7 @@ export default function FleetMonitoringPage() {
         setIsModalOpen(true);
     };
 
-    const handleOpenEditModal = (vehicle: UserProfile) => {
+    const handleOpenEditModal = (vehicle: VehicleWithLocation) => {
         setSelectedVehicle(vehicle); 
         setIsModalOpen(true);
     };
@@ -70,7 +70,7 @@ export default function FleetMonitoringPage() {
         handleCloseModal();
     };
     
-    const handleSelectOnMap = useCallback((vehicle: UserProfile) => {
+    const handleSelectOnMap = useCallback((vehicle: VehicleWithLocation) => {
         setSelectedVehicle(vehicle);
     }, []);
 
@@ -84,7 +84,7 @@ export default function FleetMonitoringPage() {
                     {vehicles.map(vehicle => (
                         <MarkerF
                             key={vehicle.id}
-                            position={{ lat: (vehicle as any).lat, lng: (vehicle as any).lng }}
+                            position={{ lat: vehicle.lat, lng: vehicle.lng }}
                             onClick={() => handleSelectOnMap(vehicle)}
                             icon={{
                                 url: `/car.svg`,

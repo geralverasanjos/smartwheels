@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Dot } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { UserProfile } from '@/types';
+import type { VehicleWithLocation } from '@/types';
 import type { TranslationKeys } from '@/lib/i18n';
 
 interface VehicleListProps {
-  vehicles: UserProfile[];
-  onVehicleClick: (vehicle: UserProfile) => void;
+  vehicles: VehicleWithLocation[];
+  onVehicleClick: (vehicle: VehicleWithLocation) => void;
   onAddClick: () => void;
 }
 

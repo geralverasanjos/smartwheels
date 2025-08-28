@@ -39,6 +39,12 @@ export interface UserProfile {
     operatorLicenseUrl?: string;
 }
 
+export interface VehicleWithLocation extends UserProfile {
+    lat: number;
+    lng: number;
+}
+
+
 export interface Trip {
     id: string; // Firestore document ID
     type: 'trip' | 'delivery';

@@ -14,12 +14,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm, Controller } from 'react-hook-form';
 import { useAppContext } from '@/contexts/app-context';
-import type { UserProfile, Vehicle } from '@/types';
+import type { UserProfile, VehicleWithLocation } from '@/types';
 
 interface VehicleEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  vehicle: (UserProfile & { vehicleDetails?: Partial<Vehicle>, vehicleStatus?: {state: string} }) | null;
+  vehicle: VehicleWithLocation | null;
   onSave: (data: Partial<UserProfile>) => void;
   onDelete: (id: string) => void;
 }
@@ -32,13 +32,13 @@ export default function VehicleEditModal({
   onDelete,
 }: VehicleEditModalProps) {
   const { t } = useAppContext();
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
-    defaultValues: vehicle || { name: '', email: '', activeVehicleId: '', status: 'disponivel' }
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<UserProfile>({
+    defaultValues: vehicle || { name: '', email: '', activeVehicleId: '', status: 'offline' }
   });
 
   React.useEffect(() => {
     if (isOpen) {
-      reset(vehicle || { name: '', email: '', activeVehicleId: '', status: 'disponivel' });
+      reset(vehicle || { name: '', email: '', activeVehicleId: '', status: 'offline' });
     }
   }, [isOpen, vehicle, reset]);
 
