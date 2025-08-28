@@ -245,7 +245,7 @@ export default function RequestDeliveryPage() {
         return;
     }
     try {
-        const docRef = await createRideRequest(user.id, origin.text, destination.text, selectedService as any);
+        const docRef = await createRideRequest(user.id, origin, destination, selectedService as any);
         dispatch({ type: 'CONFIRM_PAYMENT', payload: docRef.id });
         toast({ title: t('searching_driver_title'), description: t('searching_driver_desc') });
     } catch(error) {
@@ -653,3 +653,5 @@ export default function RequestDeliveryPage() {
     </div>
   );
 }
+
+    
