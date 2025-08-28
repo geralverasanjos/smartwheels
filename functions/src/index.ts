@@ -10,6 +10,7 @@
 import {setGlobalOptions} from "firebase-functions";
 import './genkit-sample';
 import './upload-file'; // Import the new upload function
+import './matchmaking'; // Import the matchmaking function
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
