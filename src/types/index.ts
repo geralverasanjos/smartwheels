@@ -1,3 +1,5 @@
+import type { TranslationKeys } from "@/lib/i18n";
+
 export interface Promotion {
     id: string; // Firestore IDs are strings
     title: string;
@@ -136,4 +138,16 @@ export interface ExchangeRateResponse {
   rates: {
     [key: string]: number; // Ex: { "BRL": 5.50 }
   };
+}
+
+export interface AppNotification {
+    id: string;
+    userId: string;
+    icon: string;
+    titleKey: TranslationKeys;
+    descriptionKey: TranslationKeys;
+    descriptionParams?: { [key: string]: string | number };
+    timestamp: any;
+    isRead: boolean;
+    link?: string;
 }
