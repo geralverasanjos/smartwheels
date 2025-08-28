@@ -14,7 +14,7 @@ import { MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands, saveStand, deleteStand } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
-import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 const LISBON_CENTER = { lat: 38.736946, lng: -9.142685 };
 

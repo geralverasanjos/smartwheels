@@ -29,6 +29,7 @@ import {
     Tv,
     FileText,
     Building2,
+    MapPin,
 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { usePathname } from 'next/navigation';
@@ -58,7 +59,7 @@ const driverNav = [
     { href: "/dashboard/driver/history", icon: History, labelKey: "menu_history" },
     { href: "/dashboard/driver/wallet", icon: Wallet, labelKey: "menu_wallet" },
     { href: "/dashboard/driver/vehicles", icon: Car, labelKey: "menu_vehicles" },
-    { href: "/dashboard/driver/stands", icon: Building2, labelKey: "menu_stands" },
+    { href: "/dashboard/driver/stands", icon: MapPin, labelKey: "menu_stands" },
     { href: "/dashboard/driver/promotions", icon: Award, labelKey: "menu_promotions" },
     { href: "/dashboard/driver/referral", icon: Users, labelKey: "menu_referral" },
     { href: "/dashboard/driver/chat", icon: MessageSquare, labelKey: "menu_chat" },

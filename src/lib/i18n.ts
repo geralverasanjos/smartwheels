@@ -1,5 +1,6 @@
 
 
+
 export const Translations = {
   "my_account": {
     "pt-PT": "Minha Conta",
@@ -628,44 +629,6 @@ export const Translations = {
     "id-ID": "Jumat",
     "th-TH": "วันศุกร์"
   },
-  "day_saturday ": {
-    "pt-PT": "Sábado",
-    "pt-BR": "Sábado",
-    "en-US": "Saturday",
-    "es-ES": "Sábado",
-    "fr-FR": "Samedi",
-    "de-DE": "Samstag",
-    "it-IT": "Sabato",
-    "ja-JP": "土曜日",
-    "zh-CN": "星期六",
-    "ru-RU": "Суббота",
-    "ar-SA": "السبت",
-    "hi-IN": "शनिवार",
-    "ko-KR": "토요일",
-    "he-IL": "יום שבת",
-    "uk-UA": "Субота",
-    "id-ID": "Sabtu",
-    "th-TH": "วันเสาร์"
-  },
-  "day_sunday ": {
-    "pt-PT": "Domingo",
-    "pt-BR": "Domingo",
-    "en-US": "Sunday",
-    "es-ES": "Domingo",
-    "fr-FR": "Dimanche",
-    "de-DE": "Sonntag",
-    "it-IT": "Domenica",
-    "ja-JP": "日曜日",
-    "zh-CN": "星期日",
-    "ru-RU": "Воскресенье",
-    "ar-SA": "الأحد",
-    "hi-IN": "रविवार",
-    "ko-KR": "일요일",
-    "he-IL": "יום ראשון",
-    "uk-UA": "Неділя",
-    "id-ID": "Minggu",
-    "th-TH": "วันอาทิตย์"
-  },
   "day_monday": {
     "pt-PT": "Segunda-feira",
     "pt-BR": "Segunda-feira",
@@ -685,25 +648,6 @@ export const Translations = {
     "id-ID": "Senin",
     "th-TH": "วันจันทร์"
   },
-  "Day_tuesday ": {
-    "pt-PT": "Terça-feira",
-    "pt-BR": "Terça-feira",
-    "en-US": "Tuesday",
-    "es-ES": "Martes",
-    "fr-FR": "Mardi",
-    "de-DE": "Dienstag",
-    "it-IT": "Martedì",
-    "ja-JP": "火曜日",
-    "zh-CN": "星期二",
-    "ru-RU": "Вторник",
-    "ar-SA": "الثلاثاء",
-    "hi-IN": "मंगलवार",
-    "ko-KR": "화요일",
-    "he-IL": "יום שלישי",
-    "uk-UA": "Вівторок",
-    "id-ID": "Selasa",
-    "th-TH": "วันอังคาร"
-  },
   "day_wednesday": {
     "pt-PT": "Quarta-feira",
     "pt-BR": "Quarta-feira",
@@ -722,63 +666,6 @@ export const Translations = {
     "uk-UA": "Середа",
     "id-ID": "Rabu",
     "th-TH": "วันพุธ"
-  },
-  "Day_thursday": {
-    "pt-PT": "Quinta-feira",
-    "pt-BR": "Quinta-feira",
-    "en-US": "Thursday",
-    "es-ES": "Jueves",
-    "fr-FR": "Jeudi",
-    "de-DE": "Donnerstag",
-    "it-IT": "Giovedì",
-    "ja-JP": "木曜日",
-    "zh-CN": "星期四",
-    "ru-RU": "Четверг",
-    "ar-SA": "الخميس",
-    "hi-IN": "गुरुवार",
-    "ko-KR": "목요일",
-    "he-IL": "יום חמישי",
-    "uk-UA": "Четвер",
-    "id-ID": "Kamis",
-    "th-TH": "วันพฤหัสบดี"
-  },
-  "Day_friday": {
-    "pt-PT": "Sexta-feira",
-    "pt-BR": "Sexta-feira",
-    "en-US": "Friday",
-    "es-ES": "Viernes",
-    "fr-FR": "Vendredi",
-    "de-DE": "Freitag",
-    "it-IT": "Venerdì",
-    "ja-JP": "金曜日",
-    "zh-CN": "星期五",
-    "ru-RU": "Пятница",
-    "ar-SA": "الجمعة",
-    "hi-IN": "शुक्रवार",
-    "ko-KR": "금요일",
-    "he-IL": "יום שישי",
-    "uk-UA": "П'ятниця",
-    "id-ID": "Jumat",
-    "th-TH": "วันศุกร์"
-  },
-  "Day_saturday ": {
-    "pt-PT": "Sábado",
-    "pt-BR": "Sábado",
-    "en-US": "Saturday",
-    "es-ES": "Sábado",
-    "fr-FR": "Samedi",
-    "de-DE": "Samstag",
-    "it-IT": "Sabato",
-    "ja-JP": "土曜日",
-    "zh-CN": "星期六",
-    "ru-RU": "Суббота",
-    "ar-SA": "السبت",
-    "hi-IN": "शनिवार",
-    "ko-KR": "토요일",
-    "he-IL": "יום שבת",
-    "uk-UA": "Субота",
-    "id-ID": "Sabtu",
-    "th-TH": "วันเสาร์"
   },
   "payout_method_deleted": {
     "pt-PT": "O método de pagamento foi eliminado com sucesso.",
@@ -856,25 +743,6 @@ export const Translations = {
     "id-ID": "Tambahkan Kendaraan",
     "th-TH": "เพิ่มยานพาหนะ"
   },
-  "Btn_add_vehicle": {
-    "pt-PT": "Adicionar Veículo",
-    "pt-BR": "Adicionar Veículo",
-    "en-US": "Add Vehicle",
-    "es-ES": "Añadir vehículo",
-    "fr-FR": "Ajouter un véhicule",
-    "de-DE": "Fahrzeug hinzufügen",
-    "it-IT": "Aggiungi veicolo",
-    "ja-JP": "車両を追加",
-    "zh-CN": "添加车辆",
-    "ru-RU": "Добавить автомобиль",
-    "ar-SA": "إضافة مركبة",
-    "hi-IN": "वाहन जोड़ें",
-    "ko-KR": "차량 추가",
-    "he-IL": "הוסף רכב",
-    "uk-UA": "Додати автомобіль",
-    "id-ID": "Tambahkan Kendaraan",
-    "th-TH": "เพิ่มยานพาหนะ"
-  },
   "payout_method_saved": {
     "pt-PT": "Método de pagamento guardado com sucesso.",
     "pt-BR": "Método de pagamento salvo com sucesso.",
@@ -893,25 +761,6 @@ export const Translations = {
     "uk-UA": "Спосіб виплати успішно збережено.",
     "id-ID": "Metode pembayaran berhasil disimpan.",
     "th-TH": "บันทึกวิธีการจ่ายเงินเรียบร้อยแล้ว"
-  },
-  "payout_method_deleted ": {
-    "pt-PT": "O método de pagamento foi eliminado com sucesso.",
-    "pt-BR": "O método de pagamento foi excluído com sucesso.",
-    "en-US": "Payout method deleted successfully.",
-    "es-ES": "Método de pago eliminado con éxito.",
-    "fr-FR": "La méthode de paiement a été supprimée avec succès.",
-    "de-DE": "Auszahlungsmethode erfolgreich gelöscht.",
-    "it-IT": "Metodo di pagamento eliminato con successo.",
-    "ja-JP": "支払い方法が正常に削除されました。",
-    "zh-CN": "付款方式已成功删除。",
-    "ru-RU": "Способ выплаты успешно удален.",
-    "ar-SA": "تم حذف طريقة الدفع بنجاح.",
-    "hi-IN": "भुगतान विधि सफलतापूर्वक हटा दी गई।",
-    "ko-KR": "지급 방법이 성공적으로 삭제되었습니다.",
-    "he-IL": "אמצעי התשלום נמחק בהצלחה.",
-    "uk-UA": "Спосіб виплати успішно видалено.",
-    "id-ID": "Metode pembayaran berhasil dihapus.",
-    "th-TH": "วิธีการจ่ายเงินถูกลบเรียบร้อยแล้ว"
   },
   "payout_method_add_title": {
     "pt-PT": "Adicionar Conta Bancária",
@@ -1692,25 +1541,6 @@ export const Translations = {
     "id-ID": "Online untuk mulai menerima permintaan perjalanan.",
     "th-TH": "ไปออนไลน์เพื่อเริ่มรับคำขอเดินทาง"
   },
-  "btn_driver_mototaxi_title": {
-    "pt-PT": "Motorista / MotoTáxi",
-    "pt-BR": "Motorista / MotoTáxi",
-    "en-US": "MotoTaxi / Driver",
-    "es-ES": "Conductor / mototaxi",
-    "fr-FR": "Chauffeur  mototaxi",
-    "de-DE": "Motorrad-/Taxifahrer",
-    "it-IT": "Autista / mototaxi",
-    "ja-JP": "バイク/タクシー運転手",
-    "zh-CN": "摩托车/出租车司机",
-    "ru-RU": "Водитель мотоцикла/такси",
-    "ar-SA": "سائق دراجة نارية/أجرة",
-    "hi-IN": "मोटरसाइकिल/टैक्सी ड्राइवर",
-    "ko-KR": "오토바이/택시 운전사",
-    "he-IL": "נהג אופנוע/מונית",
-    "uk-UA": "Водій мотоцикла/таксі",
-    "id-ID": "Pengemudi Sepeda Motor/Taksi",
-    "th-TH": "คนขับรถมอเตอร์ไซค์/แท็กซี่",
-  }, 
   "rating_label": {
     "pt-PT": "Avaliação",
     "pt-BR": "Avaliação",
@@ -2224,25 +2054,6 @@ export const Translations = {
     "id-ID": "Sistem",
     "th-TH": "ระบบ"
   },
-  "btn_passenger_title": {
-    "pt-PT": "Passageiro",
-    "pt-BR": "Passageiro",
-    "en-US": "Passenger",
-    "es-ES": "Pasajero",
-    "fr-FR": "Passager",
-    "de-DE": "Passagier",
-    "it-IT": "Passeggero",
-    "ja-JP": "乗客",
-    "zh-CN": "乘客",
-    "ru-RU": "Пассажир",
-    "ar-SA": "راكب",
-    "hi-IN": "यात्री",
-    "ko-KR": "승객",
-    "he-IL": "נוסע",
-    "uk-UA": "Пасажир",
-    "id-ID": "Penumpang",
-    "th-TH": "ผู้โดยสาร"
-  },
   "dialog_approach_stand_title": {
     "pt-PT": "Aproximando-se de Ponto de Táxi",
     "pt-BR": "Aproximando-se de Ponto de Táxi",
@@ -2509,6 +2320,25 @@ export const Translations = {
     "id-ID": "Tidak ada pangkalan taksi yang tersedia",
     "th-TH": "ไม่มีจุดจอดแท็กซี่ให้บริการ"
   },
+  "menu_stands": {
+    "pt-PT": "Pontos de Táxi",
+    "pt-BR": "Pontos de Táxi",
+    "en-US": "Taxi Stands",
+    "es-ES": "Paradas de taxis",
+    "fr-FR": "Stations de taxis",
+    "de-DE": "Taxistände",
+    "it-IT": "Postazioni taxi",
+    "ja-JP": "タクシー乗り場",
+    "zh-CN": "出租车站",
+    "ru-RU": "Стоянки такси",
+    "ar-SA": "مواقف سيارات الأجرة",
+    "hi-IN": "टैक्सी स्टैंड",
+    "ko-KR": "택시 승강장",
+    "he-IL": "תחנות מוניות",
+    "uk-UA": "Стоянки таксі",
+    "id-ID": "Pangkalan Taksi",
+    "th-TH": "จุดจอดแท็กซี่"
+  }
 };
 export const languages = [
 

@@ -15,7 +15,7 @@ import { HeatmapLayer, MarkerF } from '@react-google-maps/api';
 import { useAppContext } from '@/contexts/app-context';
 import { getStands } from '@/services/standsService';
 import type { TaxiStand } from '@/types';
-import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +79,7 @@ export default function DriverDashboardPage() {
   
   // Simulate driver moving and check proximity to stands
   useEffect(() => {
-    if (isOnline && taxiStands.length > 0) {
+    if (isOnline && taxiStands.length > 0 && isLoaded) {
       const interval = setInterval(() => {
         // Simulate vehicle position update
         const newLat = vehiclePosition.lat + (Math.random() - 0.5) * 0.001;
@@ -104,7 +104,7 @@ export default function DriverDashboardPage() {
 
       return () => clearInterval(interval);
     }
-  }, [isOnline, taxiStands, vehiclePosition, approachedStand]);
+  }, [isOnline, taxiStands, vehiclePosition, approachedStand, isLoaded]);
 
 
   const handleServiceChange = (service: keyof typeof services, checked: boolean) => {
