@@ -1,3 +1,4 @@
+
 /**
  * Import function triggers from their respective submodules:
  *
@@ -8,11 +9,11 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import './genkit-sample';
-import './upload-file'; // Import the new upload function
-import './matchmaking'; // Import the matchmaking function
-import './complete-trip'; // Import the new trip completion function
-import './notifications'; // Import the notification trigger
+import "./genkit-sample";
+import "./upload-file"; // Import the new upload function
+import "./matchmaking"; // Import the matchmaking function
+import "./complete-trip"; // Import the new trip completion function
+import "./notifications"; // Import the notification trigger
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -27,7 +28,7 @@ import './notifications'; // Import the notification trigger
 // functions should each use functions.runWith({ maxInstances: 10 }) instead.
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10, node: "20" });
+setGlobalOptions({maxInstances: 10, node: "20"});
 
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});
