@@ -68,10 +68,10 @@ export interface Message {
 export interface RideRequest {
  id: string;
  passengerId: string;
- origin: string; 
- destination: string;
+ origin: any; 
+ destination: any;
  serviceType: 'economico' | 'smart' | 'executivo' | 'van' | 'pet' | 'delivery_moto' | 'delivery_car' | 'delivery_van' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk';
- status: 'pending' | 'searching' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled';
+ status: 'pending' | 'searching' | 'accepted' | 'driver_enroute' | 'at_pickup' | 'in_progress' | 'completed' | 'cancelled' | 'no_drivers_found';
  timestamp: any; 
  driverId?: string;
  vehicleId?: string;

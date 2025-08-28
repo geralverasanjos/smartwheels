@@ -6,8 +6,8 @@ import type { RideRequest } from '@/types';
 
 export const createRideRequest = async (
     passengerId: string,
-    origin: string,
-    destination: string,
+    origin: any,
+    destination: any,
     serviceType: 'taxi' | 'delivery' | 'mototaxi' | 'executivo' | 'moto_economica' | 'moto_rapida' | 'moto_bau' | 'tuk_tuk'
 ): Promise<DocumentReference<DocumentData, DocumentData>> => {
     try {
