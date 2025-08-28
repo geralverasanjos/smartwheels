@@ -29,7 +29,7 @@ interface PayPalSubscription {
 }
 
 type PayPalClient = {
-    execute: (request: { method: string, path: string, body?: object, headers?: object }) => Promise<any>;
+    execute: (request: { method: string, path: string, body?: object, headers?: object }) => Promise<unknown>;
 }
 
 /**
@@ -58,7 +58,7 @@ function getPayPalClient(): PayPalClient {
       },
       body: 'grant_type=client_credentials',
     });
-    const data: PayPalTokenResponse = await response.json();
+    const data = await response.json() as PayPalTokenResponse;
     return data.access_token;
   };
 
@@ -109,10 +109,10 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
     // 1. Get or Create Product
     try {
         console.log(`Checking for PayPal Product: ${productId}`);
-        const product: PayPalProduct = await paypalClient.execute({
+        const product = await paypalClient.execute({
             method: 'GET',
             path: `/v1/catalogs/products/${productId}`
-        });
+        }) as PayPalProduct;
         finalProductId = product.id;
         console.log('Found existing PayPal product.');
     } catch (error: unknown) {
@@ -120,7 +120,7 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
         if (paypalError && paypalError.statusCode === 404) {
             console.log('PayPal product not found, creating new one.');
             try {
-                const newProduct: PayPalProduct = await paypalClient.execute({
+                const newProduct = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/catalogs/products',
                     body: {
@@ -132,7 +132,7 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
                         image_url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
                         home_url: process.env.NEXT_PUBLIC_BASE_URL,
                     },
-                });
+                }) as PayPalProduct;
                 finalProductId = newProduct.id;
                 console.log('New PayPal product created.');
             } catch (createError) {
@@ -148,10 +148,10 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
     // 2. Get or Create Plan
     try {
         console.log(`Checking for PayPal Plan: ${planId}`);
-        const plan: PayPalPlan = await paypalClient.execute({
+        const plan = await paypalClient.execute({
              method: 'GET',
              path: `/v1/billing/plans/${planId}`
-        });
+        }) as PayPalPlan;
         console.log('Found existing PayPal plan.');
         return plan.id;
     } catch (error: unknown) {
@@ -159,7 +159,7 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
         if (paypalError && paypalError.statusCode === 404) {
              console.log('PayPal plan not found, creating new one.');
              try {
-                const newPlan: PayPalPlan = await paypalClient.execute({
+                const newPlan = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/billing/plans',
                     body: {
@@ -189,7 +189,7 @@ async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<strin
                             payment_failure_threshold: 3,
                         },
                     },
-                });
+                }) as PayPalPlan;
                 console.log('New PayPal plan created.');
                 return newPlan.id;
              } catch (createError) {
@@ -236,7 +236,7 @@ export async function handleVehicleFee(vehicleId: string): Promise<{ approvalUrl
     };
 
     try {
-        const subscription: PayPalSubscription = await paypalClient.execute(request);
+        const subscription = await paypalClient.execute(request) as PayPalSubscription;
         const approvalLink = subscription.links.find((link) => link.rel === 'approve');
         
         if (approvalLink) {
@@ -250,3 +250,5 @@ export async function handleVehicleFee(vehicleId: string): Promise<{ approvalUrl
         throw error;
     }
 }
+
+    
