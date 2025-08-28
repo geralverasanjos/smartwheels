@@ -24,7 +24,6 @@ import {
   Loader2, Send,
   CheckCircle,
   Phone,
-  MessageSquare,
   X,
   Star,
   PlayCircle,
@@ -139,7 +138,6 @@ export default function RequestDeliveryPage() {
   const { formatCurrency } = useCurrency(language.value);
   const { reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
@@ -626,7 +624,7 @@ export default function RequestDeliveryPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0 relative overflow-hidden">
-             <Map onMapLoad={setMap} onMapClick={handleMapClick}>
+             <Map onMapLoad={() => {}} onMapClick={handleMapClick}>
                 {origin.coords && step !== 'rating' && <MarkerF position={origin.coords} />}
                 {destination.coords && step !== 'rating' && <MarkerF position={destination.coords} />}
                 {(step === 'driver_enroute' || step === 'trip_inprogress') && driverPosition && (
