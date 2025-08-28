@@ -21,7 +21,7 @@ export interface UserProfile {
     avatarUrl?: string;
     balance?: number; 
     role: 'passenger' | 'driver' | 'fleet-manager';
-    status?: 'active' | 'pending' | 'inactive';
+    status?: 'active' | 'pending' | 'inactive' | 'online' | 'in_trip';
     rating?: number;
     activeVehicleId?: string; // Optional, only for drivers
     fleetManagerId?: string; // Optional, only for drivers in a fleet
@@ -83,6 +83,7 @@ export interface RideRequest {
 export interface Vehicle {
     id: string;
     driverId?: string;
+    fleetManagerId?: string;
     type: string;
     make: string;
     model: string;
@@ -93,6 +94,7 @@ export interface Vehicle {
     imageUrl?: string;
     aiHint?: string;
     allowedServices: ('passengers' | 'deliveries')[];
+    createdAt?: any;
 }
 
 export interface Transaction {

@@ -3,11 +3,11 @@
 import { useAppContext } from '@/contexts/app-context';
 import ProfileForm from '@/components/shared/ProfileForm';
 import { useToast } from '@/hooks/use-toast';
-import { saveUserProfile } from '@/services/profileService';
+import { getDriversByFleetManager, saveUserProfile } from '@/services/profileService';
 import type { UserProfile } from '@/types';
 import FileUploadCard from '@/components/shared/file-upload-card';
-import { FileText, Building2 } from 'lucide-react';
-import { useState } from 'react';
+import { FileText, Building2, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -18,6 +18,26 @@ export default function FleetProfilePage() {
     const { t, user, setUser } = useAppContext();
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [drivers, setDrivers] = useState<UserProfile[]>([]);
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    const fetchDrivers = useCallback(async () => {
+        if (!user?.id) return;
+        setLoadingStats(true);
+        try {
+            const driversData = await getDriversByFleetManager(user.id);
+            setDrivers(driversData);
+        } catch (error) {
+            console.error("Failed to fetch drivers:", error);
+        } finally {
+            setLoadingStats(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchDrivers();
+    }, [fetchDrivers]);
+
 
     const handleSaveProfile = async (data: Partial<UserProfile>) => {
         if (!user) return;
@@ -53,6 +73,8 @@ export default function FleetProfilePage() {
     if (!user) {
         return <div>Loading...</div>; // Or a proper skeleton loader
     }
+    
+    const totalVehicles = drivers.length; // Assuming one vehicle per driver
 
     return (
         <div className="flex flex-col gap-8">
@@ -71,8 +93,8 @@ export default function FleetProfilePage() {
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm">
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><strong>{t('total_vehicles_label')}:</strong><p className="text-muted-foreground">0</p></div>
-                            <div><strong>{t('total_drivers_label')}:</strong><p className="text-muted-foreground">0</p></div>
+                            <div><strong>{t('total_vehicles_label')}</strong><p className="text-muted-foreground">{loadingStats ? <Loader2 className="h-4 w-4 animate-spin"/> : totalVehicles}</p></div>
+                            <div><strong>{t('total_drivers_label')}:</strong><p className="text-muted-foreground">{loadingStats ? <Loader2 className="h-4 w-4 animate-spin"/> : drivers.length}</p></div>
                          </div>
                     </CardContent>
                      <CardFooter className="gap-4">
@@ -115,4 +137,3 @@ export default function FleetProfilePage() {
         </div>
     );
 }
-

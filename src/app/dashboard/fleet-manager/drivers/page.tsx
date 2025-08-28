@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +27,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogClose
   } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/app-context';
 import type { TranslationKeys } from '@/lib/i18n';
 import type { UserProfile } from '@/types';
-import { getDriversByFleetManager } from '@/services/profileService';
+import { getDriversByFleetManager, saveUserProfile } from '@/services/profileService';
 
 const getStatusVariant = (status?: string) => {
     switch (status) {
@@ -52,33 +53,55 @@ export default function FleetDriversPage() {
     const [isAddDriverDialogOpen, setIsAddDriverDialogOpen] = useState(false);
     const [editingDriver, setEditingDriver] = useState<UserProfile | null>(null);
 
-    useEffect(() => {
-        const fetchDrivers = async () => {
-            if (!user?.id) return;
-            setLoading(true);
-            try {
-                const driversData = await getDriversByFleetManager(user.id);
-                setDrivers(driversData);
-            } catch (error) {
-                console.error("Failed to fetch drivers:", error);
-                toast({ title: t('error_title'), description: "Failed to load drivers.", variant: 'destructive' });
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDrivers();
+    const fetchDrivers = useCallback(async () => {
+        if (!user?.id) return;
+        setLoading(true);
+        try {
+            const driversData = await getDriversByFleetManager(user.id);
+            setDrivers(driversData);
+        } catch (error) {
+            console.error("Failed to fetch drivers:", error);
+            toast({ title: t('error_title'), description: "Failed to load drivers.", variant: 'destructive' });
+        } finally {
+            setLoading(false);
+        }
     }, [user, toast, t]);
 
-    const handleAddOrEditDriver = (e: React.FormEvent<HTMLFormElement>) => {
+    useEffect(() => {
+        fetchDrivers();
+    }, [fetchDrivers]);
+    
+    // NOTE: This is a simplified handler. A real app would need a more secure way to find and associate drivers.
+    const handleAddOrEditDriver = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // TODO: Implement save/update logic with backend
-        toast({
-            title: t(editingDriver ? 'edit_driver_title' : 'add_driver_title'),
-            description: t('driver_data_saved_success'),
-        });
-        setIsAddDriverDialogOpen(false);
-        setEditingDriver(null);
+        if (!user?.id) return;
+
+        const formData = new FormData(e.currentTarget);
+        const driverId = formData.get('driverId') as string;
+
+        if (!driverId) {
+             toast({ title: t('error_title'), description: "Driver ID is required.", variant: 'destructive' });
+             return;
+        }
+
+        try {
+            // In a real app, you would first fetch the driver to confirm they exist
+            // For now, we directly update assuming the ID is correct.
+            await saveUserProfile({ id: driverId, role: 'driver', fleetManagerId: user.id });
+
+            toast({
+                title: t(editingDriver ? 'edit_driver_title' : 'add_driver_title'),
+                description: t('driver_data_saved_success'),
+            });
+            fetchDrivers(); // Refresh the list
+            setIsAddDriverDialogOpen(false);
+            setEditingDriver(null);
+        } catch (error) {
+            console.error("Failed to associate driver:", error);
+            toast({ title: t('error_title'), description: "Failed to associate driver.", variant: 'destructive' });
+        }
     };
+
 
     const openAddDialog = () => {
         setEditingDriver(null);
@@ -189,20 +212,14 @@ export default function FleetDriversPage() {
                     <form onSubmit={handleAddOrEditDriver}>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">{t('driver_name_label')}</Label>
-                                <Input id="name" defaultValue={editingDriver?.name} placeholder={t('driver_placeholder_name')} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">{t('email_label')}</Label>
-                                <Input id="email" type="email" defaultValue={editingDriver?.email} placeholder={t('driver_placeholder_email')} />
-                            </div>
-                             <div className="grid gap-2">
-                                <Label htmlFor="vehicle">{t('vehicle_label')}</Label>
-                                <Input id="vehicle" defaultValue={editingDriver?.activeVehicleId} placeholder={t('driver_placeholder_vehicle')} />
+                                <Label htmlFor="driverId">ID do Motorista</Label>
+                                <Input id="driverId" name="driverId" defaultValue={editingDriver?.id} placeholder="Insira o ID do motorista" />
                             </div>
                         </div>
                          <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsAddDriverDialogOpen(false)}>{t('btn_cancel')}</Button>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">{t('btn_cancel')}</Button>
+                            </DialogClose>
                             <Button type="submit">{t('btn_save')}</Button>
                         </DialogFooter>
                     </form>

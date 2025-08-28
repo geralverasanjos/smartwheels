@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Car, Users, Wallet, Star, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/contexts/app-context';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getDriversByFleetManager } from '@/services/profileService';
 import { getFleetTripHistory } from '@/services/historyService';
@@ -23,33 +23,33 @@ export default function FleetManagerDashboard() {
     const [recentTrips, setRecentTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!user?.id) return;
-            setLoading(true);
-            try {
-                const [driversData, tripsData] = await Promise.all([
-                    getDriversByFleetManager(user.id),
-                    getFleetTripHistory(user.id)
-                ]);
-                setDrivers(driversData);
-                setRecentTrips(tripsData.slice(0, 5)); // Get last 5 trips
-            } catch (error) {
-                console.error("Failed to fetch fleet data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+    const fetchData = useCallback(async () => {
+        if (!user?.id) return;
+        setLoading(true);
+        try {
+            const [driversData, tripsData] = await Promise.all([
+                getDriversByFleetManager(user.id),
+                getFleetTripHistory(user.id)
+            ]);
+            setDrivers(driversData);
+            setRecentTrips(tripsData.slice(0, 5)); // Get last 5 trips
+        } catch (error) {
+            console.error("Failed to fetch fleet data:", error);
+        } finally {
+            setLoading(false);
+        }
     }, [user]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const calculateStats = () => {
         const totalEarningsMonth = recentTrips.reduce((acc, trip) => acc + (trip.earnings || trip.value || 0), 0);
         const totalRatings = drivers.reduce((acc, driver) => acc + (driver.rating || 0), 0);
         const avgRating = drivers.length > 0 ? totalRatings / drivers.length : 0;
         
-        // Simulating status for chart
+        // Simulating status for chart - in a real app, this would come from live location data
         const onlineCount = drivers.filter(d => (d as any).status === 'online').length || Math.floor(drivers.length / 2);
         const inTripCount = drivers.filter(d => (d as any).status === 'in_trip').length || Math.floor(drivers.length / 4);
         const offlineCount = drivers.length - onlineCount - inTripCount;
@@ -130,7 +130,7 @@ export default function FleetManagerDashboard() {
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" asChild><Link href="/dashboard/fleet-manager/drivers">{t('btn_add_driver')}</Link></Button>
-                    <Button asChild><Link href="/dashboard/fleet-manager/vehicles">{t('btn_add_vehicle')}</Link></Button>
+                    <Button asChild><Link href="/dashboard/fleet-manager/vehicles/add">{t('btn_add_vehicle')}</Link></Button>
                 </div>
             </div>
 

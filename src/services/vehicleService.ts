@@ -49,6 +49,27 @@ export const getVehiclesByDriver = async (driverId: string): Promise<Vehicle[]> 
 };
 
 /**
+ * Fetches all vehicles for a specific fleet manager.
+ * @param fleetManagerId The ID of the fleet manager.
+ * @returns A promise that resolves to an array of vehicles.
+ */
+export const getVehiclesByFleet = async (fleetManagerId: string): Promise<Vehicle[]> => {
+    if (!fleetManagerId) return [];
+    try {
+        const q = query(vehiclesCollection, where("fleetManagerId", "==", fleetManagerId));
+        const snapshot = await getDocs(q);
+        const vehicles: Vehicle[] = [];
+        snapshot.forEach(doc => {
+            vehicles.push({ id: doc.id, ...doc.data() } as Vehicle);
+        });
+        return vehicles;
+    } catch (error) {
+        console.error("Error fetching vehicles by fleet:", error);
+        throw new Error("Failed to fetch vehicles.");
+    }
+};
+
+/**
  * Fetches a specific vehicle from the database.
  * @param vehicleId The ID of the vehicle to fetch.
  * @returns A promise that resolves to the vehicle data or null if not found.
