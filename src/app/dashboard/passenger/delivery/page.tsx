@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useReducer, useEffect, useMemo } from 'react';
@@ -254,7 +253,7 @@ export default function RequestDeliveryPage() {
     }
   };
 
-  const handlePlaceSelect = async (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
+  const handlePlaceSelect = (place: google.maps.places.PlaceResult, field: 'origin' | 'destination') => {
       if(place.geometry?.location){
         const coords = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
         const address = place.formatted_address || place.name || '';
@@ -368,7 +367,7 @@ export default function RequestDeliveryPage() {
                         <Label htmlFor="origin">{t('origin_label')}</Label>
                         <div className="flex gap-2">
                              <AutocompleteInput 
-                                onPlaceSelect={(place) => handlePlaceSelect(place, 'origin')}
+                                onPlaceSelect={(place: google.maps.places.PlaceResult) => handlePlaceSelect(place, 'origin')}
                                 value={origin.text}
                                 placeholder={t('origin_placeholder')}
                                 onClear={() => dispatch({ type: 'SET_ORIGIN', payload: { text: '', coords: null } })}
