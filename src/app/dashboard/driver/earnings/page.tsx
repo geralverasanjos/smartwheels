@@ -6,7 +6,6 @@ import { useAppContext } from "@/contexts/app-context";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import React, { useState, useEffect } from 'react';
 import { getDriverTripHistory } from "@/services/historyService";
-import type { Trip } from "@/types";
 import { useCurrency } from "@/lib/currency";
 import Link from "next/link";
 

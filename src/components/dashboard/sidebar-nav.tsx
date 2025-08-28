@@ -34,6 +34,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import type { UserRole } from './dashboard-layout';
 import { useSidebar } from '@/components/ui/sidebar';
+import { TranslationKeys } from '@/lib/i18n';
 
 
 const passengerNav = [
@@ -113,9 +114,9 @@ export function DashboardSidebarNav({ role }: { role: UserRole }) {
                     {navItems.map((item) => (
                          <SidebarMenuItem key={item.href} onClick={handleLinkClick}>
                             <Link href={item.href}>
-                                <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey)}>
+                                <SidebarMenuButton isActive={pathname === item.href} tooltip={t(item.labelKey as TranslationKeys)}>
                                     <item.icon />
-                                    <span>{t(item.labelKey)}</span>
+                                    <span>{t(item.labelKey as TranslationKeys)}</span>
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>

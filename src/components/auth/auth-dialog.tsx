@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthError } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; 
 import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { db } from '@/lib/firebase';
 import { getUserProfileByAuthId } from '@/services/profileService';
 import type { UserProfile } from '@/types';
+import type { TranslationKeys } from '@/lib/i18n';
 
 
 interface AuthDialogProps {
@@ -29,7 +30,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
   const [signinEmail, setSigninEmail] = useState('');
-  const [signupRole, setSignupRole] = useState<'passenger' | 'driver' | 'fleet-manager'>(role as any || 'passenger');
+  const [signupRole, setSignupRole] = useState<'passenger' | 'driver' | 'fleet-manager'>(role as 'passenger' | 'driver' | 'fleet-manager' || 'passenger');
   const [signinPassword, setSigninPassword] = useState(''); 
   const [signupName, setSignupName] = useState('');
   const [signupPasswordError, setSignupPasswordError] = useState('');
@@ -184,7 +185,7 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     return formContent;
   }
 
-  const formattedRole = t(`role_${role.toLowerCase()}` as any);
+  const formattedRole = t(`role_${role.toLowerCase()}` as TranslationKeys);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

@@ -1,7 +1,7 @@
 // src/services/historyService.ts
 import { collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Trip, UserProfile } from '@/types';
+import type { Trip } from '@/types';
 import { getProfileByIdAndRole } from './profileService';
 
 /**
@@ -56,7 +56,7 @@ export const getFleetTripHistory = async (fleetManagerId: string): Promise<Trip[
     // NOTE: This is a simplified version. A real implementation would involve
     // querying drivers associated with the fleetManagerId first.
     const tripsCollection = collection(db, 'trips');
-    const q = query(tripsCollection, orderBy('date', 'desc')); // Fetch all trips for now
+    const q = query(tripsCollection, where("fleetManagerId", "==", fleetManagerId), orderBy('date', 'desc'));
     
     const querySnapshot = await getDocs(q);
     const trips: Trip[] = [];
@@ -88,7 +88,7 @@ export const saveTripHistory = async (tripData: Omit<Trip, 'id'>): Promise<void>
     try {
         const historyCollection = collection(db, 'trips');
         // Remove nested objects before saving to avoid Firestore issues with complex objects in arrays
-        const { driver, passenger, ...savableTripData } = tripData;
+        const { ...savableTripData } = tripData;
         await addDoc(historyCollection, savableTripData);
     } catch (error) {
         console.error("Error writing document: ", error);

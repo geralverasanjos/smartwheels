@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPayoutMethods, savePayoutMethod, deletePayoutMethod } from '@/services/payoutService';
 import type { PayoutMethod } from '@/types';
 import { PayPalIcon, MBWayIcon } from '@/components/ui/icons';
+import { TranslationKeys } from '@/lib/i18n';
 
 export default function Page() {
     const { t, user } = useAppContext();
@@ -98,7 +99,7 @@ export default function Page() {
             return method.details.email;
         }
         if (method.type === 'pix') {
-            return `${t(method.details.keyType as 'email_label' | 'payment_method_pix_phone' | 'payment_method_pix_cpf' | 'payment_method_pix_random') || ''}: ${method.details.key}`;
+            return `${t(method.details.keyType as TranslationKeys) || ''}: ${method.details.key}`;
         }
         if (method.type === 'mbway') {
             return `+${method.details.phone}`;

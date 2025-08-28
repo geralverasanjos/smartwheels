@@ -29,7 +29,7 @@ export default function ProfileForm({ userData, onSave, isSaving, titleKey, desc
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
     
-    const { register, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm<UserProfile>({
+    const { register, handleSubmit, setValue, watch, formState: { isDirty } } = useForm<UserProfile>({
         defaultValues: userData,
     });
     

@@ -5,7 +5,7 @@ import * as admin from 'firebase-admin';
 // Initialize Firebase Admin SDK
 try {
   admin.initializeApp();
-} catch (e) {
+} catch {
   // This can happen in local development with hot-reloading
   console.log('Admin SDK already initialized.');
 }

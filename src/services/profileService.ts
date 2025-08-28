@@ -1,7 +1,7 @@
 
 'use client';
 // src/services/profileService.ts
-import { doc, getDoc, setDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app, db } from '@/lib/firebase';
@@ -46,7 +46,7 @@ export const saveUserProfile = async (profileData: Partial<UserProfile>): Promis
     const docRef = doc(db, collectionName, profileData.id);
     
     const dataToSave = { ...profileData };
-    delete (dataToSave as any).id;
+    delete dataToSave.id;
 
     await setDoc(docRef, dataToSave, { merge: true });
 };
@@ -142,7 +142,7 @@ export const uploadProfilePhoto = async (file: File, path: string): Promise<stri
         const base64File = await toBase64(file);
         const uploadFileCallable = httpsCallable(functions, 'uploadFile');
         
-        const result = await uploadFileCallable({ 
+        const result: any = await uploadFileCallable({ 
             file: base64File, 
             path: path,
             contentType: file.type

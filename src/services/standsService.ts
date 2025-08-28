@@ -21,7 +21,7 @@ export const getStands = async (): Promise<TaxiStand[]> => {
     }
 };
 
-export const saveStand = async (stand: TaxiStand): Promise<DocumentData> => {
+export const saveStand = async (stand: Partial<TaxiStand>): Promise<DocumentData> => {
     try {
         if (stand.id) {
             const docRef = doc(db, 'stands', stand.id);

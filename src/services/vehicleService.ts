@@ -14,7 +14,8 @@ export const saveVehicle = async (vehicleData: Partial<Vehicle>): Promise<Docume
     try {
         if (vehicleData.id) {
             const docRef = doc(db, 'vehicles', vehicleData.id);
-            const { id, ...dataToUpdate } = vehicleData;
+            const { ...dataToUpdate } = vehicleData;
+            delete dataToUpdate.id;
             await updateDoc(docRef, dataToUpdate);
             return docRef;
         } else {

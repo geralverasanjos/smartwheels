@@ -30,12 +30,12 @@ function getPayPalClient() {
       },
       body: 'grant_type=client_credentials',
     });
-    const data = await response.json();
+    const data: { access_token: string } = await response.json();
     return data.access_token;
   };
 
   return {
-    execute: async (request: { method: string, path: string, body?: any, headers?: any }) => {
+    execute: async (request: { method: string, path: string, body?: object, headers?: object }) => {
         const accessToken = await getAccessToken();
         const response = await fetch(`${baseUrl}${request.path}`, {
             method: request.method,
@@ -74,7 +74,7 @@ function getPayPalClient() {
  * @param paypalClient The PayPal client.
  * @returns The ID of the billing plan.
  */
-async function getOrCreateBillingPlan(paypalClient: any) {
+async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalClient>) {
     const productId = `SMARTWHEELS-PRODUCT-${process.env.NODE_ENV}`;
     const planId = `SMARTWHEELS-PLAN-${process.env.NODE_ENV}`;
     let finalProductId = '';
@@ -82,7 +82,7 @@ async function getOrCreateBillingPlan(paypalClient: any) {
     // 1. Get or Create Product
     try {
         console.log(`Checking for PayPal Product: ${productId}`);
-        const product = await paypalClient.execute({
+        const product: { id: string } = await paypalClient.execute({
             method: 'GET',
             path: `/v1/catalogs/products/${productId}`
         });
@@ -92,7 +92,7 @@ async function getOrCreateBillingPlan(paypalClient: any) {
         if (error && error.statusCode === 404) {
             console.log('PayPal product not found, creating new one.');
             try {
-                const newProduct = await paypalClient.execute({
+                const newProduct: { id: string } = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/catalogs/products',
                     body: {
@@ -120,7 +120,7 @@ async function getOrCreateBillingPlan(paypalClient: any) {
     // 2. Get or Create Plan
     try {
         console.log(`Checking for PayPal Plan: ${planId}`);
-        const plan = await paypalClient.execute({
+        const plan: { id: string } = await paypalClient.execute({
              method: 'GET',
              path: `/v1/billing/plans/${planId}`
         });
@@ -130,7 +130,7 @@ async function getOrCreateBillingPlan(paypalClient: any) {
         if (error && error.statusCode === 404) {
              console.log('PayPal plan not found, creating new one.');
              try {
-                const newPlan = await paypalClient.execute({
+                const newPlan: { id: string } = await paypalClient.execute({
                     method: 'POST',
                     path: '/v1/billing/plans',
                     body: {
@@ -207,8 +207,8 @@ export async function handleVehicleFee(vehicleId: string) {
     };
 
     try {
-        const subscription = await paypalClient.execute(request);
-        const approvalLink = subscription.links.find((link: any) => link.rel === 'approve');
+        const subscription: { links: { rel: string; href: string }[] } = await paypalClient.execute(request);
+        const approvalLink = subscription.links.find((link) => link.rel === 'approve');
         
         if (approvalLink) {
             return { approvalUrl: approvalLink.href };

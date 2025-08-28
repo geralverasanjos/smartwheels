@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import FileUploadCard from '@/components/shared/file-upload-card';
+import { FileText } from 'lucide-react';
 
 export default function PassengerProfilePage() {
     const { t, user, setUser } = useAppContext();
@@ -35,6 +37,18 @@ export default function PassengerProfilePage() {
         }
     };
     
+    const handleSaveDocumentUrl = async (docType: keyof UserProfile, url: string) => {
+        if (!user) return;
+        try {
+            const updatedProfile = { ...user, [docType]: url };
+             await saveUserProfile({ id: user.id, role: user.role, [docType]: url });
+            setUser(updatedProfile);
+        } catch (error) {
+            console.error(`Failed to save document ${docType}:`, error);
+            toast({ title: t('error_title'), description: `Failed to save document.`, variant: 'destructive' });
+        }
+    };
+
     if (!user) {
         return <div>Loading...</div>; // Or a proper skeleton loader
     }
@@ -55,29 +69,16 @@ export default function PassengerProfilePage() {
                     <CardDescription>{t('profile_id_docs_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="docType">{t('profile_doc_type')}</Label>
-                            <Select>
-                                <SelectTrigger id="docType">
-                                    <SelectValue placeholder={t('profile_doc_type_placeholder')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="identity_card">{t('profile_doc_type_identity')}</SelectItem>
-                                    <SelectItem value="citizen_card">{t('profile_doc_type_citizen_card')}</SelectItem>
-                                    <SelectItem value="passport">{t('profile_doc_type_passport')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="docNumber">{t('profile_doc_number')}</Label>
-                            <Input id="docNumber" />
-                        </div>
-                    </div>
+                    <FileUploadCard
+                        title={t('profile_doc_type_identity')}
+                        description={t('profile_id_docs_desc')}
+                        icon={FileText}
+                        fileUrl={user.identityDocumentUrl}
+                        userId={user.id}
+                        docType="identityDocumentUrl"
+                        onUpload={handleSaveDocumentUrl}
+                    />
                 </CardContent>
-                <CardFooter className="justify-end">
-                    <Button>{t('profile_manage_docs_button')}</Button>
-                </CardFooter>
             </Card>
 
         </div>

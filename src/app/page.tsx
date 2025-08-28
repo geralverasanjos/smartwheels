@@ -6,6 +6,7 @@ import Footer from '@/components/landing/footer';
 import { LandingHeader } from '@/components/landing/landing-header';
 import { useRouter } from 'next/navigation';
 import AuthDialog from '@/components/auth/auth-dialog';
+import { TranslationKeys } from '@/lib/i18n';
 
 export default function LandingPage() {
     const { t } = useAppContext();
@@ -61,8 +62,8 @@ export default function LandingPage() {
                         {buttonContent.map((button, index) => (
                              <button className="botao-com-efeito" key={index} onClick={() => handleProfileClick(button.href)}>
                                 <button.icon className="botao-icone" />
-                                <span className="botao-titulo">{t(button.titleKey as any)}</span>
-                                <span className="botao-descricao">{t(button.descriptionKey as any)}</span>
+                                <span className="botao-titulo">{t(button.titleKey as TranslationKeys)}</span>
+                                <span className="botao-descricao">{t(button.descriptionKey as TranslationKeys)}</span>
                                 <span className="luz-efeito"></span>
                              </button>
                         ))}
@@ -78,9 +79,9 @@ export default function LandingPage() {
                                         <div className="icon">
                                             <card.icon />
                                         </div>
-                                        <h3>{t(card.titleKey as any)}</h3>
+                                        <h3>{t(card.titleKey as TranslationKeys)}</h3>
                                     </div>
-                                    <p>{t(card.descriptionKey as any)}</p>
+                                    <p>{t(card.descriptionKey as TranslationKeys)}</p>
                                 </div>
                             ))}
                         </div>
@@ -94,9 +95,9 @@ export default function LandingPage() {
                                 <button className="special-service-card" key={index} onClick={() => handleProfileClick(card.href)}>
                                     <div className="special-service-card-content">
                                         <card.icon className="icon" />
-                                        <h3 className="title">{t(card.titleKey as any)}</h3>
+                                        <h3 className="title">{t(card.titleKey as TranslationKeys)}</h3>
                                     </div>
-                                    <p className="description">{t(card.descriptionKey as any)}</p>
+                                    <p className="description">{t(card.descriptionKey as TranslationKeys)}</p>
                                 </button>
                             ))}
                         </div>
