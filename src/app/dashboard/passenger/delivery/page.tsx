@@ -155,7 +155,7 @@ export default function RequestDeliveryPage() {
     {id: 'pix', icon: Landmark, label: 'payment_pix', value: ''},
     {id: 'mbway', icon: Landmark, label: 'payment_mbway', value: ''},
     {id: 'cash', icon: Landmark, label: 'payment_cash', value: ''},
-  ], [user?.balance, formatCurrency, t]);
+  ], [user?.balance, formatCurrency]);
 
   const serviceCategories = useMemo(() => [
     { id: 'delivery_moto', icon: Box, title: t('delivery_service_moto_title'), description: t('delivery_service_moto_desc'), price: 5.00, eta: t('eta_10min') },
@@ -190,7 +190,7 @@ export default function RequestDeliveryPage() {
         setIsPriceLoading(false);
     }
     fetchConvertedPrices();
-  }, [language.currency.code, serviceCategories, t, toast]);
+  }, [language.currency.code, serviceCategories, toast]);
 
     useEffect(() => {
         if (!activeRideId) return;
@@ -317,7 +317,8 @@ export default function RequestDeliveryPage() {
     setMessages([]);
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!currentMessage.trim() || !activeRideId || !user?.id) return;
     try {
         await sendMessage(activeRideId, user.id, currentMessage);
@@ -519,7 +520,7 @@ export default function RequestDeliveryPage() {
                             {messages.length === 0 ? (
                                 <p className="text-center text-muted-foreground text-sm py-4">{t('chat_no_messages')}</p>
                             ) : (
-                                messages.map((msg) => {
+                                messages.map((msg: Message) => {
                                     const senderProfile = msg.senderId === user?.id ? user : assignedDriverProfile;
                                     const isCurrentUser = msg.senderId === user?.id;
                                     return (
@@ -537,11 +538,11 @@ export default function RequestDeliveryPage() {
                             )}
                         </div>
                         <div className="mt-2 space-y-2">
-                            <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
-                            <div className="flex gap-2">
+                             <form onSubmit={handleSendMessage} className="flex gap-2">
+                                <Label htmlFor="chat-input" className="sr-only">{t('chat_label')}</Label>
                                 <Textarea id="chat-input" placeholder={t('chat_placeholder')} value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} />
-                                <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}><Send /></Button>
-                            </div>
+                                <Button type="submit" disabled={!currentMessage.trim()}><Send /></Button>
+                            </form>
                         </div>
 
                     </CardContent>
