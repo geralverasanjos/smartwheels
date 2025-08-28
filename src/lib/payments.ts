@@ -1,14 +1,13 @@
+
 'use server';
 
 // In a real application, you would install the PayPal SDK. For this prototype, we'll use fetch.
 // This file is now updated to handle recurring subscriptions.
 
-
 interface PayPalError extends Error {
     statusCode?: number;
-    details?: any;
+    details?: unknown;
 }
-
 
 interface PayPalTokenResponse {
     access_token: string;
@@ -29,12 +28,15 @@ interface PayPalSubscription {
     // Add other subscription fields if needed
 }
 
+type PayPalClient = {
+    execute: (request: { method: string, path: string, body?: object, headers?: object }) => Promise<any>;
+}
 
 /**
  * Sets up the PayPal environment.
  * @returns A mock PayPal client object.
  */
-function getPayPalClient() {
+function getPayPalClient(): PayPalClient {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
   const mode = process.env.PAYPAL_MODE || 'sandbox'; // Default to sandbox
@@ -99,7 +101,7 @@ function getPayPalClient() {
  * @param paypalClient The PayPal client.
  * @returns The ID of the billing plan.
  */
-async function getOrCreateBillingPlan(paypalClient: ReturnType<typeof getPayPalClient>): Promise<string> {
+async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<string> {
     const productId = `SMARTWHEELS-PRODUCT-${process.env.NODE_ENV}`;
     const planId = `SMARTWHEELS-PLAN-${process.env.NODE_ENV}`;
     let finalProductId = '';

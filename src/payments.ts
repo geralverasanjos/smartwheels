@@ -6,7 +6,7 @@
 
 interface PayPalError extends Error {
     statusCode?: number;
-    details?: any;
+    details?: unknown;
 }
 
 interface PayPalTokenResponse {
@@ -28,11 +28,15 @@ interface PayPalSubscription {
     // Add other subscription fields if needed
 }
 
+type PayPalClient = {
+    execute: (request: { method: string, path: string, body?: object, headers?: object }) => Promise<any>;
+}
+
 /**
  * Sets up the PayPal environment.
  * @returns A mock PayPal client object.
  */
-function getPayPalClient() {
+function getPayPalClient(): PayPalClient {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
   const mode = process.env.PAYPAL_MODE || 'sandbox'; // Default to sandbox
@@ -59,7 +63,7 @@ function getPayPalClient() {
   };
 
   return {
-    execute: async (request: { method: string, path: string, body?: any, headers?: any }) => {
+    execute: async (request: { method: string, path: string, body?: object, headers?: object }) => {
         const accessToken = await getAccessToken();
         const response = await fetch(`${baseUrl}${request.path}`, {
             method: request.method,
@@ -97,7 +101,7 @@ function getPayPalClient() {
  * @param paypalClient The PayPal client.
  * @returns The ID of the billing plan.
  */
-async function getOrCreateBillingPlan(paypalClient: any): Promise<string> {
+async function getOrCreateBillingPlan(paypalClient: PayPalClient): Promise<string> {
     const productId = `SMARTWHEELS-PRODUCT-${process.env.NODE_ENV}`;
     const planId = `SMARTWHEELS-PLAN-${process.env.NODE_ENV}`;
     let finalProductId = '';
