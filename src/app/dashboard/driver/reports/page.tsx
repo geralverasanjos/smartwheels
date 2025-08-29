@@ -119,20 +119,26 @@ export default function DriverReportsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {Object.values(reportSummaryData).map((row) => (
-                        <TableRow key={row.month}>
-                            <TableCell className="font-medium">{row.month}</TableCell>
-                            <TableCell className="text-center">{row.trips}</TableCell>
-                            <TableCell className="text-center">{formatCurrency(row.revenue)}</TableCell>
-                            <TableCell className="text-center">{(row.totalRating / (row.count || 1)).toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
-                                <Button variant="outline" size="sm">
-                                    <Download className="mr-2 h-3 w-3" />
-                                    {t('btn_download')}
-                                </Button>
-                            </TableCell>
+                    {Object.values(reportSummaryData).length > 0 ? (
+                        Object.values(reportSummaryData).map((row) => (
+                            <TableRow key={row.month}>
+                                <TableCell className="font-medium">{row.month}</TableCell>
+                                <TableCell className="text-center">{row.trips}</TableCell>
+                                <TableCell className="text-center">{formatCurrency(row.revenue)}</TableCell>
+                                <TableCell className="text-center">{(row.totalRating / (row.count || 1)).toFixed(2)}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="outline" size="sm">
+                                        <Download className="mr-2 h-3 w-3" />
+                                        {t('btn_download')}
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center h-24">{t('history_no_trips')}</TableCell>
                         </TableRow>
-                    ))}
+                    )}
                 </TableBody>
             </Table>
         </CardContent>
