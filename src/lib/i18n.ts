@@ -19,728 +19,6 @@ export const Translations = {
     "id-ID": "Akun Saya",
     "th-TH": "บัญชีของฉัน"
   },
-  "welcome_title_p1": {
-    "pt-PT": "Olá,",
-    "pt-BR": "Olá,",
-    "en-US": "Hello,",
-    "es-ES": "Hola,",
-    "fr-FR": "Bonjour,",
-    "de-DE": "Hallo,",
-    "it-IT": "Ciao,",
-    "ja-JP": "こんにちは、",
-    "zh-CN": "你好，",
-    "ru-RU": "Здравствуйте,",
-    "ar-SA": "أهلاً،",
-    "hi-IN": "नमस्ते,",
-    "ko-KR": "안녕하세요,",
-    "he-IL": "שלום,",
-    "uk-UA": "Вітаємо,",
-    "id-ID": "Halo,",
-    "th-TH": "สวัสดี"
-  },
-  "welcome_title_p2": {
-    "pt-PT": "Bem-vindo de volta!",
-    "pt-BR": "Bem-vindo de volta!",
-    "en-US": "Welcome back!",
-    "es-ES": "¡Bienvenido de nuevo!",
-    "fr-FR": "Bon retour !",
-    "de-DE": "Willkommen zurück!",
-    "it-IT": "Bentornato!",
-    "ja-JP": "おかえりなさい！",
-    "zh-CN": "欢迎回来！",
-    "ru-RU": "С возвращением!",
-    "ar-SA": "أهلاً بعودتك!",
-    "hi-IN": "वापसी पर स्वागत है!",
-    "ko-KR": "다시 오신 것을 환영합니다!",
-    "he-IL": "ברוך השב!",
-    "uk-UA": "З поверненням!",
-    "id-ID": "Selamat datang kembali!",
-    "th-TH": "ยินดีต้อนรับกลับ!"
-  },
-  "welcome_subtitle": {
-    "pt-PT": "Lembre-se, um serviço excecional começa com um sorriso.",
-    "pt-BR": "Lembre-se, um serviço excepcional começa com um sorriso.",
-    "en-US": "Remember, exceptional service begins with a smile.",
-    "es-ES": "Recuerda, un servicio excepcional comienza con una sonrisa.",
-    "fr-FR": "N'oubliez pas, un service exceptionnel commence par un sourire.",
-    "de-DE": "Denken Sie daran, außergewöhnlicher Service beginnt mit einem Lächeln.",
-    "it-IT": "Ricorda, un servizio eccezionale inizia con un sorriso.",
-    "ja-JP": "覚えておいてください、最高のサービスは笑顔から始まります。",
-    "zh-CN": "记住，卓越的服务始于微笑。",
-    "ru-RU": "Помните, исключительное обслуживание начинается с улыбки.",
-    "ar-SA": "تذكر، الخدمة الاستثنائية تبدأ بابتسامة.",
-    "hi-IN": "याद रखें, असाधारण सेवा एक मुस्कान के साथ शुरू होती है।",
-    "ko-KR": "기억하세요, 탁월한 서비스는 미소에서 시작됩니다.",
-    "he-IL": "זכור, שירות יוצא דופן מתחיל בחיוך.",
-    "uk-UA": "Пам'ятайте, виняткове обслуговування починається з посмішки.",
-    "id-ID": "Ingat, layanan luar biasa dimulai dengan senyuman.",
-    "th-TH": "จำไว้ว่าบริการที่เป็นเลิศเริ่มต้นด้วยรอยยิ้ม"
-  },
-  "HistoryPage": {
-    "pt-PT": "Histórico de Viagens",
-    "pt-BR": "Histórico de Viagens",
-    "en-US": "Trip History",
-    "es-ES": "Historial de viajes",
-    "fr-FR": "Historique des trajets",
-    "de-DE": "Fahrtenverlauf",
-    "it-IT": "Cronologia viaggi",
-    "ja-JP": "旅行履歴",
-    "zh-CN": "行程历史记录",
-    "ru-RU": "История поездок",
-    "ar-SA": "سجل الرحلات",
-    "hi-IN": "ट्रिप इतिहास",
-    "ko-KR": "여행 기록",
-    "he-IL": "היסטוריית נסיעות",
-    "uk-UA": "Історія поїздок",
-    "id-ID": "Riwayat perjalanan",
-    "th-TH": "ประวัติการเดินทาง"
-  },
-  "history_date": {
-    "pt-PT": "Data",
-    "pt-BR": "Data",
-    "en-US": "Date",
-    "es-ES": "Fecha",
-    "fr-FR": "Date",
-    "de-DE": "Datum",
-    "it-IT": "Data",
-    "ja-JP": "日付",
-    "zh-CN": "日期",
-    "ru-RU": "Дата",
-    "ar-SA": "التاريخ",
-    "hi-IN": "दिनांक",
-    "ko-KR": "날짜",
-    "he-IL": "תאריך",
-    "uk-UA": "Дата",
-    "id-ID": "Tanggal",
-    "th-TH": "วันที่"
-  },
-  "menu_history": {
-    "pt-PT": "Histórico",
-    "pt-BR": "Histórico",
-    "en-US": "History",
-    "es-ES": "Historial",
-    "fr-FR": "Historique",
-    "de-DE": "Verlauf",
-    "it-IT": "Cronologia",
-    "ja-JP": "履歴",
-    "zh-CN": "历史记录",
-    "ru-RU": "История",
-    "ar-SA": "السجل",
-    "hi-IN": "इतिहास",
-    "ko-KR": "기록",
-    "he-IL": "היסטוריה",
-    "uk-UA": "Історія",
-    "id-ID": "Riwayat",
-    "th-TH": "ประวัติ"
-  },
-  "history_page_desc": {
-    "pt-PT": "Acompanhe todas as suas viagens e entregas passadas.",
-    "pt-BR": "Acompanhe todas as suas viagens e entregas passadas.",
-    "en-US": "Keep track of all your past trips and deliveries.",
-    "es-ES": "Mantén un registro de todos tus viajes y entregas pasados.",
-    "fr-FR": "Gardez une trace de tous vos trajets et livraisons passés.",
-    "de-DE": "Verfolgen Sie alle Ihre vergangenen Fahrten und Lieferungen.",
-    "it-IT": "Tieni traccia di tutti i tuoi viaggi e consegne passati.",
-    "ja-JP": "過去のすべての旅行と配達を記録しておきましょう。",
-    "zh-CN": "跟踪您所有过去的行程和送货。",
-    "ru-RU": "Отслеживайте все свои прошлые поездки и доставки.",
-    "ar-SA": "تتبع جميع رحلاتك وتسليماتك السابقة.",
-    "hi-IN": "अपनी सभी पिछली ट्रिप और डिलीवरी का ट्रैक रखें।",
-    "ko-KR": "모든 과거 여행 및 배달을 추적하세요.",
-    "he-IL": "עקוב אחר כל הנסיעות והמשלוחים הקודמים שלך.",
-    "uk-UA": "Слідкуйте за всіма своїми минулими поїздками та доставками.",
-    "id-ID": "Lacak semua perjalanan dan pengiriman Anda di masa lalu.",
-    "th-TH": "ติดตามการเดินทางและการจัดส่งทั้งหมดที่ผ่านมาของคุณ"
-  },
-  "trip_type_trip": {
-    "pt-PT": "Viagem",
-    "pt-BR": "Viagem",
-    "en-US": "Trip",
-    "es-ES": "Viaje",
-    "fr-FR": "Trajet",
-    "de-DE": "Fahrt",
-    "it-IT": "Viaggio",
-    "ja-JP": "旅行",
-    "zh-CN": "行程",
-    "ru-RU": "Поездка",
-    "ar-SA": "رحلة",
-    "hi-IN": "ट्रिप",
-    "ko-KR": "여행",
-    "he-IL": "נסיעה",
-    "uk-UA": "Поїздка",
-    "id-ID": "Perjalanan",
-    "th-TH": "การเดินทาง"
-  },
-  "trip_type_delivery": {
-    "pt-PT": "Entrega",
-    "pt-BR": "Entrega",
-    "en-US": "Delivery",
-    "es-ES": "Entrega",
-    "fr-FR": "Livraison",
-    "de-DE": "Lieferung",
-    "it-IT": "Consegna",
-    "ja-JP": "配達",
-    "zh-CN": "送货",
-    "ru-RU": "Доставка",
-    "ar-SA": "تسليم",
-    "hi-IN": "डिलीवरी",
-    "ko-KR": "배달",
-    "he-IL": "משלוח",
-    "uk-UA": "Доставка",
-    "id-ID": "Pengiriman",
-    "th-TH": "การจัดส่ง"
-  },
-  "menu_earnings": {
-    "pt-PT": "Ganhos",
-    "pt-BR": "Ganhos",
-    "en-US": "Earnings",
-    "es-ES": "Ganancias",
-    "fr-FR": "Gains",
-    "de-DE": "Einnahmen",
-    "it-IT": "Guadagni",
-    "ja-JP": "収益",
-    "zh-CN": "收入",
-    "ru-RU": "Заработок",
-    "ar-SA": "الأرباح",
-    "hi-IN": "कमाई",
-    "ko-KR": "수입",
-    "he-IL": "רווחים",
-    "uk-UA": "Заробіток",
-    "id-ID": "Penghasilan",
-    "th-TH": "รายได้"
-  },
-  "status_completed": {
-    "pt-PT": "Concluída",
-    "pt-BR": "Concluída",
-    "en-US": "Completed",
-    "es-ES": "Completado",
-    "fr-FR": "Terminé",
-    "de-DE": "Abgeschlossen",
-    "it-IT": "Completato",
-    "ja-JP": "完了",
-    "zh-CN": "已完成",
-    "ru-RU": "Завершено",
-    "ar-SA": "مكتمل",
-    "hi-IN": "पूर्ण",
-    "ko-KR": "완료됨",
-    "he-IL": "הושלם",
-    "uk-UA": "Завершено",
-    "id-ID": "Selesai",
-    "th-TH": "เสร็จสิ้น"
-  },
-  "status_cancelled": {
-    "pt-PT": "Cancelada",
-    "pt-BR": "Cancelada",
-    "en-US": "Cancelled",
-    "es-ES": "Cancelado",
-    "fr-FR": "Annulé",
-    "de-DE": "Storniert",
-    "it-IT": "Annullato",
-    "ja-JP": "キャンセル",
-    "zh-CN": "已取消",
-    "ru-RU": "Отменено",
-    "ar-SA": "ملغاة",
-    "hi-IN": "रद्द",
-    "ko-KR": "취소됨",
-    "he-IL": "בוטל",
-    "uk-UA": "Скасовано",
-    "id-ID": "Dibatalkan",
-    "th-TH": "ถูกยกเลิก"
-  },
-  "history_no_trips": {
-    "pt-PT": "Sem viagens registradas.",
-    "pt-BR": "Sem viagens registradas.",
-    "en-US": "No trips logged.",
-    "es-ES": "No hay viajes registrados.",
-    "fr-FR": "Aucun trajet enregistré.",
-    "de-DE": "Keine Fahrten aufgezeichnet.",
-    "it-IT": "Nessun viaggio registrato.",
-    "ja-JP": "記録された旅行はありません。",
-    "zh-CN": "没有记录的行程。",
-    "ru-RU": "Поездок не зарегистрировано.",
-    "ar-SA": "لم يتم تسجيل أي رحلات.",
-    "hi-IN": "कोई ट्रिप लॉग नहीं की गई है।",
-    "ko-KR": "기록된 여행이 없습니다.",
-    "he-IL": "לא נרשמו נסיעות.",
-    "uk-UA": "Поїздок не зафіксовано.",
-    "id-ID": "Tidak ada perjalanan yang tercatat.",
-    "th-TH": "ไม่มีการเดินทางที่ถูกบันทึกไว้"
-  },
-  "history_no_trips_desc": {
-    "pt-PT": "Comece uma nova viagem para que o seu histórico seja preenchido.",
-    "pt-BR": "Comece uma nova viagem para que o seu histórico seja preenchido.",
-    "en-US": "Start a new trip to have your history populated.",
-    "es-ES": "Inicia un nuevo viaje para que tu historial se llene.",
-    "fr-FR": "Commencez un nouveau trajet pour que votre historique soit rempli.",
-    "de-DE": "Beginnen Sie eine neue Fahrt, um Ihren Verlauf zu füllen.",
-    "it-IT": "Inizia un nuovo viaggio per popolare la tua cronologia.",
-    "ja-JP": "履歴を埋めるために新しい旅行を開始してください。",
-    "zh-CN": "开始新的行程，以便您的历史记录被填充。",
-    "ru-RU": "Начните новую поездку, чтобы заполнить историю.",
-    "ar-SA": "ابدأ رحلة جديدة ليتم ملء سجلك.",
-    "hi-IN": "अपने इतिहास को भरने के लिए एक नई ट्रिप शुरू करें।",
-    "ko-KR": "기록을 채우려면 새로운 여행을 시작하세요.",
-    "he-IL": "התחל נסיעה חדשה כדי למלא את ההיסטוריה שלך.",
-    "uk-UA": "Почніть нову поїздку, щоб заповнити свою історію.",
-    "id-ID": "Mulai perjalanan baru untuk mengisi riwayat Anda.",
-    "th-TH": "เริ่มการเดินทางใหม่เพื่อให้ประวัติของคุณถูกเติม"
-  },
-  "DriverDashboard": {
-    "pt-PT": "Painel do Motorista",
-    "pt-BR": "Painel do Motorista",
-    "en-US": "Driver Dashboard",
-    "es-ES": "Panel de control del conductor",
-    "fr-FR": "Tableau de bord du conducteur",
-    "de-DE": "Fahrer-Dashboard",
-    "it-IT": "Cruscotto del conducente",
-    "ja-JP": "ドライバーダッシュボード",
-    "zh-CN": "司机仪表板",
-    "ru-RU": "Панель водителя",
-    "ar-SA": "لوحة تحكم السائق",
-    "hi-IN": "ड्राइवर डैशबोर्ड",
-    "ko-KR": "운전자 대시보드",
-    "he-IL": "לוח מחוונים לנהג",
-    "uk-UA": "Панель приладів водія",
-    "id-ID": "Dasbor Pengemudi",
-    "th-TH": "แดชบอร์ดคนขับ"
-  },
-  "driver_status_message_online": {
-    "pt-PT": "Você está online!",
-    "pt-BR": "Você está online!",
-    "en-US": "You are online!",
-    "es-ES": "¡Estás en línea!",
-    "fr-FR": "Vous êtes en ligne !",
-    "de-DE": "Sie sind online!",
-    "it-IT": "Sei online!",
-    "ja-JP": "あなたはオンラインです！",
-    "zh-CN": "您已上线！",
-    "ru-RU": "Вы онлайн!",
-    "ar-SA": "أنت متصل بالإنترنت!",
-    "hi-IN": "आप ऑनलाइन हैं!",
-    "ko-KR": "온라인 상태입니다!",
-    "he-IL": "אתה מחובר!",
-    "uk-UA": "Ви онлайн!",
-    "id-ID": "Anda sedang online!",
-    "th-TH": "คุณออนไลน์แล้ว!"
-  },
-  "driver_status_message_offline": {
-    "pt-PT": "Você está offline.",
-    "pt-BR": "Você está offline.",
-    "en-US": "You are offline.",
-    "es-ES": "Estás desconectado.",
-    "fr-FR": "Vous êtes hors ligne.",
-    "de-DE": "Sie sind offline.",
-    "it-IT": "Sei offline.",
-    "ja-JP": "あなたはオフラインです。",
-    "zh-CN": "您已离线。",
-    "ru-RU": "Вы оффлайн.",
-    "ar-SA": "أنت غير متصل بالإنترنت.",
-    "hi-IN": "आप ऑफ़लाइन हैं।",
-    "ko-KR": "오프라인 상태입니다.",
-    "he-IL": "אתה מנותק.",
-    "uk-UA": "Ви офлайн.",
-    "id-ID": "Anda sedang offline.",
-    "th-TH": "คุณออฟไลน์"
-  },
-  "driver_queue_position_title": {
-    "pt-PT": "Posição na fila",
-    "pt-BR": "Posição na fila",
-    "en-US": "Queue position",
-    "es-ES": "Posición en la cola",
-    "fr-FR": "Position dans la file d'attente",
-    "de-DE": "Warteschlangenposition",
-    "it-IT": "Posizione in coda",
-    "ja-JP": "キューでの位置",
-    "zh-CN": "队列位置",
-    "ru-RU": "Позиция в очереди",
-    "ar-SA": "موقعك في الطابور",
-    "hi-IN": "कतार में स्थिति",
-    "ko-KR": "대기열 순위",
-    "he-IL": "מיקום בתור",
-    "uk-UA": "Позиція в черзі",
-    "id-ID": "Posisi antrean",
-    "th-TH": "ตำแหน่งในคิว"
-  },
-  "driver_not_in_queue": {
-    "pt-PT": "Não está na fila de espera.",
-    "pt-BR": "Não está na fila de espera.",
-    "en-US": "You are not in the queue.",
-    "es-ES": "No estás en la cola.",
-    "fr-FR": "Vous n'êtes pas dans la file d'attente.",
-    "de-DE": "Sie befinden sich nicht in der Warteschlange.",
-    "it-IT": "Non sei in coda.",
-    "ja-JP": "あなたはキューに入っていません。",
-    "zh-CN": "您不在队列中。",
-    "ru-RU": "Вы не в очереди.",
-    "ar-SA": "أنت لست في الطابور.",
-    "hi-IN": "आप कतार में नहीं हैं।",
-    "ko-KR": "대기열에 있지 않습니다.",
-    "he-IL": "אינך נמצא בתור.",
-    "uk-UA": "Ви не в черзі.",
-    "id-ID": "Anda tidak dalam antrean.",
-    "th-TH": "คุณไม่ได้อยู่ในคิว"
-  },
-  "driver_online_status_title": {
-    "pt-PT": "Estado Online",
-    "pt-BR": "Status Online",
-    "en-US": "Online Status",
-    "es-ES": "Estado en línea",
-    "fr-FR": "Statut en ligne",
-    "de-DE": "Online-Status",
-    "it-IT": "Stato online",
-    "ja-JP": "オンラインステータス",
-    "zh-CN": "在线状态",
-    "ru-RU": "Онлайн-статус",
-    "ar-SA": "الحالة على الإنترنت",
-    "hi-IN": "ऑनलाइन स्थिति",
-    "ko-KR": "온라인 상태",
-    "he-IL": "סטטוס מחובר",
-    "uk-UA": "Онлайн-статус",
-    "id-ID": "Status Online",
-    "th-TH": "สถานะออนไลน์"
-  },
-  "driver_online_status_desc_offline": {
-    "pt-PT": "Seu perfil está invisível para os passageiros. Toque para ficar online.",
-    "pt-BR": "Seu perfil está invisível para os passageiros. Toque para ficar online.",
-    "en-US": "Your profile is invisible to passengers. Tap to go online.",
-    "es-ES": "Tu perfil es invisible para los pasajeros. Toca para conectarte.",
-    "fr-FR": "Votre profil est invisible pour les passagers. Appuyez pour vous connecter.",
-    "de-DE": "Ihr Profil ist für Passagiere unsichtbar. Tippen Sie, um online zu gehen.",
-    "it-IT": "Il tuo profilo è invisibile ai passeggeri. Tocca per andare online.",
-    "ja-JP": "あなたのプロフィールは乗客には見えません。タップしてオンラインになります。",
-    "zh-CN": "您的个人资料对乘客不可见。点击即可上线。",
-    "ru-RU": "Ваш профиль невидим для пассажиров. Нажмите, чтобы выйти в сеть.",
-    "ar-SA": "ملفك الشخصي غير مرئي للركاب. انقر لتصبح متصل بالإنترنت.",
-    "hi-IN": "आपकी प्रोफ़ाइल यात्रियों के लिए अदृश्य है। ऑनलाइन जाने के लिए टैप करें।",
-    "ko-KR": "귀하의 프로필이 승객에게 보이지 않습니다. 탭하여 온라인으로 전환하세요.",
-    "he-IL": "הפרופיל שלך בלתי נראה לנוסעים. הקש כדי להתחבר.",
-    "uk-UA": "Ваш профіль невидимий для пасажирів. Натисніть, щоб перейти в онлайн.",
-    "id-ID": "Profil Anda tidak terlihat oleh penumpang. Ketuk untuk beralih ke mode online.",
-    "th-TH": "โปรไฟล์ของคุณมองไม่เห็นสำหรับผู้โดยสาร แตะเพื่อออนไลน์"
-  },
-  "driver_active_services_title": {
-    "pt-PT": "Serviços ativos",
-    "pt-BR": "Serviços ativos",
-    "en-US": "Active services",
-    "es-ES": "Servicios activos",
-    "fr-FR": "Services actifs",
-    "de-DE": "Aktive Dienste",
-    "it-IT": "Servizi attivi",
-    "ja-JP": "アクティブなサービス",
-    "zh-CN": "活动服务",
-    "ru-RU": "Активные услуги",
-    "ar-SA": "الخدمات النشطة",
-    "hi-IN": "सक्रिय सेवाएं",
-    "ko-KR": "활성 서비스",
-    "he-IL": "שירותים פעילים",
-    "uk-UA": "Активні послуги",
-    "id-ID": "Layanan aktif",
-    "th-TH": "บริการที่ใช้งานอยู่"
-  },
-  "driver_service_passengers": {
-    "pt-PT": "Passageiros",
-    "pt-BR": "Passageiros",
-    "en-US": "Passengers",
-    "es-ES": "Pasajeros",
-    "fr-FR": "Passagers",
-    "de-DE": "Fahrgäste",
-    "it-IT": "Passeggeri",
-    "ja-JP": "乗客",
-    "zh-CN": "乘客",
-    "ru-RU": "Пассажиры",
-    "ar-SA": "الركاب",
-    "hi-IN": "यात्री",
-    "ko-KR": "승객",
-    "he-IL": "נוסעים",
-    "uk-UA": "Пасажири",
-    "id-ID": "Penumpang",
-    "th-TH": "ผู้โดยสาร"
-  },
-  "driver_service_deliveries": {
-    "pt-PT": "Entregas",
-    "pt-BR": "Entregas",
-    "en-US": "Deliveries",
-    "es-ES": "Entregas",
-    "fr-FR": "Livraisons",
-    "de-DE": "Lieferungen",
-    "it-IT": "Consegne",
-    "ja-JP": "配達",
-    "zh-CN": "送货",
-    "ru-RU": "Доставки",
-    "ar-SA": "التسليمات",
-    "hi-IN": "डिलीवरी",
-    "ko-KR": "배달",
-    "he-IL": "משלוחים",
-    "uk-UA": "Доставки",
-    "id-ID": "Pengiriman",
-    "th-TH": "การจัดส่ง"
-  },
-  "driver_queue_operation_title": {
-    "pt-PT": "Operação de fila",
-    "pt-BR": "Operação de fila",
-    "en-US": "Queue operation",
-    "es-ES": "Operación de cola",
-    "fr-FR": "Opération de file d'attente",
-    "de-DE": "Warteschlangenbetrieb",
-    "it-IT": "Operazione in coda",
-    "ja-JP": "キュー操作",
-    "zh-CN": "队列操作",
-    "ru-RU": "Операция с очередью",
-    "ar-SA": "عملية الطابور",
-    "hi-IN": "कतार संचालन",
-    "ko-KR": "대기열 작업",
-    "he-IL": "פעולת תור",
-    "uk-UA": "Операція черги",
-    "id-ID": "Operasi antrean",
-    "th-TH": "การดำเนินการคิว"
-  },
-  "driver_queue_global": {
-    "pt-PT": "Global",
-    "pt-BR": "Global",
-    "en-US": "Global",
-    "es-ES": "Global",
-    "fr-FR": "Global",
-    "de-DE": "Global",
-    "it-IT": "Globale",
-    "ja-JP": "グローバル",
-    "zh-CN": "全球",
-    "ru-RU": "Глобальный",
-    "ar-SA": "عالمي",
-    "hi-IN": "वैश्विक",
-    "ko-KR": "글로벌",
-    "he-IL": "גלובלי",
-    "uk-UA": "Глобальний",
-    "id-ID": "Global",
-    "th-TH": "ทั่วโลก"
-  },
-  "driver_queue_stand": {
-    "pt-PT": "Ponto de espera",
-    "pt-BR": "Ponto de espera",
-    "en-US": "Stand",
-    "es-ES": "Parada",
-    "fr-FR": "Station",
-    "de-DE": "Standplatz",
-    "it-IT": "Piazzola",
-    "ja-JP": "待機所",
-    "zh-CN": "停车点",
-    "ru-RU": "Стоянка",
-    "ar-SA": "موقف",
-    "hi-IN": "स्टैंड",
-    "ko-KR": "대기 장소",
-    "he-IL": "עמדה",
-    "uk-UA": "Стоянка",
-    "id-ID": "Pangkalan",
-    "th-TH": "จุดจอดรอ"
-  },
-  "driver_queue_both": {
-    "pt-PT": "Ambos",
-    "pt-BR": "Ambos",
-    "en-US": "Both",
-    "es-ES": "Ambos",
-    "fr-FR": "Les deux",
-    "de-DE": "Beide",
-    "it-IT": "Entrambi",
-    "ja-JP": "両方",
-    "zh-CN": "两者",
-    "ru-RU": "Оба",
-    "ar-SA": "كلاهما",
-    "hi-IN": "दोनों",
-    "ko-KR": "둘 다",
-    "he-IL": "שניהם",
-    "uk-UA": "Обидва",
-    "id-ID": "Keduanya",
-    "th-TH": "ทั้งสอง"
-  },
-  "driver_select_stand_label": {
-    "pt-PT": "Selecionar ponto de espera",
-    "pt-BR": "Selecionar ponto de espera",
-    "en-US": "Select stand",
-    "es-ES": "Seleccionar parada",
-    "fr-FR": "Sélectionner une station",
-    "de-DE": "Standplatz auswählen",
-    "it-IT": "Seleziona piazzola",
-    "ja-JP": "待機所を選択",
-    "zh-CN": "选择停车点",
-    "ru-RU": "Выбрать стоянку",
-    "ar-SA": "اختر موقف",
-    "hi-IN": "स्टैंड चुनें",
-    "ko-KR": "대기 장소 선택",
-    "he-IL": "בחר עמדה",
-    "uk-UA": "Вибрати стоянку",
-    "id-ID": "Pilih pangkalan",
-    "th-TH": "เลือกจุดจอดรอ"
-  },
-  "driver_select_stand_placeholder": {
-    "pt-PT": "Nenhum ponto de espera selecionado",
-    "pt-BR": "Nenhum ponto de espera selecionado",
-    "en-US": "No stand selected",
-    "es-ES": "Ninguna parada seleccionada",
-    "fr-FR": "Aucune station sélectionnée",
-    "de-DE": "Kein Standplatz ausgewählt",
-    "it-IT": "Nessuna piazzola selezionata",
-    "ja-JP": "待機所が選択されていません",
-    "zh-CN": "未选择停车点",
-    "ru-RU": "Стоянка не выбрана",
-    "ar-SA": "لم يتم اختيار موقف",
-    "hi-IN": "कोई स्टैंड नहीं चुना गया है",
-    "ko-KR": "대기 장소를 선택하지 않았습니다",
-    "he-IL": "לא נבחרה עמדה",
-    "uk-UA": "Не вибрано жодної стоянки",
-    "id-ID": "Tidak ada pangkalan yang dipilih",
-    "th-TH": "ไม่ได้เลือกจุดจอดรอ"
-  },
-  "driver_no_stands_available": {
-    "pt-PT": "Não há pontos de espera disponíveis na sua área.",
-    "pt-BR": "Não há pontos de espera disponíveis na sua área.",
-    "en-US": "No stands available in your area.",
-    "es-ES": "No hay paradas disponibles en tu área.",
-    "fr-FR": "Aucune station disponible dans votre région.",
-    "de-DE": "Keine Standplätze in Ihrer Nähe verfügbar.",
-    "it-IT": "Nessuna piazzola disponibile nella tua zona.",
-    "ja-JP": "あなたのエリアには利用可能な待機所がありません。",
-    "zh-CN": "您所在的区域没有可用的停车点。",
-    "ru-RU": "В вашем районе нет доступных стоянок.",
-    "ar-SA": "لا توجد مواقف متاحة في منطقتك.",
-    "hi-IN": "आपके क्षेत्र में कोई स्टैंड उपलब्ध नहीं है।",
-    "ko-KR": "해당 지역에 이용 가능한 대기 장소가 없습니다.",
-    "he-IL": "אין עמדות זמינות באזור שלך.",
-    "uk-UA": "У вашому районі немає доступних стоянок.",
-    "id-ID": "Tidak ada pangkalan yang tersedia di area Anda.",
-    "th-TH": "ไม่มีจุดจอดรอในพื้นที่ของคุณ"
-  },
-  "dialog_approach_stand_title": {
-    "pt-PT": "Aproximar-se do ponto de espera",
-    "pt-BR": "Aproximar-se do ponto de espera",
-    "en-US": "Approach stand",
-    "es-ES": "Acercarse a la parada",
-    "fr-FR": "Approcher de la station",
-    "de-DE": "Standplatz anfahren",
-    "it-IT": "Avvicinarsi alla piazzola",
-    "ja-JP": "待機所に近づく",
-    "zh-CN": "接近停车点",
-    "ru-RU": "Подъехать к стоянке",
-    "ar-SA": "اقترب من الموقف",
-    "hi-IN": "स्टैंड के पास पहुंचें",
-    "ko-KR": "대기 장소에 접근",
-    "he-IL": "התקרב לעמדה",
-    "uk-UA": "Під'їхати до стоянки",
-    "id-ID": "Mendekati pangkalan",
-    "th-TH": "เข้าใกล้จุดจอดรอ"
-  },
-  "dialog_approach_stand_desc": {
-    "pt-PT": "Para se juntar à fila, por favor, aproxime-se do ponto de espera selecionado para que a sua posição seja confirmada.",
-    "pt-BR": "Para se juntar à fila, por favor, aproxime-se do ponto de espera selecionado para que a sua posição seja confirmada.",
-    "en-US": "To join the queue, please approach the selected stand so that your position can be confirmed.",
-    "es-ES": "Para unirte a la cola, por favor, acércate a la parada seleccionada para que tu posición pueda ser confirmada.",
-    "fr-FR": "Pour rejoindre la file d'attente, veuillez vous approcher de la station sélectionnée afin que votre position puisse être confirmée.",
-    "de-DE": "Um der Warteschlange beizutreten, nähern Sie sich bitte dem ausgewählten Standplatz, damit Ihre Position bestätigt werden kann.",
-    "it-IT": "Per unirti alla coda, per favore, avvicinati alla piazzola selezionata in modo che la tua posizione possa essere confermata.",
-    "ja-JP": "キューに参加するには、選択した待機所に近づいてください。そうすれば、あなたの位置が確認されます。",
-    "zh-CN": "要加入队列，请靠近所选的停车点，以便确认您的位置。",
-    "ru-RU": "Чтобы встать в очередь, пожалуйста, подъедьте к выбранной стоянке, чтобы ваша позиция была подтверждена.",
-    "ar-SA": "للانضمام إلى الطابور، يرجى الاقتراب من الموقف المحدد حتى يمكن تأكيد موقعك.",
-    "hi-IN": "कतार में शामिल होने के लिए, कृपया चयनित स्टैंड के पास पहुंचें ताकि आपकी स्थिति की पुष्टि हो सके।",
-    "ko-KR": "대기열에 합류하려면 선택한 대기 장소에 접근하여 위치를 확인하세요.",
-    "he-IL": "כדי להצטרף לתור, אנא התקרב לעמדה שנבחרה כדי שמיקומך יאושר.",
-    "uk-UA": "Щоб стати в чергу, будь ласка, під'їдьте до обраної стоянки, щоб ваша позиція була підтверджена.",
-    "id-ID": "Untuk bergabung dengan antrean, silakan dekati pangkalan yang dipilih agar posisi Anda dapat dikonfirmasi.",
-    "th-TH": "ในการเข้าร่วมคิว โปรดเข้าใกล้จุดจอดรอที่เลือกเพื่อให้ตำแหน่งของคุณได้รับการยืนยัน"
-  },
-  "btn_ignore": {
-    "pt-PT": "Ignorar",
-    "pt-BR": "Ignorar",
-    "en-US": "Ignore",
-    "es-ES": "Ignorar",
-    "fr-FR": "Ignorer",
-    "de-DE": "Ignorieren",
-    "it-IT": "Ignora",
-    "ja-JP": "無視",
-    "zh-CN": "忽略",
-    "ru-RU": "Игнорировать",
-    "ar-SA": "تجاهل",
-    "hi-IN": "अनदेखा करें",
-    "ko-KR": "무시",
-    "he-IL": "התעלם",
-    "uk-UA": "Ігнорувати",
-    "id-ID": "Abaikan",
-    "th-TH": "ไม่สนใจ"
-  },
-  "btn_join_queue": {
-    "pt-PT": "Entrar na Fila",
-    "pt-BR": "Entrar na Fila",
-    "en-US": "Join Queue",
-    "es-ES": "Unirse a la cola",
-    "fr-FR": "Rejoindre la file d'attente",
-    "de-DE": "Warteschlange beitreten",
-    "it-IT": "Entra in coda",
-    "ja-JP": "キューに参加",
-    "zh-CN": "加入队列",
-    "ru-RU": "Встать в очередь",
-    "ar-SA": "انضم إلى الطابور",
-    "hi-IN": "कतार में शामिल हों",
-    "ko-KR": "대기열 참여",
-    "he-IL": "הצטרף לתור",
-    "uk-UA": "Вступити в чергу",
-    "id-ID": "Bergabung dengan Antrean",
-    "th-TH": "เข้าร่วมคิว"
-  },
-  "status_online": {
-    "pt-PT": "Online",
-    "pt-BR": "Online",
-    "en-US": "Online",
-    "es-ES": "En línea",
-    "fr-FR": "En ligne",
-    "de-DE": "Online",
-    "it-IT": "Online",
-    "ja-JP": "オンライン",
-    "zh-CN": "在线",
-    "ru-RU": "Онлайн",
-    "ar-SA": "متصل",
-    "hi-IN": "ऑनलाइन",
-    "ko-KR": "온라인",
-    "he-IL": "מחובר",
-    "uk-UA": "Онлайн",
-    "id-ID": "Online",
-    "th-TH": "ออนไลน์"
-  },
-  "status_offline": {
-    "pt-PT": "Offline",
-    "pt-BR": "Offline",
-    "en-US": "Offline",
-    "es-ES": "Desconectado",
-    "fr-FR": "Hors ligne",
-    "de-DE": "Offline",
-    "it-IT": "Offline",
-    "ja-JP": "オフライン",
-    "zh-CN": "离线",
-    "ru-RU": "Оффлайн",
-    "ar-SA": "غير متصل",
-    "hi-IN": "ऑफ़लाइन",
-    "ko-KR": "오프라인",
-    "he-IL": "מנותק",
-    "uk-UA": "Офлайн",
-    "id-ID": "Offline",
-    "th-TH": "ออฟไลน์"
-  },
-  "driver_online_status_desc_online": {
-    "pt-PT": "Seu perfil está visível para os passageiros. Toque para ficar offline.",
-    "pt-BR": "Seu perfil está visível para os passageiros. Toque para ficar offline.",
-    "en-US": "Your profile is visible to passengers. Tap to go offline.",
-    "es-ES": "Tu perfil es visible para los pasajeros. Toca para desconectarte.",
-    "fr-FR": "Votre profil est visible pour les passagers. Appuyez pour vous déconnecter.",
-    "de-DE": "Ihr Profil ist für Passagiere sichtbar. Tippen Sie, um offline zu gehen.",
-    "it-IT": "Il tuo profilo è visibile ai passeggeri. Tocca per andare offline.",
-    "ja-JP": "あなたのプロフィールは乗客に表示されています。タップしてオフラインになります。",
-    "zh-CN": "您的个人资料对乘客可见。点击即可离线。",
-    "ru-RU": "Ваш профиль виден пассажирам. Нажмите, чтобы выйти из сети.",
-    "ar-SA": "ملفك الشخصي مرئي للركاب. انقر لتصبح غير متصل.",
-    "hi-IN": "आपकी प्रोफ़ाइल यात्रियों के लिए दृश्यमान है। ऑफ़लाइन जाने के लिए टैप करें।",
-    "ko-KR": "귀하의 프로필이 승객에게 보입니다. 탭하여 오프라인으로 전환하세요.",
-    "he-IL": "הפרופיל שלך גלוי לנוסעים. הקש כדי להתנתק.",
-    "uk-UA": "Ваш профіль видно пасажирам. Натисніть, щоб перейти в офлайн.",
-    "id-ID": "Profil Anda terlihat oleh penumpang. Ketuk untuk beralih ke mode offline.",
-    "th-TH": "โปรไฟล์ของคุณสามารถมองเห็นได้สำหรับผู้โดยสาร แตะเพื่อออฟไลน์"
-  },
   "profile_license_docs_title": {
     "pt-PT": "Documentos de Identificação",
     "pt-BR": "Documentos de Identificação",
@@ -1520,7 +798,7 @@ export const Translations = {
     "id-ID": "Metode pembayaran berhasil dihapus.",
     "th-TH": "วิธีการจ่ายเงินถูกลบเรียบร้อยแล้ว"
   },
-  "Status_online": {
+  "status_online": {
     "pt-PT": "Online",
     "pt-BR": "Online",
     "en-US": "Online",
@@ -1539,7 +817,7 @@ export const Translations = {
     "id-ID": "Online",
     "th-TH": "ออนไลน์"
   },
-  "Status_offline": {
+  "status_offline": {
     "pt-PT": "Offline",
     "pt-BR": "Offline",
     "en-US": "Offline",
@@ -1995,7 +1273,7 @@ export const Translations = {
     "id-ID": "20 menit",
     "th-TH": "20 นาที"
   },
-   "Driver_status_message_offline": {
+   "driver_status_message_offline": {
     "pt-PT": "Está Offline",
     "pt-BR": "Você está offline",
     "en-US": "You're Offline",
@@ -2014,7 +1292,7 @@ export const Translations = {
     "id-ID": "Anda sedang Offline",
     "th-TH": "คุณออฟไลน์อยู่"
   },
-  "Driver_online_status_desc_online": {
+  "driver_online_status_desc_online": {
     "pt-PT": "Deslize para Offline para deixar de receber novos pedidos de viagem.",
     "pt-BR": "Deslize para Offline para deixar de receber novos pedidos de viagem.",
     "en-US": "Swipe Offline to stop receiving new ride requests.",
@@ -2033,7 +1311,7 @@ export const Translations = {
     "id-ID": "Geser Offline untuk berhenti menerima permintaan perjalanan baru.",
     "th-TH": "ปัดออฟไลน์เพื่อหยุดรับคำขอเดินทางใหม่"
   },
-  "Driver_active_services_title": {
+  "driver_active_services_title": {
     "pt-PT": "Serviços Ativos",
     "pt-BR": "Serviços Ativos",
     "en-US": "Active Services",
@@ -2052,7 +1330,7 @@ export const Translations = {
     "id-ID": "Layanan Aktif",
     "th-TH": "บริการที่ใช้งานอยู่"
   },
-  "Driver_service_passengers": {
+  "driver_service_passengers": {
     "pt-PT": "Passageiros",
     "pt-BR": "Passageiros",
     "en-US": "Passengers",
@@ -2071,7 +1349,7 @@ export const Translations = {
     "id-ID": "Penumpang",
     "th-TH": "ผู้โดยสาร"
   },
-  "Driver_service_deliveries": {
+  "driver_service_deliveries": {
     "pt-PT": "Entregas",
     "pt-BR": "Entregas",
     "en-US": "Deliveries",
@@ -2090,7 +1368,7 @@ export const Translations = {
     "id-ID": "Pengiriman",
     "th-TH": "การจัดส่ง"
   },
-  "Driver_queue_operation_title": {
+  "driver_queue_operation_title": {
     "pt-PT": "Operação de Fila",
     "pt-BR": "Operação de Fila",
     "en-US": "Queue Operation",
@@ -2109,7 +1387,7 @@ export const Translations = {
     "id-ID": "Operasi Antrean",
     "th-TH": "การดำเนินการคิว"
   },
-  "Driver_status_message_online": {
+  "driver_status_message_online": {
     "pt-PT": "Está Online",
     "pt-BR": "Você está online",
     "en-US": "You're Online",
@@ -2128,7 +1406,7 @@ export const Translations = {
     "id-ID": "Anda sedang Online",
     "th-TH": "คุณออนไลน์อยู่"
   },
-  "Driver_select_stand_placeholder": {
+  "driver_select_stand_placeholder": {
     "pt-PT": "Ponto de interesse",
     "pt-BR": "Ponto de interesse",
     "en-US": "Stand",
@@ -2147,7 +1425,7 @@ export const Translations = {
     "id-ID": "Titik kumpul",
     "th-TH": "จุดสนใจ"
   },
-  "Driver_not_in_queue": {
+  "driver_not_in_queue": {
     "pt-PT": "Não está em fila de espera",
     "pt-BR": "Não está na fila de espera",
     "en-US": "Not in queue",
@@ -2394,7 +1672,7 @@ export const Translations = {
     "id-ID": "Tambahkan kendaraan pertama Anda",
     "th-TH": "เพิ่มยานพาหนะคันแรกของคุณ"
   },
-  "Driver_online_status_desc_offline": {
+  "driver_online_status_desc_offline": {
     "pt-PT": "Fique online para começar a receber pedidos de viagem.",
     "pt-BR": "Fique online para começar a receber pedidos de viagem.",
     "en-US": "Go online to start receiving ride requests.",
@@ -2527,7 +1805,7 @@ export const Translations = {
     "id-ID": "Tidak ada permintaan yang tertunda.",
     "th-TH": "ไม่มีคำขอที่รอดำเนินการ"
   },
-  "History_no_trips": {
+  "history_no_trips": {
     "pt-PT": "Não foram encontradas viagens",
     "pt-BR": "Nenhuma viagem encontrada",
     "en-US": "No trips found",
@@ -2660,7 +1938,7 @@ export const Translations = {
     "id-ID": "Lihat status teman-teman yang Anda undang untuk bergabung dengan platform.",
     "th-TH": "ดูสถานะของเพื่อนที่คุณเชิญเข้าร่วมแพลตฟอร์ม"
   },
-  "History_no_trips_desc": {
+  "history_no_trips_desc": {
     "pt-PT": "Comece a conduzir para ver as suas viagens aparecerem aqui.",
     "pt-BR": "Comece a dirigir para ver suas viagens aparecerem aqui.",
     "en-US": "Start driving to see your trips appear here.",
@@ -2964,7 +2242,7 @@ export const Translations = {
     "id-ID": "Penumpang",
     "th-TH": "ผู้โดยสาร"
   },
-  "Welcome_title_p1": {
+  "welcome_title_p1": {
     "pt-PT": "Taxi ",
     "pt-BR": "Taxi ",
     "en-US": "Taxi ",
@@ -4274,7 +3552,7 @@ export const Translations = {
     "id-ID": "Alamat",
     "th-TH": "ที่อยู่"
   },
-  "Driver_queue_global": {
+  "driver_queue_global": {
     "pt-PT": "Fila Global",
     "pt-BR": "Fila Global",
     "en-US": "Global Queue",
@@ -4293,7 +3571,7 @@ export const Translations = {
     "id-ID": "Antrean Global",
     "th-TH": "คิวทั่วโลก"
   },
-  "Driver_queue_stand": {
+  "driver_queue_stand": {
     "pt-PT": "Fila de Posto",
     "pt-BR": "Fila de Ponto",
     "en-US": "Stand Queue",
@@ -4388,7 +3666,7 @@ export const Translations = {
     "id-ID": "Lihat dan unduh laporan rinci tentang pendapatan mingguan dan bulanan Anda.",
     "th-TH": "ดูและดาวน์โหลดรายงานโดยละเอียดของรายได้รายสัปดาห์และรายเดือนของคุณ"
   },
-  "Driver_queue_position_title": {
+  "driver_queue_position_title": {
     "pt-PT": "Posição na Fila",
     "pt-BR": "Posição na Fila",
     "en-US": "Queue Position",
@@ -4407,7 +3685,7 @@ export const Translations = {
     "id-ID": "Posisi Antrean",
     "th-TH": "ลำดับคิว"
   },
-  "Driver_select_stand_label": {
+  "driver_select_stand_label": {
     "pt-PT": "Selecione a Fila de Posto",
     "pt-BR": "Selecione a Fila de Ponto",
     "en-US": "Select a Stand Queue",
@@ -4426,7 +3704,7 @@ export const Translations = {
     "id-ID": "Pilih Antrean Stan",
     "th-TH": "เลือกคิวของจุดจอด"
   },
-  "Driver_queue_both": {
+  "driver_queue_both": {
     "pt-PT": "Fila Global e de Posto",
     "pt-BR": "Fila Global e de Ponto",
     "en-US": "Global and Stand Queue",
@@ -4445,7 +3723,7 @@ export const Translations = {
     "id-ID": "Antrean Global dan Stan",
     "th-TH": "คิวทั่วโลกและคิวของจุดจอด"
   },
-  "Driver_online_status_title": {
+  "driver_online_status_title": {
     "pt-PT": "Estado Online",
     "pt-BR": "Status Online",
     "en-US": "Online Status",
@@ -7219,7 +6497,7 @@ export const Translations = {
     "id-ID": "Atau bagikan tautan pembayaran Anda",
     "th-TH": "หรือแชร์ลิงก์การชำระเงินของคุณ"
   },
-  "History_page_desc": {
+  "history_page_desc": {
     "pt-PT": "Veja aqui todas as suas viagens e entregas passadas.",
     "pt-BR": "Veja aqui todas as suas viagens e entregas passadas.",
     "en-US": "View all your past trips and deliveries here.",
@@ -7257,7 +6535,7 @@ export const Translations = {
     "id-ID": "Nilai",
     "th-TH": "มูลค่า"
   },
-  "Status_completed": {
+  "status_completed": {
     "pt-PT": "Concluída",
     "pt-BR": "Concluída",
     "en-US": "Completed",
@@ -7314,7 +6592,7 @@ export const Translations = {
     "id-ID": "Lihat Kwitansi",
     "th-TH": "ดูใบเสร็จ"
   },
-  "Trip_type_delivery": {
+  "trip_type_delivery": {
     "pt-PT": "Entrega",
     "pt-BR": "Entrega",
     "en-US": "Delivery",
@@ -7333,7 +6611,7 @@ export const Translations = {
     "id-ID": "Pengiriman",
     "th-TH": "การจัดส่ง"
   },
-  "Status_cancelled": {
+  "status_cancelled": {
     "pt-PT": "Cancelada",
     "pt-BR": "Cancelada",
     "en-US": "Cancelled",
@@ -7352,7 +6630,7 @@ export const Translations = {
     "id-ID": "Dibatalkan",
     "th-TH": "ยกเลิกแล้ว"
   },
-  "Trip_type_trip": {
+  "trip_type_trip": {
     "pt-PT": "Viagem",
     "pt-BR": "Viagem",
     "en-US": "Trip",
@@ -10392,7 +9670,7 @@ export const Translations = {
     "id-ID": "Terima biaya perjalanan langsung ke akun Anda, tanpa perantara.",
     "th-TH": "รับค่าธรรมเนียมการเดินทางเข้าบัญชีของคุณโดยตรง โดยไม่มีคนกลาง"
   },
-  "Welcome_title_p2": {
+  "welcome_title_p2": {
     "pt-PT": "Inteligente",
     "pt-BR": "Inteligente",
     "en-US": "Inteligente",
@@ -11665,7 +10943,7 @@ export const Translations = {
     "id-ID": "Kirim dan terima paket dengan cepat, aman, dan efisien.",
     "th-TH": "ส่งและรับพัสดุได้อย่างรวดเร็ว ปลอดภัย และมีประสิทธิภาพ"
   },
-  "Menu_earnings": {
+  "menu_earnings": {
     "pt-PT": "Ganhos",
     "pt-BR": "Ganhos",
     "en-US": "Earnings",
@@ -11988,7 +11266,7 @@ export const Translations = {
     "id-ID": "Lihat detail",
     "th-TH": "ดูรายละเอียด"
   },
-  "Menu_history": {
+  "menu_history": {
     "pt-PT": "Histórico",
     "pt-BR": "Histórico",
     "en-US": "History",
@@ -14002,7 +13280,7 @@ export const Translations = {
     "id-ID": "Perjalanan yang dibuat untuk Anda",
     "th-TH": "ทริปที่สร้างมาเพื่อคุณ"
   },
-  "Welcome_subtitle": {
+  "welcome_subtitle": {
     "pt-PT": "A maneira mais fácil de se mover na cidade.",
     "pt-BR": "A maneira mais fácil de se mover na cidade.",
     "en-US": "The easiest way to move around the city.",

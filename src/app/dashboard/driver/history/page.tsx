@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppContext } from '@/contexts/app-context';
@@ -7,12 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { useCurrency } from '@/lib/currency';
 import { getDriverTripHistory } from '@/services/historyService';
 import type { Trip } from '@/types';
-import { useTranslations } from 'next-intl'; // Importar o useTranslations
+import { useTranslations } from 'next-intl'; 
 
 export default function DriverHistoryPage() {
     const { user } = useAppContext();
     const { formatCurrency, formatDate } = useCurrency();
-    const t = useTranslations(); // Inicializar a função de tradução
+    const t = useTranslations();
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -58,13 +59,10 @@ export default function DriverHistoryPage() {
                                     </div>
                                 </div>
                                 <div className="text-left md:text-center">
-                                    {/* Linha da Data Corrigida */}
                                     <p className="font-semibold">{formatDate(trip.date.toISOString())}</p>
-                                    {/* Linha da Tradução Corrigida */}
                                     <p className="text-xs text-muted-foreground">{t('HistoryPage.history_date')}</p>
                                 </div>
                                 <div className="text-left md:text-center">
-                                    {/* Linha dos Ganhos Corrigida */}
                                     <p className="font-semibold text-primary">{formatCurrency(trip.earnings || trip.value * 0.8)}</p>
                                     <p className="text-xs text-muted-foreground">{t('menu_earnings')}</p>
                                 </div>
