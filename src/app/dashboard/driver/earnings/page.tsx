@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ export default function FleetEarningsPage() {
     const { t, user } = useAppContext();
     const { formatCurrency } = useCurrency();
     const [loading, setLoading] = useState(true);
+    const [isClient, setIsClient] = useState(false);
     const [earningsData, setEarningsData] = useState({
         today: 0,
         week: 0,
@@ -21,6 +23,7 @@ export default function FleetEarningsPage() {
     });
 
     useEffect(() => {
+        setIsClient(true);
         const fetchEarnings = async () => {
             if (!user?.id) {
                 setLoading(false);
@@ -131,6 +134,7 @@ export default function FleetEarningsPage() {
             <CardDescription>{t('earnings_weekly_performance_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
+            {isClient && (
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={earningsData.weeklyPerformance}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -141,6 +145,7 @@ export default function FleetEarningsPage() {
                     <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t('earnings_week')} />
                 </BarChart>
             </ResponsiveContainer>
+            )}
         </CardContent>
       </Card>
       
