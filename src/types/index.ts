@@ -35,8 +35,8 @@ export interface UserProfile {
     // Fleet Manager Documents & Info
     companyName?: string;
     companyNif?: string;
-    commercialLicenseUrl?: string;
-    operatorLicenseUrl?: string;
+    commercialLicenseUrl?: string | null;
+    operatorLicenseUrl?: string | null;
 }
 
 export interface VehicleWithLocation extends UserProfile {
@@ -49,7 +49,7 @@ export interface Trip {
     id: string; // Firestore document ID
     type: 'trip' | 'delivery';
     passengerName: string;
-    date: Date;
+    date: any;
     value: number;
     earnings?: number; // Optional, can be calculated
     status: 'completed' | 'cancelled';
