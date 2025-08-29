@@ -57,7 +57,7 @@ export default function DriverHistoryPage() {
                                      </div>
                                 </div>
                                 <div className="text-left md:text-center">
-                                    <p className="font-semibold">{formatDate(trip.date.toISOString())}</p>
+                                    <p className="font-semibold">{formatDate(trip.date.toString())}</p>
                                     <p className="text-xs text-muted-foreground">{t('history_date')}</p>
                                 </div>
                                 <div className="text-left md:text-center">

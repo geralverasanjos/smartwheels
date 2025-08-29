@@ -58,11 +58,13 @@ export default function DriverDashboardPage() {
   const [approachedStand, setApproachedStand] = useState<TaxiStand | null>(null);
   
   const { isLoaded } = useGoogleMaps();
+  const [isClient, setIsClient] = useState(false);
   const locationWatcher = useRef<number | null>(null);
 
 
   // Initialize heatmap data once Google Maps is loaded
   useEffect(() => {
+    setIsClient(true);
     if (isLoaded) {
         setHeatmapData([
             new google.maps.LatLng(38.71, -9.14),
@@ -155,7 +157,7 @@ export default function DriverDashboardPage() {
   return (
     <div className="grid md:grid-cols-3 gap-6 h-full">
         <div className="md:col-span-2 rounded-lg bg-muted flex items-center justify-center min-h-[400px] md:min-h-0">
-            {isLoaded ? (
+            {isLoaded && isClient ? (
                 <Map>
                     {isOnline && heatmapData.length > 0 && <HeatmapLayer data={heatmapData} />}
                     {isOnline && nearbyDriversData.map((driver, index) => (
