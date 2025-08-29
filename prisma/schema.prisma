@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PASSENGER
+  DRIVER
+  FLEET_MANAGER
+  RENTAL_COMPANY
+  SCHOOL_TRANSPORT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum VehicleStatus {
+  PENDING_PAYMENT
+  AVAILABLE
+  IN_TRIP
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum TripStatus {
+  REQUESTED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum VehicleType {
+  CAR
+  MOTORCYCLE
+}
+
+enum PaymentMethodType {
+  PIX
+  PAYPAL
+  MBWAY
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  SMART_WALLET
+}
+
+model User {
+  id                      String                  @id @default(cuid())
+  name                    String?
+  email                   String?                 @unique
+  emailVerified           DateTime?
+  hashedPassword          String?
+  image                   String?
+  role                    UserRole                @default(PASSENGER)
+  status                  UserStatus              @default(ACTIVE)
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  accounts                Account[]
+  sessions                Session[]
+  fleet                   Fleet?
+  vehicle                 Vehicle?
+  tripsAsPassenger        Trip[]                  @relation("PassengerTrips")
+  tripsAsDriver           Trip[]                  @relation("DriverTrips")
+  bookings                Booking[]
+  schoolRoutesProvided    SchoolRoute[]
+  subscriptionsAsParent   RouteSubscription[]
+  reviewsWritten          Review[]                @relation("ReviewsWritten")
+  reviewsReceived         Review[]                @relation("ReviewsReceived")
+  paymentMethods          ProviderPaymentMethod[]
+}
+
+model Fleet {
+  id        String    @id @default(cuid())
+  name      String
+  ownerId   String    @unique
+  owner     User      @relation(fields: [ownerId], references: [id])
+  vehicles  Vehicle[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Vehicle {
+  id                   String        @id @default(cuid())
+  make                 String
+  model                String
+  year                 Int
+  licensePlate         String        @unique
+  status               VehicleStatus @default(PENDING_PAYMENT)
+  type                 VehicleType   @default(CAR)
+  isAvailableForRental Boolean       @default(false)
+  rentalPricePerDay    Float?
+  fleetId              String
+  fleet                Fleet         @relation(fields: [fleetId], references: [id])
+  driverId             String?       @unique
+  driver               User?         @relation(fields: [driverId], references: [id])
+  trips                Trip[]
+  bookings             Booking[]
+  listingFee           ListingFee?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([fleetId])
+}
+
+model Trip {
+  id                 String     @id @default(cuid())
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  status             TripStatus @default(REQUESTED)
+  originAddress      String
+  originLat          Float
+  originLng          Float
+  destinationAddress String
+  destinationLat     Float
+  destinationLng     Float
+  serviceType        VehicleType
+  passengerId        String
+  passenger          User       @relation("PassengerTrips", fields: [passengerId], references: [id])
+  driverId           String?
+  driver             User?      @relation("DriverTrips", fields: [driverId], references: [id])
+  vehicleId          String?
+  vehicle            Vehicle?   @relation(fields: [vehicleId], references: [id])
+  price              Float?
+  review             Review?
+
+  @@index([passengerId])
+  @@index([driverId])
+  @@index([status])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Float
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  rating    Int
+  comment   String?
+  tripId    String   @unique
+  trip      Trip     @relation(fields: [tripId], references: [id])
+  authorId  String
+  author    User     @relation("ReviewsWritten", fields: [authorId], references: [id])
+  subjectId String
+  subject   User     @relation("ReviewsReceived", fields: [subjectId], references: [id])
+}
+
+model School {
+  id      String        @id @default(cuid())
+  name    String        @unique
+  address String
+  routes  SchoolRoute[]
+}
+
+model SchoolRoute {
+  id            String              @id @default(cuid())
+  name          String
+  description   String?
+  capacity      Int
+  providerId    String
+  provider      User                @relation(fields: [providerId], references: [id])
+  schoolId      String
+  school        School              @relation(fields: [schoolId], references: [id])
+  subscriptions RouteSubscription[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model RouteSubscription {
+  id          String      @id @default(cuid())
+  studentName String
+  parentId    String
+  parent      User        @relation(fields: [parentId], references: [id])
+  routeId     String
+  route       SchoolRoute @relation(fields: [routeId], references: [id])
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+}
+
+model ListingFee {
+  id        String   @id @default(cuid())
+  amount    Float
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  vehicleId String   @unique
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+}
+
+model ProviderPaymentMethod {
+  id         String            @id @default(cuid())
+  methodType PaymentMethodType
+  details    Json
+  isActive   Boolean           @default(true)
+  providerId String
+  provider   User              @relation(fields: [providerId], references: [id])
+  createdAt  DateTime          @default(now())
+}
+
+// Modelos para o NextAuth.js
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
