@@ -137,7 +137,7 @@ function reducer(state: State, action: Action): State {
 export default function RequestTransportPage() {
   const { toast } = useToast();
   const { language, t, user } = useAppContext();
-  const { formatCurrency } = useCurrency(language.value);
+  const { formatCurrency } = useCurrency();
   const { reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [messages, setMessages] = useState<Message[]>([]);
