@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { Input } from './ui/input';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
-import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 
 interface AutocompleteInputProps {
   onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
