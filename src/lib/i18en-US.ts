@@ -133,6 +133,25 @@ export const translations = {
     "id-ID": "Pembayaran dibatalkan",
     "th-TH": "ยกเลิกการชำระเงิน"
   },
+  "payment_success_processing": {
+    "pt-PT": "A sua avaliação e gorjeta estão a ser processadas. Pode fechar esta página. Obrigado!",
+    "pt-BR": "Sua avaliação e gorjeta estão sendo processadas. Você pode fechar esta página. Obrigado!",
+    "en-US": "Your review and tip are being processed. You can close this page. Thank you!",
+    "es-ES": "Tu reseña y propina están siendo procesadas. Puedes cerrar esta página. ¡Gracias!",
+    "fr-FR": "Votre évaluation et pourboire sont en cours de traitement. Vous pouvez fermer cette page. Merci !",
+    "de-DE": "Ihre Bewertung und Ihr Trinkgeld werden verarbeitet. Sie können diese Seite schließen. Vielen Dank!",
+    "it-IT": "La tua recensione e mancia sono in fase di elaborazione. Puoi chiudere questa pagina. Grazie!",
+    "ja-JP": "あなたのレビューとチップは処理中です。このページを閉じても大丈夫です。ありがとうございます！",
+    "zh-CN": "您的评价和小费正在处理中。您可以关闭此页面。谢谢！",
+    "ru-RU": "Ваш отзыв и чаевые обрабатываются. Вы можете закрыть эту страницу. Спасибо!",
+    "ar-SA": "جارٍ معالجة تقييمك وإكراميتك. يمكنك إغلاق هذه الصفحة. شكرًا لك!",
+    "hi-IN": "आपकी समीक्षा और टिप को संसाधित किया जा रहा है। आप इस पृष्ठ को बंद कर सकते हैं। धन्यवाद!",
+    "ko-KR": "귀하의 리뷰와 팁이 처리 중입니다. 이 페이지를 닫으셔도 됩니다. 감사합니다!",
+    "he-IL": "הביקורת והטיפ שלך נמצאים בתהליך עיבוד. באפשרותך לסגור דף זה. תודה!",
+    "uk-UA": "Ваш відгук та чайові обробляються. Ви можете закрити цю сторінку. Дякуємо!",
+    "id-ID": "Ulasan dan tip Anda sedang diproses. Anda dapat menutup halaman ini. Terima kasih!",
+    "th-TH": "กำลังดำเนินการรีวิวและทิปของคุณ คุณสามารถปิดหน้านี้ได้ ขอขอบคุณ!"
+  },
   "payment_cancelled_desc": {
     "pt-PT": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
     "pt-BR": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
