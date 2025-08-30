@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, Dispatch, SetStateAction } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import React, { type ReactNode, type Dispatch, type SetStateAction } from 'react';
+import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import { languages, Translations } from '@/lib/i18n';
 import type { TranslationKeys } from '@/lib/i18n';
 import { auth } from '@/lib/firebase';
@@ -18,18 +18,18 @@ interface AppContextType {
   setUser: Dispatch<SetStateAction<UserProfile | null | undefined>>;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+const AppContext = React.createContext<AppContextType | undefined>(undefined);
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>(languages[0]); // Default to pt-PT
-  const [isClient, setIsClient] = useState(false);
-  const [user, setUser] = useState<UserProfile | null | undefined>(undefined); // Start as undefined (loading)
+  const [language, setLanguage] = React.useState<Language>(languages[0]); // Default to pt-PT
+  const [isClient, setIsClient] = React.useState(false);
+  const [user, setUser] = React.useState<UserProfile | null | undefined>(undefined); // Start as undefined (loading)
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const t = useCallback((key: TranslationKeys, replacements?: Record<string, string | number>) => {
+  const t = React.useCallback((key: TranslationKeys, replacements?: Record<string, string | number>) => {
     if (!isClient) {
       return key; // Render the key on the server or before hydration
     }
@@ -46,7 +46,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     return translation;
   }, [language, isClient]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         // User is signed in, fetch their profile from Firestore.
@@ -77,7 +77,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAppContext = () => {
-  const context = useContext(AppContext);
+  const context = React.useContext(AppContext);
   if (context === undefined) {
     throw new Error('useAppContext must be used within an AppContextProvider');
   }
