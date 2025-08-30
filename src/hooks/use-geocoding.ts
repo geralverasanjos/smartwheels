@@ -2,7 +2,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useGoogleMaps } from './useGoogleMaps';
+import { useGoogleMaps } from './use-google-maps';
 
 export const useGeocoding = () => {
     const { isLoaded } = useGoogleMaps();
