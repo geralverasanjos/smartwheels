@@ -152,6 +152,25 @@ export const translations = {
     "id-ID": "Pembayaran dibatalkan",
     "th-TH": "ยกเลิกการชำระเงิน"
   },
+  "btn_back_to_vehicles": {
+    "pt-PT": "Voltar para Veículos",
+    "pt-BR": "Voltar para Veículos",
+    "en-US": "Back to Vehicles",
+    "es-ES": "Volver a Vehículos",
+    "fr-FR": "Retourner aux Véhicules",
+    "de-DE": "Zurück zu „Fahrzeuge“",
+    "it-IT": "Torna a Veicoli",
+    "ja-JP": "車両に戻る",
+    "zh-CN": "返回车辆",
+    "ru-RU": "Назад к «Автомобили»",
+    "ar-SA": "العودة إلى المركبات",
+    "hi-IN": "वाहनों पर वापस जाएं",
+    "ko-KR": "차량으로 돌아가기",
+    "he-IL": "חזרה לרכבים",
+    "uk-UA": "Назад до «Транспортні засоби»",
+    "id-ID": "Kembali ke Kendaraan",
+    "th-TH": "กลับไปที่ ยานพาหนะ"
+  },
   "payment_success_processing": {
     "pt-PT": "A sua avaliação e gorjeta estão a ser processadas. Pode fechar esta página. Obrigado!",
     "pt-BR": "Sua avaliação e gorjeta estão sendo processadas. Você pode fechar esta página. Obrigado!",

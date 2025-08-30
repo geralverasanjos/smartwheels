@@ -152,6 +152,25 @@ export const translations = {
     "id-ID": "Ulasan dan tip Anda sedang diproses. Anda dapat menutup halaman ini. Terima kasih!",
     "th-TH": "กำลังดำเนินการรีวิวและทิปของคุณ คุณสามารถปิดหน้านี้ได้ ขอขอบคุณ!"
   },
+  "btn_back_to_vehicles": {
+    "pt-PT": "Voltar para Veículos",
+    "pt-BR": "Voltar para Veículos",
+    "en-US": "Back to Vehicles",
+    "es-ES": "Volver a Vehículos",
+    "fr-FR": "Retourner aux Véhicules",
+    "de-DE": "Zurück zu „Fahrzeuge“",
+    "it-IT": "Torna a Veicoli",
+    "ja-JP": "車両に戻る",
+    "zh-CN": "返回车辆",
+    "ru-RU": "Назад к «Автомобили»",
+    "ar-SA": "العودة إلى المركبات",
+    "hi-IN": "वाहनों पर वापस जाएं",
+    "ko-KR": "차량으로 돌아가기",
+    "he-IL": "חזרה לרכבים",
+    "uk-UA": "Назад до «Транспортні засоби»",
+    "id-ID": "Kembali ke Kendaraan",
+    "th-TH": "กลับไปที่ ยานพาหนะ"
+  },
   "payment_cancelled_desc": {
     "pt-PT": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
     "pt-BR": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
