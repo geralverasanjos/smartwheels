@@ -22,9 +22,14 @@ export default function FleetMonitoringPage() {
     const [loading, setLoading] = useState(true);
     const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithLocation | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
     const { isLoaded } = useGoogleMaps();
     
+    useEffect(() => {
+      setIsClient(true);
+    }, []);
+
     const fetchVehicles = useCallback(async () => {
         if (user?.id) {
             getDriversByFleetManager(user.id).then(drivers => {
@@ -75,7 +80,7 @@ export default function FleetMonitoringPage() {
     }, []);
 
 
-    if (loading || !isLoaded) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
+    if (loading || !isLoaded || !isClient) return <div className="flex items-center justify-center h-full"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>;
     
     return (
         <div className="grid md:grid-cols-3 gap-6 md:h-[calc(100vh-10rem)]">

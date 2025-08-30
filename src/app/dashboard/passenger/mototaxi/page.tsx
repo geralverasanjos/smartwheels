@@ -131,17 +131,16 @@ function reducer(state: State, action: Action): State {
 
 
 export default function RequestMotoTaxiPage() {
+  const [currentMessage, setCurrentMessage] = useState('');
   const { toast } = useToast();
   const { language, t, user } = useAppContext();
-  const { formatCurrency } = useCurrency(language.value);
   const { reverseGeocode, isLoaded } = useGeocoding();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
+  const { formatCurrency } = useCurrency();
   const [assignedDriverProfile, setAssignedDriverProfile] = useState<UserProfile | null>(null);
   const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
-  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;
-
+  const { step, origin, destination, driverPosition, directions, selectedService, selectedPayment, selectingField, rating, tip, activeRideId } = state;  
   const [convertedPrices, setConvertedPrices] = useState<Record<string, number | null>>({});
   const [isPriceLoading, setIsPriceLoading] = useState(true);
 

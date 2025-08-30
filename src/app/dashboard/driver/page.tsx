@@ -60,6 +60,9 @@ export default function DriverDashboardPage() {
 
     useEffect(() => {
         setIsClient(true);
+    }, []);
+
+    useEffect(() => {
         if (isLoaded) {
             setHeatmapData([
                 new google.maps.LatLng(38.71, -9.14),
