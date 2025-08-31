@@ -9,5 +9,14 @@
         "rootDir": "/"
       }
     ]
+  },
+  "targets": {
+    "smartwheels-7ln28": {
+      "apphosting": {
+        "studio": [
+          "studio"
+        ]
+      }
+    }
   }
 }
