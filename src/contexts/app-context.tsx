@@ -31,7 +31,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
   const t = React.useCallback((key: TranslationKeys, replacements?: Record<string, string | number>) => {
     if (!isClient) {
-      return key; // Render the key on the server or before hydration
+      return ''; // Render empty on the server to avoid hydration mismatch
     }
     
     const langKey = language.value as keyof typeof Translations[typeof key];
