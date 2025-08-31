@@ -63,7 +63,7 @@ export default function DriverDashboardPage() {
     }, []);
 
     useEffect(() => {
-        if (isLoaded) {
+        if (isLoaded && user) { // Adicionada a verificação do 'user'
             setHeatmapData([
                 new google.maps.LatLng(38.71, -9.14),
                 new google.maps.LatLng(38.712, -9.142),
@@ -72,7 +72,7 @@ export default function DriverDashboardPage() {
             
             getStands().then(setTaxiStands).catch(console.error);
         }
-    }, [isLoaded]);
+    }, [isLoaded, user]); // Adicionada a dependência 'user'
 
     useEffect(() => {
         setStatusMessage(isOnline ? t('driver_status_message_online') : t('driver_status_message_offline'));
@@ -284,3 +284,5 @@ export default function DriverDashboardPage() {
         </div>
     );
 }
+
+    
