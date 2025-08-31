@@ -18,7 +18,7 @@ import type { Promotion } from '@/types';
 import type { TranslationKeys } from '@/lib/i18n';
 
 export default function DriverPromotionsPage() {
-    const { t } = useAppContext();
+    const { t, user } = useAppContext();
     const { toast } = useToast();
     const [promotions, setPromotions] = useState<Promotion[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,6 +26,7 @@ export default function DriverPromotionsPage() {
     const [editingPromotion, setEditingPromotion] = useState<Partial<Promotion> | null>(null);
 
     const fetchPromotions = useCallback(async () => {
+        if (!user) return;
         setLoading(true);
         try {
             const data = await getDriverPromotions();
@@ -36,11 +37,13 @@ export default function DriverPromotionsPage() {
         } finally {
             setLoading(false);
         }
-    }, [t, toast]);
+    }, [t, toast, user]);
 
     useEffect(() => {
-        fetchPromotions();
-    }, [fetchPromotions]);
+        if (user) {
+            fetchPromotions();
+        }
+    }, [fetchPromotions, user]);
 
     const handleCreate = () => {
         setEditingPromotion({});
