@@ -361,7 +361,26 @@ export const Translations = {
     "id-ID": "Kata sandi terlalu lemah. Harap gunakan minimal 8 karakter, termasuk huruf, angka, dan simbol.",
     "th-TH": "รหัสผ่านอ่อนเกินไป โปรดใช้ตัวอักษร ตัวเลข และสัญลักษณ์อย่างน้อย 8 ตัวอักษร"
   },
-  "payment_cancelled_info": {
+  "auth_error_email_in_use": {
+    "pt-PT": "O endereço de e-mail já está em uso por outra conta.",
+    "pt-BR": "O endereço de e-mail já está em uso por outra conta.",
+    "en-US": "The email address is already in use by another account.",
+    "es-ES": "La dirección de correo electrónico ya está en uso por otra cuenta.",
+    "fr-FR": "L'adresse e-mail est déjà utilisée par un autre compte.",
+    "de-DE": "Die E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
+    "it-IT": "L'indirizzo email è già in uso da un altro account.",
+    "ja-JP": "このメールアドレスはすでに別のアカウントで使用されています。",
+    "zh-CN": "此电子邮件地址已被另一个帐户使用。",
+    "ru-RU": "Этот адрес электронной почты уже используется другой учетной записью.",
+    "ar-SA": "عنوان البريد الإلكتروني مستخدم بالفعل من قبل حساب آخر.",
+    "hi-IN": "ईमेल पता पहले से ही किसी अन्य खाते द्वारा उपयोग में है।",
+    "ko-KR": "이 이메일 주소는 이미 다른 계정에서 사용 중입니다.",
+    "he-IL": "כתובת הדוא\"ל כבר נמצאת בשימוש על ידי חשבון אחר.",
+    "uk-UA": "Ця електронна адреса вже використовується іншим обліковим записом.",
+    "id-ID": "Alamat email sudah digunakan oleh akun lain.",
+    "th-TH": "ที่อยู่อีเมลนี้ถูกใช้งานโดยบัญชีอื่นแล้ว"
+  },
+  "Payment_cancelled_info ": {
     "pt-PT": "Não foi feita nenhuma cobrança.",
     "pt-BR": "Nenhuma cobrança foi feita.",
     "en-US": "No charge was made.",
