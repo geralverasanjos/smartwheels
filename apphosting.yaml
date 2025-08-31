@@ -7,11 +7,6 @@ runConfig:
   # cpu: 1
   # memoryMiB: 512
 
-# Specifies the build and serve commands for your app.
-build:
-  # Command to build your app
-  command: 'npm run build'
-
 # Environment variables and secrets.
 # env:
   # Configure environment variables.
