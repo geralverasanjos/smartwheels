@@ -190,6 +190,25 @@ export const translations = {
     "id-ID": "Kembali",
     "th-TH": "กลับ"
   },
+  "auth_error_weak_password": {
+    "pt-PT": "A palavra-passe é demasiado fraca. Por favor, utilize pelo menos 8 caracteres, incluindo letras, números e símbolos.",
+    "pt-BR": "A senha é muito fraca. Por favor, use pelo menos 8 caracteres, incluindo letras, números e símbolos.",
+    "en-US": "The password is too weak. Please use at least 8 characters, including letters, numbers, and symbols.",
+    "es-ES": "La contraseña es demasiado débil. Por favor, usa al menos 8 caracteres, incluyendo letras, números y símbolos.",
+    "fr-FR": "Le mot de passe est trop faible. Veuillez utiliser au moins 8 caractères, y compris des lettres, des chiffres et des symboles.",
+    "de-DE": "Das Passwort ist zu schwach. Bitte verwenden Sie mindestens 8 Zeichen, einschließlich Buchstaben, Zahlen und Symbolen.",
+    "it-IT": "La password è troppo debole. Si prega di utilizzare almeno 8 caratteri, inclusi lettere, numeri e simboli.",
+    "ja-JP": "パスワードが弱すぎます。文字、数字、記号を含む8文字以上を使用してください。",
+    "zh-CN": "密码太弱。请使用至少8个字符，包括字母、数字和符号。",
+    "ru-RU": "Пароль слишком слабый. Пожалуйста, используйте не менее 8 символов, включая буквы, цифры и символы.",
+    "ar-SA": "كلمة المرور ضعيفة جدًا. يرجى استخدام 8 أحرف على الأقل، بما في ذلك الحروف والأرقام والرموز.",
+    "hi-IN": "पासवर्ड बहुत कमजोर है। कृपया अक्षरों, संख्याओं और प्रतीकों सहित कम से कम 8 वर्णों का उपयोग करें।",
+    "ko-KR": "비밀번호가 너무 약합니다. 문자, 숫자, 기호를 포함하여 최소 8자 이상을 사용하십시오.",
+    "he-IL": "הסיסמה חלשה מדי. אנא השתמש ב-8 תווים לפחות, כולל אותיות, מספרים וסמלים.",
+    "uk-UA": "Пароль занадто слабкий. Будь ласка, використовуйте щонайменше 8 символів, включаючи літери, цифри та символи.",
+    "id-ID": "Kata sandi terlalu lemah. Harap gunakan minimal 8 karakter, termasuk huruf, angka, dan simbol.",
+    "th-TH": "รหัสผ่านอ่อนเกินไป โปรดใช้ตัวอักษร ตัวเลข และสัญลักษณ์อย่างน้อย 8 ตัวอักษร"
+  },
   "payment_success_processing": {
     "pt-PT": "A sua avaliação e gorjeta estão a ser processadas. Pode fechar esta página. Obrigado!",
     "pt-BR": "Sua avaliação e gorjeta estão sendo processadas. Você pode fechar esta página. Obrigado!",
