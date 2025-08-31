@@ -2,34 +2,5 @@
   "storage": {
     "rules": "storage.rules"
   },
-  "apphosting": [
-    {
-      "backends": [
-        {
-          "backendId": "studio",
-          "rootDir": "/"
-        }
-      ]
-    },
-    {
-      "backendId": "studio",
-      "rootDir": "/",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "functions"
-      ]
-    }
-  ],
-  "targets": {
-    "smartwheels-7ln28": {
-      "apphosting": {
-        "studio": [
-          "studio"
-        ]
-      }
-    }
-  }
+  "apphosting": {}
 }
