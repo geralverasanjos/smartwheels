@@ -171,6 +171,25 @@ export const translations = {
     "id-ID": "Kembali ke Kendaraan",
     "th-TH": "กลับไปที่ ยานพาหนะ"
   },
+  "btn_go_back": {
+    "pt-PT": "Voltar",
+    "pt-BR": "Voltar",
+    "en-US": "Go back",
+    "es-ES": "Volver",
+    "fr-FR": "Retour",
+    "de-DE": "Zurück",
+    "it-IT": "Indietro",
+    "ja-JP": "戻る",
+    "zh-CN": "返回",
+    "ru-RU": "Вернуться",
+    "ar-SA": "العودة",
+    "hi-IN": "वापस जाएं",
+    "ko-KR": "뒤로 가기",
+    "he-IL": "חזור אחורה",
+    "uk-UA": "Повернутися",
+    "id-ID": "Kembali",
+    "th-TH": "กลับ"
+  },
   "payment_cancelled_desc": {
     "pt-PT": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
     "pt-BR": "O pagamento da sua viagem foi cancelado. Por favor, tente novamente para continuar.",
