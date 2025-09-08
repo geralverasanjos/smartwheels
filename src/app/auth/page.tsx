@@ -1,6 +1,3 @@
-// FICHEIRO COMPLETO E CORRIGIDO
-// src/app/auth/page.tsx
-
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -9,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAppContext } from '@/contexts/app-context';
 import type { UserProfile } from '@/types';
 
-// Esta linha diz ao Next.js para não pré-renderizar esta página durante o build.
+// This line tells Next.js not to pre-render this page during the build.
 export const dynamic = 'force-dynamic';
 
 export default function AuthPage() {
@@ -17,22 +14,26 @@ export default function AuthPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     
-    // O setRole não estava a ser usado, foi removido para limpar o código.
+    // The setRole was not being used, it was removed to clean up the code.
     const initialRole = searchParams.get('role') || 'passenger';
     const [role] = useState(initialRole);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // Este efeito trata do redirecionamento após um login bem-sucedido
+    // This effect handles the redirect after a successful login
     useEffect(() => {
-        if (user) { // user é um objeto UserProfile, significa que está logado
+        // When the user object is loaded from the context and is not null, redirect.
+        if (isLoggedIn && user) { 
             const targetRole = user.role || 'passenger';
             router.push(`/dashboard/${targetRole}`);
         }
-    }, [user, router]);
+    }, [user, isLoggedIn, router]);
 
 
     const handleSuccess = (loggedInUser: UserProfile) => {
-        // O useEffect acima irá tratar do redirecionamento assim que o estado do utilizador for atualizado no contexto
-        console.log("handleSuccess called for user:", loggedInUser.name, "with role:", loggedInUser.role);
+        // We just need to know that the login process was successful.
+        // The useEffect above will handle the redirect once the user state is updated in the context.
+        console.log("handleSuccess called for user:", loggedInUser.id);
+        setIsLoggedIn(true);
     };
 
     return (

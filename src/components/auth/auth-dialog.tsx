@@ -1,10 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthError } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthError, UserCredential } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; 
-import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
+import { doc, setDoc } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/app-context';
@@ -29,7 +29,7 @@ function isAuthError(error: unknown): error is AuthError {
 }
 
 export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage = false }: AuthDialogProps) {
-  const { t } = useAppContext();
+  const { t, setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -63,7 +63,10 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
         status: 'active',
         balance: 0,
       };
-
+      
+      // Explicitly set user in context after signup
+      setUser(profileData);
+      
       const collectionName = `${signupRole}s`;
       const userDocRef = doc(db, collectionName, user.uid);
       
@@ -93,15 +96,21 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     e.preventDefault();
     setAuthError('');
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
-      const userProfile = await getUserProfileByAuthId(userCredential.user.uid);
-      
-      if (userProfile && onSuccess) {
-        onSuccess(userProfile);
-      } else {
-        setAuthError(t('auth_error_no_profile'));
-      }
-      setIsOpen(false);
+        // Step 1: Just sign in the user.
+        const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
+
+        // Step 2: The onAuthStateChanged listener in AppContext will now fire.
+        // It will fetch the user profile and update the global user state.
+        // We no longer need to fetch the profile here.
+
+        // The onSuccess callback in AuthPage will then trigger the redirect
+        // based on the updated global user state from the context.
+        if (onSuccess) {
+            // We pass a temporary partial profile. The full profile will be loaded by the context.
+            onSuccess({ id: userCredential.user.uid, role: 'passenger', name: '', email: '' }); 
+        }
+
+        setIsOpen(false);
     } catch (error: unknown) {
       console.error("Signin error:", error);
       if (isAuthError(error)) {
