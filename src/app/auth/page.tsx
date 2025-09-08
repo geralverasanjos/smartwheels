@@ -14,26 +14,24 @@ export default function AuthPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     
-    // The setRole was not being used, it was removed to clean up the code.
     const initialRole = searchParams.get('role') || 'passenger';
     const [role] = useState(initialRole);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // This effect handles the redirect after a successful login
+    
+    // This effect handles the redirect ONLY when the user object is fully loaded in the context.
     useEffect(() => {
-        // When the user object is loaded from the context and is not null, redirect.
-        if (isLoggedIn && user) { 
+        // user is undefined: Still loading.
+        // user is not null: Login was successful and profile is fetched.
+        if (user) { 
             const targetRole = user.role || 'passenger';
             router.push(`/dashboard/${targetRole}`);
         }
-    }, [user, isLoggedIn, router]);
+    }, [user, router]);
 
 
     const handleSuccess = (loggedInUser: UserProfile) => {
-        // We just need to know that the login process was successful.
-        // The useEffect above will handle the redirect once the user state is updated in the context.
-        console.log("handleSuccess called for user:", loggedInUser.id);
-        setIsLoggedIn(true);
+        // This function is now just a confirmation.
+        // The useEffect above, which listens to the global user state, handles the redirect.
+        console.log(`Login successful for user ID: ${loggedInUser.id}. Waiting for context to update and redirect.`);
     };
 
     return (
@@ -46,7 +44,7 @@ export default function AuthPage() {
                  <CardContent>
                      <AuthDialog
                          isOpen={true} 
-                         setIsOpen={() => router.push('/')}
+                         setIsOpen={() => router.push('/')} // Go back to home if dialog is closed
                          role={role}
                          onSuccess={handleSuccess}
                          isPage={true} 

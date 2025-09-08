@@ -101,12 +101,11 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
 
         // Step 2: The onAuthStateChanged listener in AppContext will now fire.
         // It will fetch the user profile and update the global user state.
-        // We no longer need to fetch the profile here.
-
-        // The onSuccess callback in AuthPage will then trigger the redirect
-        // based on the updated global user state from the context.
+        
+        // The onSuccess callback in AuthPage will then trigger based on the context update.
         if (onSuccess) {
-            // We pass a temporary partial profile. The full profile will be loaded by the context.
+            // We can pass back a partial profile, just to signal success.
+            // The AuthPage will ignore this data and wait for the context to update.
             onSuccess({ id: userCredential.user.uid, role: 'passenger', name: '', email: '' }); 
         }
 
