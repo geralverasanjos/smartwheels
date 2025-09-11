@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/app-context';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { db } from '@/lib/firebase';
-import { getUserProfileByAuthId } from '@/services/profileService';
 import type { UserProfile } from '@/types';
 import type { TranslationKeys } from '@/lib/i18n';
 
@@ -64,7 +63,6 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
         balance: 0,
       };
       
-      // Explicitly set user in context after signup
       setUser(profileData);
       
       const collectionName = `${signupRole}s`;
@@ -96,16 +94,9 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     e.preventDefault();
     setAuthError('');
     try {
-        // Step 1: Just sign in the user.
         const userCredential = await signInWithEmailAndPassword(auth, signinEmail, signinPassword);
 
-        // Step 2: The onAuthStateChanged listener in AppContext will now fire.
-        // It will fetch the user profile and update the global user state.
-        
-        // The onSuccess callback in AuthPage will then trigger based on the context update.
         if (onSuccess) {
-            // We can pass back a partial profile, just to signal success.
-            // The AuthPage will ignore this data and wait for the context to update.
             onSuccess({ id: userCredential.user.uid, role: 'passenger', name: '', email: '' }); 
         }
 
@@ -223,3 +214,5 @@ export default function AuthDialog({ isOpen, setIsOpen, role, onSuccess, isPage 
     </Dialog>
   );
 }
+
+    
